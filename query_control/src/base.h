@@ -13,6 +13,8 @@
 
 config_query_control cqc;
 op_code_module itself_ocm;
+int priority=0;
+char* archive_query;
 
 
 #endif

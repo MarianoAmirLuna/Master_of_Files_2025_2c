@@ -44,7 +44,18 @@ void* attend_multiple_clients(void* params)
         t_list* l = recv_operation_packet(sock_client);
         op_code_module ocm;
         memcpy(&ocm, list_get(l, 0), sizeof(op_code_module));
+
+        if(ocm == MODULE_QUERY_CONTROL){
+            char* archive_query= (char*)list_get(l, 1);
+            int prioridad = list_get_int(l,2);
+            log_orange(logger, "Recibi el dato de Query Control: Query:%s, Prioridad: %d", archive_query, prioridad);
+        }
+        if(ocm == MODULE_WORKER){
+            int id_worker = list_get_int(l,1);
+        }
+
         list_destroy_and_destroy_elements(l, free_element);
+
         /*if(ocm == MODULE_QUERY_CONTROL){
             //Se podría justo en este momento al recibir el prioridad y path queries agregar en una lista de query_control sus campos
         }*/
@@ -57,7 +68,7 @@ void* attend_multiple_clients(void* params)
         memcpy(parameter+offset, &sock, sizeof(int));
         pthread_t* pth = malloc(sizeof(pthread_t));
         int res_create = pthread_create(pth, NULL,go_loop_net, parameter);
-        int res = pthread_detach(pth);
+        int res = pthread_detach(&pth);
     }
 }
 
@@ -100,6 +111,8 @@ void packet_callback(void* params){
     
     if(ocm == MODULE_QUERY_CONTROL) {
         log_pink(logger, "RECIBI DATOS DEL QUERY_CONTROL");
+        //Si se quiere responder se utiliza el sock_client
+        //Ejemplo send_and_free_packet(packet, sock_client);
     }
     if(ocm == MODULE_WORKER){
         log_pink(logger, "RECIBI DATOS DEL MODULE WORKER");
