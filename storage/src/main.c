@@ -72,7 +72,8 @@ void* go_loop_net(void* params){
     loop_network(
         sock_client,
         packet_callback,
-        data
+        data, 
+        NULL
     );
     free(data);
     

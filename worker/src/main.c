@@ -67,7 +67,7 @@ void* connect_to_server(void* params){
     offset+=sizeof(int);
     memcpy(parameters+offset, &wcl, sizeof(int));
 
-    loop_network(wcl, packet_callback, parameters);
+    loop_network(wcl, packet_callback, parameters, NULL);
     free(parameters);
     return NULL;
 }

@@ -82,11 +82,32 @@ void* go_loop_net(void* params){
     loop_network(
         sock_client,
         packet_callback,
-        data
+        data,
+        disconnect_callback
     );
     free(data);
     
     return NULL;
+}
+void disconnect_callback(void* params){
+
+    log_warning(logger, "Se desconecto el cliente");
+
+    int sock_client = 0;
+    op_code_module ocm= 0;
+    int sock_server=0;
+    int offset= 0;
+    memcpy(&sock_client, params+offset, sizeof(int));
+    offset+=sizeof(int);
+    memcpy(&ocm, params+offset, sizeof(int));
+    offset+=sizeof(int);
+    memcpy(&sock_server, params+offset, sizeof(int));
+    
+    if(ocm == MODULE_QUERY_CONTROL)
+    {
+        log_warning(logger, "Se desconecto el cliente de QUERY CONTROL");
+    }
+    
 }
 
 void packet_callback(void* params){

@@ -232,18 +232,23 @@ int handshake(int sock, int is_server_side){
 /// @param sock Socket Socket
 /// @param cbPack Callback Packet (void**)
 /// @param argsPack Argumentos del Callback Packet
-void loop_network(int sock, void(*cbPack)(void*), void* argsPack)
+void loop_network(int sock, void(*cbPack)(void*), void* argsPack, void(*cbDisconnect)(void*))
 {
 	int cod_op = PACKET;
 	for(;;){
 		cod_op = recv_operation(sock);
         if(cod_op == -1)
 		{
-			//print_trace();
-			log_error(logger, "el cliente se desconecto. Terminando servidor");
-			int cl = close(sock);
-            log_info(logger, "Cerrando Socket %d (%s:%d)", cl, __func__, __LINE__);
-			break;
+			if(cbDisconnect != NULL){
+				(*cbDisconnect)(argsPack);
+				break;
+			}else{
+				//print_trace();
+				log_error(logger, "el cliente se desconecto. Terminando servidor");
+				int cl = close(sock);
+				log_info(logger, "Cerrando Socket %d (%s:%d)", cl, __func__, __LINE__);
+				break;
+			}
 		}
 		if(cod_op == PACKET)
 		{
