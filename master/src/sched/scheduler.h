@@ -8,7 +8,8 @@
 #include "exts/common_ext.h"
 
 //Se debe instanciar en un nuevo subproceso
-void scheduler(){
+//Coloqué el argumento params para que el compilador no llore con el warning
+void* scheduler(void* params){
 
     log_info(logger, "%s", "SCHEDULER INSTANCE");
     if(cm.tiempo_aging < 0){

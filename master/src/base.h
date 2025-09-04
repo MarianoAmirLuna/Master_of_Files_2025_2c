@@ -1,19 +1,12 @@
 #ifndef MASTER_BASE_H
 #define MASTER_BASE_H
 
-#include <pthread.h>
-#include "inc/common.h"
-#include "modules/sockets/network.h"
-#include "inc/libs.h"
-#include "exts/array_ext.h"
-#include "exts/list_ext.h"
-
 #ifndef SCHEDULER_H
 #include "sched/scheduler.h"
 #endif
 
-
-
 op_code_module itself_ocm;
+/// @brief Es como PID, es incremental desde 0, doc página 13
+int query_idx=0;
 
 #endif

@@ -49,7 +49,7 @@ typedef struct{
 }config_worker;
 
 typedef struct{
-    char* puerto_escucha;
+    int puerto_escucha;
     int fresh_start;
     char* punto_montaje;
     int retardo_operacion;

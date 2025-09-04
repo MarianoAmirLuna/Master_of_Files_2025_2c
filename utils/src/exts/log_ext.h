@@ -12,13 +12,14 @@
 
 #include "commons/temporal.h"
 #include "commons/string.h"
+#include "commons/process.h" //Por el implicit declaration del get_process_thread_id();
 
 #define BF_COLOR_SIZE 4
 
 /**
  * Private Functions
  */
-static void _log_write_in_level(t_log* logger, t_log_level level, const char* message_template, va_list arguments);
+//static void _log_write_in_level(t_log* logger, t_log_level level, const char* message_template, va_list arguments);
 static bool _is_level_enabled(t_log* logger, t_log_level level);
 
 static char *reset_color = "\x1b[0m";

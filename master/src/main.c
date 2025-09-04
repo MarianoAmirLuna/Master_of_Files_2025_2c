@@ -6,6 +6,8 @@ int main(int argc, char* argv[]) {
     create_log("master", cm.log_level);
     log_violet(logger, "%s", "Hola soy MASTER");
     
+    queries = list_create();
+    
     int sock_server = server_connection(cm.puerto_escucha);
     
     void* param = malloc(sizeof(int)*2);
@@ -14,7 +16,7 @@ int main(int argc, char* argv[]) {
     
     pthread_t* pth = malloc(sizeof(pthread_t));
     pthread_create(pth, NULL, scheduler, NULL);
-    pthread_detach(&pth);
+    pthread_detach(*pth);
 
     attend_multiple_clients(param);
     
@@ -74,8 +76,8 @@ void* attend_multiple_clients(void* params)
         offset+=sizeof(int);
         memcpy(parameter+offset, &sock, sizeof(int));
         pthread_t* pth = malloc(sizeof(pthread_t));
-        int res_create = pthread_create(pth, NULL,go_loop_net, parameter);
-        int res = pthread_detach(&pth);
+        pthread_create(pth, NULL,go_loop_net, parameter);
+        pthread_detach(*pth);
     }
 }
 
@@ -110,11 +112,18 @@ void disconnect_callback(void* params){
     offset+=sizeof(int);
     memcpy(&sock_server, params+offset, sizeof(int));
     
+    //TODO: Si se desconectó y la query se encuentra en Ready se debe mandar exit directamente
+    //ahora si estaba en Exec se debe notificar al Worker que la está ejecutando justo ese query y debe desalojar la query.
+
+    
     if(ocm == MODULE_QUERY_CONTROL)
     {
         log_warning(logger, "Se desconecto el cliente de QUERY CONTROL");
     }
     
+    if(ocm == MODULE_WORKER){
+        //Si se desconectó un worker la query  que se encontraba en ejecución en ese Worker se finalizará con error y notificará al Query Control correspondiente.
+    }
 }
 
 void packet_callback(void* params){

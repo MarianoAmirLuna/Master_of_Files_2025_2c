@@ -1,6 +1,7 @@
 #ifndef STORAGE_BASE_H
 #define STORAGE_BASE_H
 
+#include "pthread.h"
 #include "inc/common.h"
 #include "modules/sockets/network.h"
 

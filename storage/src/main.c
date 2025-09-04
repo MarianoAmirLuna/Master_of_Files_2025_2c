@@ -57,8 +57,8 @@ void* attend_multiple_clients(void* params)
         offset+=sizeof(int);
         memcpy(parameter+offset, &sock, sizeof(int));
         pthread_t* pth = (pthread_t*)malloc(sizeof(pthread_t));
-        int res_create = pthread_create(pth, NULL,go_loop_net, parameter);
-        int res = pthread_detach(*pth);
+        pthread_create(pth, NULL,go_loop_net, parameter);
+        pthread_detach(*pth);
     }
 }
 

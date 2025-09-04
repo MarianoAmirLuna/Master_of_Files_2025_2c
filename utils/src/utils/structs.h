@@ -50,5 +50,13 @@ typedef struct{
 }pseudocode;
 //TODO: Se podrá cambiar el nombre del pseudocode a query_interpreter
 
+/// @brief Es la estructura que usa el Master para administrar las query
+typedef struct{
+    int query_id;
+    int worker_id;
+    char* archive_query;
+    int priority;
+}query;
+
 
 #endif

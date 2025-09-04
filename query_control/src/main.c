@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
         log_orange(logger, "Config: %s, Path Queries: %s, Prioridad: %d", path_config, archive_query, priority);
     }
     if(priority <= 0){
-        log_warning(logger, "Número de prioridad inválido, se seteó en 0")
+        log_warning(logger, "Número de prioridad inválido, se seteó en 0");
         priority=0;
     }
     
