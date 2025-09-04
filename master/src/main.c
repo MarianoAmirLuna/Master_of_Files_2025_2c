@@ -11,8 +11,15 @@ int main(int argc, char* argv[]) {
     void* param = malloc(sizeof(int)*2);
     memcpy(param, &sock_server, sizeof(int));
     memcpy(param+sizeof(int), &cm.puerto_escucha, sizeof(int));
+    
+    pthread_t* pth = malloc(sizeof(pthread_t));
+    pthread_create(pth, NULL, scheduler, NULL);
+    pthread_detach(&pth);
+
     attend_multiple_clients(param);
     
+    //TODO: Instance handler key down for kill ALL SOCKETS
+
     return 0;
 }
 

@@ -25,6 +25,10 @@ int main(int argc, char* argv[]) {
         priority = atoi(argv[3]);
         log_orange(logger, "Config: %s, Path Queries: %s, Prioridad: %d", path_config, archive_query, priority);
     }
+    if(priority <= 0){
+        log_warning(logger, "Número de prioridad inválido, se seteó en 0")
+        priority=0;
+    }
     
     cqc = load_config_query_control();
 
@@ -49,6 +53,27 @@ int main(int argc, char* argv[]) {
         t_list* l = recv_operation_packet(fd_master);
         log_info(logger, "Recibi: %d cantidad de elementos", list_size(l));
         
+        int v = list_get_int(l, 0);
+        if(v == REQUEST_READ){
+            char* archivo = list_get_str(l,1);
+            char* contenido = list_get_str(l,2);
+            log_info(logger, "## Lectura realizada: %s, contenido: %s", archivo, contenido);
+            //Es la lectura del log obligatorio: "## Lectura realizada: Archivo <File:Tag>, contenido: <CONTENIDO>"
+        }
+        if(v == REQUEST_EXECUTE_QUERY){
+            //Sera que el Master solicita el query y este modulo le responde? eso es lo que entendí.
+            log_info(logger, "## Solicitud de ejecución de Query: %s, prioridad: %d", archive_query, priority);
+        }
+        if(v == REQUEST_KILL){
+
+            //Se debe poner el log de query finalizada y su motivo...
+            //Debe ser un char* el motivo???
+            char* motivo = list_get_str(l, 1);
+            log_info(logger, "## Query Finalizada - %s", motivo);
+            break;
+        }
+
+
         //Por ahora asumo que si recibe cantidad vacía rompo este programa y listo.
         if(list_size(l) == 0)
             break;

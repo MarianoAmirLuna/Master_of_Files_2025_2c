@@ -178,8 +178,7 @@ t_list* recv_packet(int sock_client){
 
 t_list* recv_operation_packet(int sock_client){
 	int op = recv_operation(sock_client);
-	//if(op != PACKET && op!= IDENTIFICARSE_DISPATCH_MEMORIA && op != IDENTIFICARSE_DISPATCH_KERNEL){ //nunca pense que iba a odiar tanto una linea especifica
-	if(op != PACKET){ //nunca pense que iba a odiar tanto una linea especifica
+	if(op != PACKET){
 		log_error(logger, "Operacion invalida valor(%d) cliente %d, %s:%d se invocó exit(1)", op, sock_client, __func__, __LINE__); 
 		exit(1);
 	}
@@ -232,6 +231,7 @@ int handshake(int sock, int is_server_side){
 /// @param sock Socket Socket
 /// @param cbPack Callback Packet (void**)
 /// @param argsPack Argumentos del Callback Packet
+/// @param cbDisconnect Callback de Desconexión del módulo
 void loop_network(int sock, void(*cbPack)(void*), void* argsPack, void(*cbDisconnect)(void*))
 {
 	int cod_op = PACKET;

@@ -58,6 +58,7 @@ typedef enum{
     NOTEXISTS,
     /// @brief Replanificación
     RESCHEDULE,
+    QUERY_ID,
     /// @brief El proceso terminó de ejecutarse
     PROCESS_FINISHED,
     /// @brief Error general
@@ -71,6 +72,9 @@ typedef enum{
     REQUEST_LIST_INSTRUCTIONS,
     REQUEST_CHECK_SPACE_MEMORY,
 	REQUEST_INSTRUCTIONS_MEMORY,
+    /// @brief Cuando el Master debe desalojar el Query al Worker
+    REQUEST_DESALOJO,
+    REQUEST_KILL,
     REQUEST_WRITE,
     REQUEST_READ,
 	REQUEST_INFO,

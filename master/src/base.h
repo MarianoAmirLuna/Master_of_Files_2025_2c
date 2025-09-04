@@ -8,8 +8,12 @@
 #include "exts/array_ext.h"
 #include "exts/list_ext.h"
 
+#ifndef SCHEDULER_H
+#include "sched/scheduler.h"
+#endif
 
-config_master cm;
+
+
 op_code_module itself_ocm;
 
 #endif
