@@ -118,9 +118,14 @@ typedef enum{
 
 typedef enum{
     /// @brief Least Recently Used
-    R_LRU,
+    R_LRU=END+1,
     /// @brief Least Recently Used
     R_CLOCK_M
 }replace_algorithm;
+
+typedef enum{
+    WORK_IN_PROGRESS=R_CLOCK_M+1,
+    COMMITED
+}state_metadata;
 
 #endif

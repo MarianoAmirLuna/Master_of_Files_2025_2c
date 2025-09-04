@@ -5,6 +5,16 @@
 #ifndef UTILS_ENUMS_H
 #include "utils/enums.h"
 #endif
+
+char* get_string_state(state_metadata state){
+    if(state == WORK_IN_PROGRESS){
+        return "WORK_IN_PROGRESS";
+    }
+    if(state == COMMITED){
+        return "COMMITED";
+    }
+    return string_new();
+}
 /*
 instr_code cast_code(char* name){
     if(string_contains(name, "\n"))

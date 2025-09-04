@@ -10,11 +10,16 @@
 #include "../utils/enums.h"
 
 #include "commons/collections/list.h"
+
 #ifndef CONFIG_H_
 #include <commons/config.h>
 #endif
 #ifndef LIBS_LOGGER_H
 #include "logger.h"
+#endif
+
+#ifndef EXTS_LIST_EXT
+#include "exts/list_ext.h"
 #endif
 
 #ifndef CAST_EXT_H
@@ -177,5 +182,43 @@ t_config* load_config(char* path){
         exit(1);
     }
     return config;
+}
+
+t_config* create_super_block(char* path, int fs_size, int block_size)
+{
+    if(fs_size < 0 || block_size < 0){
+        printf("%s, (%s:%d)","WHAT THE FUCK fs_size o block_size menores o iguales a 0???? EXIT(1) IS INVOKED", __func__, __LINE__);
+        exit(EXIT_FAILURE);
+    }
+    t_config* superblock = config_create(path);
+    config_set_value(superblock, "FS_SIZE", fs_size);
+    config_set_value(superblock, "BLOCK_SIZE", block_size);
+    return superblock;
+}
+
+t_config* create_blocks_hash_index(char* path){
+    return config_create(path);
+}
+
+t_config* insert_hash_block(t_config* block_hash_index, char* hash, char* block){
+    //Lo gracioso es que el MD5 es un hash pobre y es más propenso a tener colisión de hash que un SHA1
+    if(block_hash_index == NULL){
+        printf("%s (%s:%d)", "El Config block hash index no está creado...", __func__,__LINE__);
+        exit(EXIT_FAILURE);
+    }
+    
+    config_set_value(block_hash_index, hash, block);
+}
+t_config* create_metadata(char* path, int size, t_list* blocks, state_metadata state){
+    t_config* metadata = config_create(path);
+    if(blocks == NULL || list_is_empty(blocks))
+    {
+        printf("%s (%s:%d)", "La lista blocks está vacía o es nula", __func__,__LINE__);
+        exit(EXIT_FAILURE);
+    }
+    config_set_value(metadata, "TAMAÑO", size);
+    config_set_value(metadata, "BLOCKS", list_array_int_as_string(blocks));
+    config_set_value(metadata, "ESTADO", get_string_state(state));
+    return metadata;
 }
 #endif

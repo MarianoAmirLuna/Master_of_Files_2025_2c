@@ -19,12 +19,12 @@ int main(int argc, char* argv[]) {
         int v =arr[i];
         add_thread_by_enum(v);
         pthread_t* pth = get_pthread_by_enum(v);
-        int res = 0;
+        
         void* parameters = malloc(sizeof(int));
         memcpy(parameters, &v, sizeof(int));
-        res = pthread_create(pth, NULL, connect_to_server, parameters);
-        log_debug(logger, "Res pthread_create: %d", res);
-        res = pthread_detach(*pth);
+        pthread_create(pth, NULL, connect_to_server, parameters);
+        //log_debug(logger, "Res pthread_create: %d", res);
+        pthread_detach(*pth);
         pthread_mutex_unlock(&locker);
     }
     pthread_mutex_destroy(&locker);

@@ -125,4 +125,15 @@ t_list* list_add_range_fill_length(t_list* l, void*(*fptr)(), int length){
     }
     return l;
 }
+
+char* list_array_int_as_string(t_list* l){
+    int sz = list_size(l);
+    char* res = string_new();
+    string_append(&res, "[");
+    for(int i=0;i<sz;i++){
+        string_append_with_format(&res, i == sz-1 ? "%d" : "%d,", list_get_int(l, i));
+    }
+    
+    string_append(&res, "]");
+}
 #endif
