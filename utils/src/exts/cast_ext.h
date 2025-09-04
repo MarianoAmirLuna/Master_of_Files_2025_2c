@@ -44,5 +44,7 @@ instr_code cast_code(char* code){
     if(string_equals_ignore_case(code,"END")){
         return END;
     }
+    log_error(logger, "No se encontró instrucción %s:%d", __func__,__LINE__);
+    return END;
 }
 #endif
