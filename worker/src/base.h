@@ -15,6 +15,7 @@
 config_worker cw;
 op_code_module itself_ocm;
 int sock_master,sock_storage;
-
+void* memory;
+int id_worker;
 
 #endif

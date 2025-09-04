@@ -61,9 +61,14 @@ void* attend_multiple_clients(void* params)
         }
         if(ocm == MODULE_WORKER){
             int id_worker = list_get_int(l,1);
+            log_orange(logger, "Recibi el id_worker de Worker: ID_WORKER = %d", id_worker);
         }
 
         list_destroy_and_destroy_elements(l, free_element);
+
+        //TODO: Implement query structure of this id_worker, etc. 
+        //list_add(queries, )
+
 
         /*if(ocm == MODULE_QUERY_CONTROL){
             //Se podría justo en este momento al recibir el prioridad y path queries agregar en una lista de query_control sus campos

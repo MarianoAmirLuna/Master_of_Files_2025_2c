@@ -2,12 +2,24 @@
 
 int main(int argc, char* argv[]) {
     itself_ocm = MODULE_WORKER;
-    load_config("worker.config");
-    cw = load_config_worker();
     create_log("worker", cw.log_level);
     log_violet(logger, "%s", "Hola soy WORKER");
+
+    if(argc == 3){
+        char* config_path = argv[1];
+        id_worker = atoi(argv[2]);
+        load_config(config_path);
+    }else{
+        log_error(logger, "Cantidad inválida de argumentos: %d", argc);
+        id_worker = 0;
+        load_config("worker.config");
+    }
+
+    cw = load_config_worker();
     
     //TODO: El worker tiene 2 argumentos: archivo_config y el ID_Worker
+       
+    memory = malloc(cw.tam_memoria);
     
     pthread_mutex_t locker;
     pthread_mutex_init(&locker, NULL);
@@ -28,6 +40,8 @@ int main(int argc, char* argv[]) {
         pthread_mutex_unlock(&locker);
     }
     pthread_mutex_destroy(&locker);
+
+
 
     for(;;){
         //Fingir hacer algo para que no se muera esta consola
@@ -55,7 +69,18 @@ void* connect_to_server(void* params){
         log_error(logger, "No pudo hacer handshake con el socket %d del modulo %s exit(1) is invoked", wcl, ocm_to_string(ocm));
         exit(EXIT_FAILURE);
     }
-    send_john_snow_packet(itself_ocm, wcl);
+    
+
+    if(ocm == MODULE_STORAGE){
+        send_john_snow_packet(itself_ocm, wcl);
+    }
+    if(ocm == MODULE_MASTER){
+        t_packet* p = create_packet();
+        add_int_to_packet(p,itself_ocm);
+        add_int_to_packet(p, id_worker); //le envio el id_worker al master
+        send_and_free_packet(p, sock_master);
+    }
+
     //add_socket_structure_by_name_ocm_sock_server(ocm_to_string(ocm), ocm, wcl, 0);
     
     void* parameters = malloc(sizeof(int)*3);

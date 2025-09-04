@@ -5,6 +5,9 @@ int main(int argc, char* argv[]) {
     itself_ocm = MODULE_STORAGE;
     load_config("storage.config");
     cs =load_config_storage();
+
+    
+
     create_log("storage", cs.log_level);
     log_violet(logger, "%s", "Hola soy STORAGE");
     
@@ -51,6 +54,8 @@ void* attend_multiple_clients(void* params)
         memcpy(&ocm, list_get(l, 0), sizeof(op_code_module));
         list_destroy_and_destroy_elements(l, free_element);
         
+        
+
         void* parameter = malloc(sizeof(int)*3);
         int offset = 0;
         memcpy(parameter, &sock_client, sizeof(int));
