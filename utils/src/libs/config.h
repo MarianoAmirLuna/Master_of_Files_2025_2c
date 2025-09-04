@@ -191,8 +191,8 @@ t_config* create_super_block(char* path, int fs_size, int block_size)
         exit(EXIT_FAILURE);
     }
     t_config* superblock = config_create(path);
-    config_set_value(superblock, "FS_SIZE", fs_size);
-    config_set_value(superblock, "BLOCK_SIZE", block_size);
+    config_set_value(superblock, "FS_SIZE", string_itoa(fs_size));
+    config_set_value(superblock, "BLOCK_SIZE", string_itoa(block_size));
     return superblock;
 }
 
@@ -217,7 +217,7 @@ t_config* create_metadata(char* path, int size, t_list* blocks, state_metadata s
         printf("%s (%s:%d)", "La lista blocks está vacía o es nula", __func__,__LINE__);
         exit(EXIT_FAILURE);
     }
-    config_set_value(metadata, "TAMAÑO", size);
+    config_set_value(metadata, "TAMAÑO", string_itoa(size));
     config_set_value(metadata, "BLOCKS", list_array_int_as_string(blocks));
     config_set_value(metadata, "ESTADO", get_string_state(state));
     return metadata;

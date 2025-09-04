@@ -48,6 +48,16 @@ typedef struct{
     /// @brief instruction
     t_list* instructions;
 }pseudocode;
+
+typedef struct{
+    instr_code instrs;
+    char* name;
+    char* tag;
+    char* name2;
+    char* tag2;
+    int v;
+}line_instr;
+
 //TODO: Se podrá cambiar el nombre del pseudocode a query_interpreter
 
 /// @brief Es la estructura que usa el Master para administrar las query

@@ -13,6 +13,12 @@
 config_master cm;
 /// @brief struct de query
 t_list* queries;
+/// @brief Es como PID, es incremental desde 0, doc página 13
+int query_idx=0;
 
+int increment_idx(){
+    //TODO: Usar Pthread lock  o semáforo para bloquear el subproceso así no hay condición de carrera al incrementar la query_id
+    return query_idx++;
+}
 
 #endif
