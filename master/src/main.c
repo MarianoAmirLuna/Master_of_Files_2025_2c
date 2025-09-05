@@ -119,12 +119,12 @@ void disconnect_callback(void* params){
     
     if(ocm == MODULE_QUERY_CONTROL){
         //TODO: Si se desconectó y la query se encuentra en Ready se debe mandar exit directamente
-        //ahora si estaba en Exec se debe notificar al Worker que la está ejecutando justo ese query y debe desalojar la query.
+        //TODO: ahora si estaba en Exec se debe notificar al Worker que la está ejecutando justo ese query y debe desalojar la query.
     }
     
     if(ocm == MODULE_WORKER){
-        //Si se desconectó un worker la query  que se encontraba en ejecución en ese Worker se finalizará con error y notificará al Query Control correspondiente.
-
+        //Si se desconectó un worker la query que se encontraba en ejecución en ese Worker se finalizará con error y notificará al Query Control correspondiente.
+        //TODO: En Params buscar la forma de hacer que se pueda identificar que poronga de Worker es para saber cuál query estaba corriendo este Worker que se desconectó.
     }
     log_warning(logger, "Se desconecto el cliente de %s QUERY CONTROL fd:%d", ocm_to_string(ocm), sock_client);
 }
