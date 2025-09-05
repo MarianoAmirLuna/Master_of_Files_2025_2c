@@ -80,7 +80,7 @@ void* go_loop_net(void* params){
         sock_client,
         packet_callback,
         data, 
-        NULL
+        disconnect_callback
     );
     free(data);
     
@@ -109,4 +109,18 @@ void packet_callback(void* params){
     log_pink(logger, "RECIBI DATOS DEL %s", ocm_to_string(ocm));
     
     list_destroy_and_destroy_elements(pack, free_element);
+}
+
+void disconnect_callback(void* params){
+    int sock_client = 0;
+    op_code_module ocm= 0;
+    int sock_server=0;
+    int offset= 0;
+    memcpy(&sock_client, params+offset, sizeof(int));
+    offset+=sizeof(int);
+    memcpy(&ocm, params+offset, sizeof(int));
+    offset+=sizeof(int);
+    memcpy(&sock_server, params+offset, sizeof(int));
+
+    log_warning(logger, "Se desconectó el cliente %s fd:%d", ocm_to_string(ocm), sock_client);
 }

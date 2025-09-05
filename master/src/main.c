@@ -105,8 +105,6 @@ void* go_loop_net(void* params){
 }
 void disconnect_callback(void* params){
 
-    log_warning(logger, "Se desconecto el cliente");
-
     int sock_client = 0;
     op_code_module ocm= 0;
     int sock_server=0;
@@ -117,18 +115,18 @@ void disconnect_callback(void* params){
     offset+=sizeof(int);
     memcpy(&sock_server, params+offset, sizeof(int));
     
-    //TODO: Si se desconectó y la query se encuentra en Ready se debe mandar exit directamente
-    //ahora si estaba en Exec se debe notificar al Worker que la está ejecutando justo ese query y debe desalojar la query.
-
     
-    if(ocm == MODULE_QUERY_CONTROL)
-    {
-        log_warning(logger, "Se desconecto el cliente de QUERY CONTROL");
+    
+    if(ocm == MODULE_QUERY_CONTROL){
+        //TODO: Si se desconectó y la query se encuentra en Ready se debe mandar exit directamente
+        //ahora si estaba en Exec se debe notificar al Worker que la está ejecutando justo ese query y debe desalojar la query.
     }
     
     if(ocm == MODULE_WORKER){
         //Si se desconectó un worker la query  que se encontraba en ejecución en ese Worker se finalizará con error y notificará al Query Control correspondiente.
+
     }
+    log_warning(logger, "Se desconecto el cliente de %s QUERY CONTROL fd:%d", ocm_to_string(ocm), sock_client);
 }
 
 void packet_callback(void* params){
