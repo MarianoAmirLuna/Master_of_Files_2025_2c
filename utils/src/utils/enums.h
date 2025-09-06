@@ -128,4 +128,40 @@ typedef enum{
     COMMITED
 }state_metadata;
 
+
+typedef enum{
+    /// @brief Esta operación creará un nuevo File dentro del FS. Para ello recibirá el nombre del File y un Tag inicial para crearlo.
+    ///Deberá crear el archivo de metadata en estado WORK_IN_PROGRESS y no asignarle ningún bloque.
+    CREATE_FILE = COMMITED+1,
+    /// @brief Esta operación se encargará de modificar el tamaño del File:Tag especificados agrandando o achicando el tamaño del mismo para reflejar el nuevo tamaño deseado (actualizando la metadata necesaria).
+    /// Al incrementar el tamaño del File, se le asignarán tantos bloques lógicos (hard links) como sea necesario. Inicialmente, todos ellos deberán apuntar el bloque físico nro 0.
+    /// Al reducir el tamaño del File, se deberán desasignar tantos bloques lógicos como sea necesario (empezando por el final del archivo). Si el bloque físico al que apunta el bloque lógico eliminado no es referenciado por ningún otro File:Tag, deberá ser marcado como libre en el bitmap.
+    TRUNCATE_FILE,
+    /// @brief Esta operación creará una copia completa del directorio nativo correspondiente al Tag de origen en un nuevo directorio correspondiente al Tag destino y modificará en el archivo de metadata del Tag destino para que el mismo se encuentre en estado WORK_IN_PROGRESS.
+    TAG_FILE,
+    /// @brief Confirmará un File:Tag pasado por parámetro. En caso de que un Tag ya se encuentre confirmado, esta operación no realizará nada. Para esto se deberá actualizar el archivo metadata del Tag pasando su estado a “COMMITED”.
+    /// Se deberá, por cada bloque lógico, buscar si existe algún bloque físico que tenga el mismo contenido (utilizando el hash y archivo blocks_hash_index.config). En caso de encontrar uno, se deberá liberar el bloque físico actual y reapuntar el bloque lógico al bloque físico pre-existente. En caso contrario, simplemente se agregará el hash del nuevo contenido al archivo blocks_hash_index.config.
+    COMMIT_TAG,
+    /// @brief Esta operación recibirá el contenido de un bloque lógico de un File:Tag y guardará los cambios en el bloque físico correspondiente, siempre y cuando el File:Tag no se encuentre en estado COMMITED y el bloque lógico se encuentre asignado.
+    /// Si el bloque lógico a escribir fuera el único referenciando a su bloque físico asignado, se escribirá dicho bloque físico directamente. En caso contrario, se deberá buscar un nuevo bloque físico, escribir en el mismo y asignarlo al bloque lógico en cuestión.
+    WRITE_BLOCK,
+    /// @brief Dado un File:Tag y número de bloque lógico, la operación de lectura obtendrá y devolverá el contenido del mismo.
+    READ_BLOCK,
+    /// @brief Esta operación eliminará el directorio correspondiente al File:Tag indicado. Al realizar esta operación, si el bloque físico al que apunta cada bloque lógico eliminado no es referenciado por ningún otro File:Tag, deberá ser marcado como libre en el bitmap.
+    DELETE_TAG
+}storage_operation;
+
+typedef enum{
+    //Una operación quiere realizar una acción sobre un File:Tag que no existe (salvo la operación de CREATE que crea un nuevo File:Tag).
+    FILE_NOT_FOUND = DELETE_TAG+1,
+    /// @brief Una operación quiere realizar una acción sobre un tag que no existe, salvo la operación de TAG que crea un nuevo Tag.
+    TAG_NOT_FOUND,
+    /// @brief Al intentar asignar un nuevo bloque físico, no se encuentra ninguno disponible.
+    INSUFFICIENT_SPACE,
+    /// @brief Una query intenta escribir o truncar un File:Tag que se encuentre en estado COMMITED.
+    WRITE_NO_PERMISSION,
+    /// @brief Una query intenta leer o escribir por fuera del tamaño del File:Tag.
+    READ_WRITE_OVERFLOW
+}errors_operation;
+
 #endif
