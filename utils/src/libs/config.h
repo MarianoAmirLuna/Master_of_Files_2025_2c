@@ -190,9 +190,16 @@ t_config* create_super_block(char* path, int fs_size, int block_size)
         printf("%s, (%s:%d)","WHAT THE FUCK fs_size o block_size menores o iguales a 0???? EXIT(1) IS INVOKED", __func__, __LINE__);
         exit(EXIT_FAILURE);
     }
+
     t_config* superblock = config_create(path);
+    if(superblock == NULL){
+        superblock = malloc(sizeof(t_config));
+        superblock->path = strdup(path);
+    }
     config_set_value(superblock, "FS_SIZE", string_itoa(fs_size));
     config_set_value(superblock, "BLOCK_SIZE", string_itoa(block_size));
+    
+    config_save(superblock);
     return superblock;
 }
 
@@ -214,7 +221,16 @@ t_config* insert_hash_block(t_config* block_hash_index, char* hash, char* block)
     return block_hash_index;
 }
 t_config* create_metadata(char* path, int size, t_list* blocks, state_metadata state){
+
     t_config* metadata = config_create(path);
+
+    if(metadata == NULL){
+        //https://github.com/sisoputnfrba/so-commons-library/blob/master/src/commons/config.c
+        metadata = malloc(sizeof(t_config));
+        metadata->path = strdup(path);
+        config_save(metadata);
+        metadata = config_create(path);
+    }
     if(blocks == NULL || list_is_empty(blocks))
     {
         printf("%s (%s:%d)", "La lista blocks está vacía o es nula", __func__,__LINE__);
