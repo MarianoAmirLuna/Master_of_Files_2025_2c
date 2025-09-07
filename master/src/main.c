@@ -69,11 +69,17 @@ void* attend_multiple_clients(void* params)
             q->archive_query = malloc(strlen(archive_query)+1);
             strcpy(q->archive_query, archive_query);
             q->priority = prioridad;
+            q->fd = sock_client;
             q->id = increment_idx();
             q->sp = STATE_READY;
             id = q->id;
             list_add(queries, q);
-            
+            log_info(logger, "## Se conecta un Query Control para ejecutar la Query %s con prioridad %d - Id asignado: %d. Nivel multiprocesamiento: %d",
+                q->archive_query,
+                q->priority,
+                q->id,
+                list_size(workers)
+            );
             //Deberia hacer una planificación ahora mismo para saber si puede asignar un 
         }
         if(ocm == MODULE_WORKER){
@@ -88,6 +94,7 @@ void* attend_multiple_clients(void* params)
             degree_multiprocess = list_size(workers);
             //Acaso cuando recibo el id_worker en seguida le tengo que asignar un query?? de ahí para pasar el path de la query al worker???????
             log_orange(logger, "Recibi el id_worker de Worker: ID_WORKER = %d", id_worker);
+            log_info(logger, "## Se conecta el Worker %d - Cantidad total de Workers: %d", id_worker, list_size(workers));
         }
 
         list_destroy_and_destroy_elements(l, free_element);
@@ -147,6 +154,20 @@ void disconnect_callback(void* params){
         if(q->sp == STATE_READY){
             //Se debe mandar a exit directamente
         }
+        if(q->sp == STATE_EXEC){
+            //Se debe notificar al worker que está ejecutando esto y pedir que desaloje
+            worker* w = get_worker_by_qid(q->id);
+            if(w == NULL){ //No se encuentra
+                log_warning(logger, "%s","No se encontró el worker en la lista de workers");
+            }else{
+                t_packet* p = create_packet();
+                add_int_to_packet(p, REQUEST_DESALOJO);
+                add_int_to_packet(p, q->id);
+                send_and_free_packet(p, w->fd);
+                //Me tendra que responder el PC???
+                //log_info(logger, "## Se desaloja la Query")
+            }
+        }
     }
     
     if(ocm == MODULE_WORKER){
@@ -156,11 +177,29 @@ void disconnect_callback(void* params){
         int idx = -1;
         worker* w = get_worker_by_wid(id_worker);
         //worker* w = get_worker_by_fd(sock_client, &idx);
+        
         if(idx != -1 && w != NULL){
+            query* q = get_query_by_qid(w->id_query);
+            if(q != NULL){
+                //Notificar al query
+                t_packet* p = create_packet();
+                add_int_to_packet(p, ERROR);
+                send_and_free_packet(p,q->fd);
+                
+            }
+            int id_worker = w->id;
+            int qid = w->id_query;
             //TODO: free pointer worker
             list_remove(workers, idx);
+            degree_multiprocess = list_size(workers);
+
+            log_info(logger, "## Se desconecta el Worker %d - Se finaliza la Query %d - Cantidad total de Workers: %d",
+                id_worker,
+                qid,
+                degree_multiprocess
+            );
         }
-        degree_multiprocess = list_size(workers);
+        
     }
     log_warning(logger, "Se desconecto el cliente de %s fd:%d", ocm_to_string(ocm), sock_client);
 }
@@ -172,11 +211,15 @@ void packet_callback(void* params){
     op_code_module ocm= 0;
     int sock_server=0;
     int offset= 0;
+    int id =-1;
     memcpy(&sock_client, params+offset, sizeof(int));
     offset+=sizeof(int);
     memcpy(&ocm, params+offset, sizeof(int));
     offset+=sizeof(int);
     memcpy(&sock_server, params+offset, sizeof(int));
+    offset+=sizeof(int);
+    memcpy(&id, params+offset, sizeof(int));
+
     log_info(logger, "En el packet callback sock_client: %d, ocm: %d, sock_server:%d", sock_client, ocm, sock_server);
     t_list* pack = recv_packet(sock_client);
     
@@ -187,20 +230,27 @@ void packet_callback(void* params){
     
     if(ocm == MODULE_QUERY_CONTROL) {
         log_pink(logger, "RECIBI DATOS DEL QUERY_CONTROL");
-        work_query_control(pack, sock_client);
+        work_query_control(pack, id, sock_client);
     }
     if(ocm == MODULE_WORKER){
         log_pink(logger, "RECIBI DATOS DEL MODULE WORKER");
-        work_worker(pack, sock_client);
+        work_worker(pack, id, sock_client);
     }
 
     list_destroy_and_destroy_elements(pack, free_element);
 }
 
-void work_query_control(t_list* packet, int sock){
+void work_query_control(t_list* packet, int id, int sock){
 
 }
 
-void work_work(t_list* pack, int sock){
+void work_worker(t_list* pack, int id, int sock){
+    int opcode = list_get_int(pack, 0);
 
+    if(opcode = QUERY_END){
+        worker* w = get_worker_by_wid(id);
+        log_info(logger, "## Se terminó la Query: %d en el Worker %d",
+            w->id_query, id
+        );
+    }
 }

@@ -43,14 +43,17 @@ t_queue* get_queue_by_sp(state_process sp){
 }
 
 void query_to(query* q, state_process to){
-    if(is_valid_sp (q->))
+    //if(is_valid_sp (q->))
 }
+
+
 
 worker* get_worker_by_fd(int fd, int* idx)
 {
     int sz = list_size(workers);
     for(int i=0;i<sz;i++){
         worker* w = list_get(workers, i);
+        
         if(w->fd == fd){
             *idx = i;
             return w;
@@ -59,7 +62,18 @@ worker* get_worker_by_fd(int fd, int* idx)
     *idx = -1;
     return NULL;
 }
-
+worker* get_worker_by_qid(qid id){
+     int sz = list_size(workers);
+    for(int i=0;i<sz;i++){
+        worker* w = list_get(workers, i);
+        if(w == NULL){
+            continue;
+        }
+        if(w->id_query == id)
+            return w;
+    }
+    return NULL;
+}
 worker* get_worker_by_wid(wid id){
     int sz = list_size(workers);
     for(int i=0;i<sz;i++){

@@ -62,6 +62,7 @@ typedef struct{
 
 /// @brief Es la estructura que usa el Master para administrar las query
 typedef struct{
+    int fd;
     qid id;
     state_process sp;
     int pc;
