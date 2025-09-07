@@ -190,9 +190,15 @@ void valido_inicial_file(char* path)
     {
         crear_directorio("BASE",string_from_format("%s%s", path, "files/"));
     }
+    if (!control_existencia(string_from_format("%s%s", path, "files/BASE/metadata.config")))
+    {
+        crear_config_path(string_from_format("%s%s", path, "files/BASE/"), "metadata.config");
+    }    
     if (!control_existencia(string_from_format("%s%s", path, "files/BASE/logical_blocks")))
     {
         crear_directorio("logical_blocks",string_from_format("%s%s", path, "files/BASE/"));
+        crear_archivo(string_from_format("%s%s", path, "files/BASE/logical_blocks"), "000000", "dat");
+        //vincular_bloque(logico, fisico)
     }
 }
 
@@ -265,16 +271,66 @@ void valido_bloques_fisicos(const char* path)
         log_light_green(logger, "[valido_bloques_fisicos] Directorio encontrado, verificando que el block count sea el correcto"); //to_do: borrar este
         int cantidad_bloques = g_fs_size / g_block_size;
         log_light_blue(logger, "[valido_bloques_fisicos] Cantidad de bloques que deberia haber: %d", cantidad_bloques); //to_do: borrar este
+
+        //Veriifico la cantidad de bloques fisicos que hay
+        if (cant_elementos_directorio(string_from_format("%s%s", path, "physical_blocks")) == cantidad_bloques)
+        {
+            //Cantidad de bloques correcta, por lo tanto no no hay que crear nuevos bloques
+            log_light_green(logger, "[valido_bloques_fisicos] La cantidad de bloques fisicos es correcta"); //to_do: borrar este
+        }
+        else
+        {
+            //Cantidad de bloques incorrecta, por lo tanto hay que crear los bloques faltantes o eliminar los bloques de mas
+
+            //Cantidad de bloques inferior
+            do 
+            {
+                int bloques_restantes = cantidad_bloques - cant_elementos_directorio(string_from_format("%s%s", path, "physical_blocks"));
+                log_orange(logger, "[valido_bloques_fisicos] La cantidad de bloques fisicos es INFERIOR, faltan %d bloques", bloques_restantes); //to_do: borrar este
+                crear_bloques_fisicos (bloques_restantes, string_from_format("%s%s", path, "physical_blocks"), cant_elementos_directorio(string_from_format("%s%s", path, "physical_blocks")));
+            }
+            while(cant_elementos_directorio(string_from_format("%s%s", path, "physical_blocks")) < cantidad_bloques);
+
+
+            //Cantidad de bloques superior
+            do 
+            {
+                int bloques_restantes = cantidad_bloques - cant_elementos_directorio(string_from_format("%s%s", path, "physical_blocks"));
+                log_orange(logger, "[valido_bloques_fisicos] La cantidad de bloques fisicos es SUPERIOR, sobran %d bloques", bloques_restantes); //to_do: borrar este
+                eliminar_bloques_fisicos(bloques_restantes, string_from_format("%s%s", path, "physical_blocks"), cant_elementos_directorio(string_from_format("%s%s", path, "physical_blocks")));
+            }
+            while(cant_elementos_directorio(string_from_format("%s%s", path, "physical_blocks")) > cantidad_bloques);
+
+        }
+        
     }
     else
     {
+        log_light_blue(logger, "[valido_bloques_fisicos] No se encontro el directorio physical_blocks, creando el directorio y los bloques fisicos"); //to_do: borrar este
+        int cantidad_bloques = g_fs_size / g_block_size;
         crear_directorio("physical_blocks", path);
-
-        //crear_bloques_fisicos (cantidad_bloques, path) para crear los bloques fisicos faltantes
+        crear_bloques_fisicos (cantidad_bloques, string_from_format("%s%s", path, "physical_blocks"), 0);
     }
-   
+
 }
 
+void crear_bloques_fisicos (int cantidad_bloques_faltantes, char* path, int bloques_actuales)
+{
+    // Creo los bloques fisicos que falten
+    for (int i = 0; i < cantidad_bloques_faltantes; i++)
+    {
+        crear_archivo(path, string_from_format("block%04d", bloques_actuales+i), "dat");
+    }
+}
+
+void eliminar_bloques_fisicos (int cantidad_bloques_de_mas, char* path, int bloques_actuales)
+{
+    // Elimino los bloques fisicos que sobren
+    for (int i = 0; i < cantidad_bloques_de_mas; i++)
+    {
+        eliminar_archivo(path, string_from_format("block%04d.dat", bloques_actuales-i));
+    }
+}
 
 void limpiar_fs() 
 {
@@ -342,6 +398,7 @@ por ejemplo: "00000…". Dicho File/Tag no se podrá borrar.
 */
 
 
+
 /*
 +----------------------------------------------------------------------------------------------+
 |                                Fin de Inicio de Modulo                                       |
@@ -352,7 +409,7 @@ por ejemplo: "00000…". Dicho File/Tag no se podrá borrar.
 
 
 +----------------------------------------------------------------------------------------------+
-|                                 Funciones Multipleuso                                        |
+|                                 Funciones Generales                                          |
 +----------------------------------------------------------------------------------------------+
 */
 
@@ -392,6 +449,103 @@ bool control_existencia(const char* path)
 }
 
 
+bool control_existencia_file(const char* path)
+{
+    //Controlo que no se me envie un path vacio
+    if (path==NULL)
+    {
+        return false;
+    }
+    log_warning(logger, "path: %s", path);
+    FILE * archivo = fopen(path, "r");
+    if (archivo != NULL)
+    {
+    //Path encontrado
+        log_info(logger, "existe el archivo");
+        fclose(archivo);
+        return true;
+    }
+    else 
+    {
+        log_error(logger, "archivo no encontrado");
+        //Path no encontrado
+        return false;
+    }
+}
+
+int cant_elementos_directorio (const char *path)
+{
+    int cant_elementos = 0;
+    DIR * dir = opendir(path);
+
+    if (!dir)
+    {
+        log_error(logger, "No se pudo abrir el directorio %s", path);
+        return -1;
+    }
+
+    struct dirent * entry;
+
+    while ((entry = readdir(dir)) != NULL)
+    {
+        if (!string_equals_ignore_case(entry->d_name, ".") && !string_equals_ignore_case(entry->d_name, ".."))
+        {
+            cant_elementos++;
+        }
+    }
+
+    closedir(dir);
+    return cant_elementos;
+}
+
+void crear_archivo (const char* path, const char* nombre, const char* extension)
+{
+    log_error(logger, "antes de entrar");
+    //if (!control_existencia_file("home/utnso/tp-2025-2c-Pizza/no_borrar_propiedad_de_storage_team/physical_blocks/block0030.dat"))
+    if (!control_existencia_file(string_from_format("%s/%s.%s", path, nombre, extension)))
+    {
+        log_error(logger, "entro");
+
+        FILE * archivo = fopen(string_from_format("%s/%s.%s", path, nombre, extension), "w");
+        fclose(archivo);
+    }
+    else
+    {
+        log_warning(logger, "El archivo %s.%s ya existe en el path %s", nombre, extension, path);
+    }
+}
+
+void eliminar_archivo (const char* path, const char* nombre)
+{
+    if (control_existencia_file(string_from_format("%s/%s", path, nombre)))
+    {
+        FILE * archivo = fopen(string_from_format("%s/%s", path, nombre), "r");
+        remove(archivo);
+    }
+    else
+    {
+        log_error(logger, "El archivo %s no existe en el path %s", nombre, path);
+    }
+}
+
+void vincular_bloque(char* path_bloque_logico, char* path_bloque_fisico)
+{
+    if(link(path_bloque_logico, path_bloque_fisico) == 0)
+    {
+        log_debug(logger, "se vinculo el bloque del path %s, con el bloque en el path %s", path_bloque_logico, path_bloque_fisico);
+    }
+    else
+    {
+        log_error(logger, "ERROR EN VINCULACION DE BLOQUES LOGICO: %s, FISICO: %s", path_bloque_logico, path_bloque_fisico);
+    }
+}
+
+void crear_config_path(char* p_path, char* name)
+{
+    char* path = string_from_format("%s%s", p_path, name);
+    create_blocks_hash_index(path);
+    free(path);
+}
 
 /*
 +----------------------------------------------------------------------------------------------+
@@ -438,47 +592,6 @@ void ejecutar_storage_instruction(storage_operation so, char* par1, char* par2){
     }
 }
 
-
-/*
-
-void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2)
-{
-    switch (caso)
-    {
-    case READ:
-        acceder_a_espacio_usuario(0, parametro1, parametro2);
-        break;
-    case WRITE:
-        acceder_a_espacio_usuario(1, parametro1, parametro2);
-        break;
-    case INIT_PROC:
-        init_proc(parametro1, parametro2);
-        break;
-    case GOTO:
-        go_to(parametro1);
-        break;
-    case IO:
-        io(parametro1, parametro2); // En el enunciado es un parametro, pero a ellos no les sube el agua al tanque
-        break;
-    case NOOP:
-        noop();
-        break;
-    case DUMP_MEMORY:
-        dump_memory();
-        break;
-    case INSTR_SYSCALL_EXIT:
-        salir();
-        break;
-    case INVALID_INSTRUCTION:
-        log_info(cpu_logger, "Matate y grabalo ludoBo");
-        break;
-    }
-}
-
-    instr_code cast_code(instruccion)
-
-*/
-
 /*
 +----------------------------------------------------------------------------------------------+
 |                     Fin de Decodifcaciones de Mensajes de Otros Modulos                      |
@@ -489,10 +602,9 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2)
 
 
 +----------------------------------------------------------------------------------------------+
-|                        Otros                                                                  |
+|                                 Funciones Decodificacion                                     |
 +----------------------------------------------------------------------------------------------+
 */
-
 
 
 
