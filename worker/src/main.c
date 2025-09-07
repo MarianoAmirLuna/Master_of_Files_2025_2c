@@ -111,16 +111,22 @@ void packet_callback(void* params){
     //free(params);
     log_debug(logger, "OCM: %s", ocm_to_string(ocm));
     t_list* packet = recv_packet(sock);
-    
     log_info(logger, "Recibi mensaje de %s cantidad del packet: %d", ocm_to_string(ocm), list_size(packet));
-
-    int op_code = (int)list_get(packet, 0);
-
-    if(op_code == EJECUTAR_QUERY){
-        archivo_query_actual = (char*)list_get(packet, 1);
-        pc_actual = (int)list_get(packet, 2);
-        is_free=false;
+    
+    int op_code = list_get_int(packet, 0); //si del otro lado se usa el add_int_to_packet(...) entonces es recomendable utilizar el list_get_int(...) si por alguna razón da malos valores intentar con casteo (int)...
+    
+    if(ocm == MODULE_MASTER){
+        //ACA RECIBIS UN PAQUETE PROVENIENTE DE MASTER
+        if(op_code == EJECUTAR_QUERY){
+            archivo_query_actual = (char*)list_get(packet, 1);
+            pc_actual = (int)list_get(packet, 2);
+            is_free=false;
+        }
     }
+    if(ocm == MODULE_STORAGE){
+        //ACA RECIBIS UN PAQUETE PROVENIENTE DE STORAGE
+    }
+    
 
     list_destroy_and_destroy_elements(packet, free_element);
 }

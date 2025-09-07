@@ -85,14 +85,14 @@ typedef enum{
 // CPU //
 
 typedef enum{
-    EJECUTAR_QUERY
+    EJECUTAR_QUERY=REQUEST_KNOW+1
 }op_code_master;
 
 
 typedef enum{    
     ///Formato: CREATE <NOMBRE_FILE>:<TAG>
     //La instrucción CREATE solicitará al módulo Storage la creación de un nuevo File con el Tag recibido por parámetro y con tamaño 0.
-    CREATE=REQUEST_KNOW+1,
+    CREATE=EJECUTAR_QUERY+1,
     //Formato: TRUNCATE <NOMBRE_FILE>:<TAG> <TAMAÑO>
     //La instrucción TRUNCATE solicitará al módulo Storage la modificación del tamaño del File y Tag indicados, asignando el tamaño recibido por parámetro (deberá ser múltiplo del tamaño de bloque).
     TRUNCATE,
@@ -118,10 +118,10 @@ typedef enum{
     ///Formato: DELETE <NOMBRE_FILE>:<TAG>
     ///La instrucción DELETE solicitará al módulo Storage la eliminación del File:Tag correspondiente.
     DELETE,
+    INVALID_INSTRUCTION,
     ///Formato: END
     ///Esta instrucción da por finalizada la Query y le informa al módulo Master el fin de la misma.
-    END,
-    INVALID_INSTRUCTION
+    END
 }instr_code;
 
 typedef enum{

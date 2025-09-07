@@ -1,7 +1,12 @@
 #ifndef FUNCIONES_WORKER_H
 #define FUNCIONES_WORKER_H
 
-#include "base.h"
+//#include "base.h"
+int pc_actual;
+config_worker cw;
+
+char* archivo_query_actual;
+
 #include "inicializar_worker.h"
 #include "fase_execute.h"
 
@@ -79,7 +84,8 @@ END
 // FASE EXECUTE //
 
 // FASE DECODE //
-instr_code str_to_enum(char *instruccion)
+//[DEPRECATED] USE instr_code cast_code(char*) INSTEAD
+/*instr_code str_to_enum(char *instruccion)
 {
     if (strcmp(instruccion, "CREATE") == 0)
         return CREATE;
@@ -100,7 +106,7 @@ instr_code str_to_enum(char *instruccion)
     if (strcmp(instruccion, "END") == 0)
         return END;
     return INVALID_INSTRUCTION;
-}
+}*/
 
 void quitar_salto_linea(char *linea)
 {
@@ -138,7 +144,7 @@ void iniciar_decode(char *linea_de_instruccion)
         parametro3 = token; // agarra desde el tercer espacio hasta el fin
     }
 
-    instr_code caso = str_to_enum(instruccion);
+    instr_code caso = cast_code(instruccion);
 
     ejecutar_instruccion(caso, parametro1, parametro2, parametro3);
 }
@@ -185,7 +191,7 @@ void loop_atender_queries()
 
     for (;;) // 1 iteracionn por query atendida
     {
-        sem_wait(sem_query_recibida);
+        sem_wait(&sem_query_recibida);
 
         t_list *instrucciones = obtener_instrucciones(archivo_query_actual);
         is_free = false;

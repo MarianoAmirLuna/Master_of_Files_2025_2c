@@ -45,6 +45,6 @@ instr_code cast_code(char* code){
         return END;
     }
     log_error(logger, "No se encontró instrucción %s:%d", __func__,__LINE__);
-    return END;
+    return INVALID_INSTRUCTION;
 }
 #endif
