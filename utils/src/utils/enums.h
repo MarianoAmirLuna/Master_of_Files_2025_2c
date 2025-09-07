@@ -82,6 +82,13 @@ typedef enum{
 	REQUEST_KNOW
 }request;
 
+// CPU //
+
+typedef enum{
+    EJECUTAR_QUERY
+}op_code_master;
+
+
 typedef enum{    
     ///Formato: CREATE <NOMBRE_FILE>:<TAG>
     //La instrucción CREATE solicitará al módulo Storage la creación de un nuevo File con el Tag recibido por parámetro y con tamaño 0.
@@ -113,7 +120,8 @@ typedef enum{
     DELETE,
     ///Formato: END
     ///Esta instrucción da por finalizada la Query y le informa al módulo Master el fin de la misma.
-    END
+    END,
+    INVALID_INSTRUCTION
 }instr_code;
 
 typedef enum{
@@ -128,6 +136,7 @@ typedef enum{
     COMMITED
 }state_metadata;
 
+// CPU //
 
 typedef enum{
     /// @brief Esta operación creará un nuevo File dentro del FS. Para ello recibirá el nombre del File y un Tag inicial para crearlo.

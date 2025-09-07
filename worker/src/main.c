@@ -1,4 +1,5 @@
 #include "main.h"
+#include "inicializar_worker.h"
 
 int main(int argc, char* argv[]) {
     itself_ocm = MODULE_WORKER;
@@ -16,6 +17,8 @@ int main(int argc, char* argv[]) {
     }
 
     cw = load_config_worker();
+
+    inicializar_worker();
     
     //TODO: El worker tiene 2 argumentos: archivo_config y el ID_Worker
        
@@ -42,11 +45,8 @@ int main(int argc, char* argv[]) {
     pthread_mutex_destroy(&locker);
 
 
+    loop_atender_queries();
 
-    for(;;){
-        //Fingir hacer algo para que no se muera esta consola
-        sleep(10);
-    }
     return 0;
 }
 
@@ -113,5 +113,14 @@ void packet_callback(void* params){
     t_list* packet = recv_packet(sock);
     
     log_info(logger, "Recibi mensaje de %s cantidad del packet: %d", ocm_to_string(ocm), list_size(packet));
+
+    int op_code = (int)list_get(packet, 0);
+
+    if(op_code == EJECUTAR_QUERY){
+        archivo_query_actual = (char*)list_get(packet, 1);
+        pc_actual = (int)list_get(packet, 2);
+        is_free=false;
+    }
+
     list_destroy_and_destroy_elements(packet, free_element);
 }
