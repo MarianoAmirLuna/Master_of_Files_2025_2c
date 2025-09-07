@@ -17,6 +17,7 @@ t_list* queries;
 int query_idx=0;
 
 int increment_idx(){
+    
     //TODO: Usar Pthread lock  o semáforo para bloquear el subproceso así no hay condición de carrera al incrementar la query_id
     return query_idx++;
 }

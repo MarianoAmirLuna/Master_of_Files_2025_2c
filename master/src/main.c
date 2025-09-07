@@ -58,6 +58,11 @@ void* attend_multiple_clients(void* params)
             char* archive_query= (char*)list_get(l, 1);
             int prioridad = list_get_int(l,2);
             log_orange(logger, "Recibi el dato de Query Control: Query:%s, Prioridad: %d", archive_query, prioridad);
+            query* query = malloc(sizeof(query));
+            strcpy(query->archive_query, archive_query);
+            query->priority = prioridad;
+            //query->query_id = 
+            //list_add(queries, )
         }
         if(ocm == MODULE_WORKER){
             int id_worker = list_get_int(l,1);
