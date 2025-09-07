@@ -158,22 +158,33 @@ void inicializar_file_system()
 
     if (cs.fresh_start) // si es 1 (true)
     {
-        log_pink(logger, "no limpio el storage"); //to_do: borrar
-    }
-    else // si es 0 (false)
-    {
         log_pink(logger, "limpio el storage"); //to_do: borrar
         limpiar_fs();
     }
+    else // si es 0 (false)
+    {
+        log_pink(logger, "no limpio el storage"); //to_do: borrar
+    }
+    log_orange(logger, "llego aca bien"); //to_do: borrar
     valido_bitmap(cs.punto_montaje);
+    log_orange(logger, "valido bitmap"); //to_do: borrar
     valido_hash(cs.punto_montaje);
+    log_orange(logger, "valido hash"); //to_do: borrar
     valido_bloques_fisicos(cs.punto_montaje);
+    log_orange(logger, "valido bloques fisicos"); //to_do: borrar
     valido_inicial_file(cs.punto_montaje);
+    log_orange(logger, "valido initial file"); //to_do: borrar
+}
+
+void valido_inicial_file(char* path)
+{
+    NULL;
 }
 
 // valido si existe el archivo 
-void valido_bitmap(const char* path)
+void valido_bitmap(const char* p_path)
 {
+    char* path = string_from_format("%s%s", p_path, "bitmap.bin");
     FILE* bitmap = fopen(path, "rb");
     if(bitmap == NULL)
     {
@@ -183,7 +194,7 @@ void valido_bitmap(const char* path)
         if(bitmap == NULL){
             log_error(logger, "Error raro al crear el bitmap"); // to_do: sacar despues
         }
-        inicializar_bitnap();
+        inicializar_bitmap();
     }
 }
 
@@ -233,17 +244,19 @@ bool control_existencia(const char* path)
     //Controlo que no se me envie un path vacio
     if (path==NULL)
     {
-        log_orange(logger, "PATH Vacio");
+        log_orange(logger, "[control_existencia] PATH Vacio"); // to_do: borrar este
         return false;
     }
     struct stat statbuf;
     if (stat(path, &statbuf)==0)
     {
         //Path encontrado
+        log_orange(logger, "[control_existencia] Path encontrado: %s", path); // to_do: borrar este
         return true;
     }
     else 
     {
+        log_orange(logger, "[control_existencia] Path no encontrado: %s", path); // to_do: borrar este
         //Path no encontrado
         return false;
     }
@@ -253,13 +266,12 @@ bool control_existencia(const char* path)
 // si falta algun bloque lo creo (funcion crear_bloque_fisico(tamaño bloque, nombre_de_bloque), eliminar_bloque_fisico(numero_bloque))
 void valido_bloques_fisicos(const char* path)
 {
-    //Controlo que exista el directorio blocks
-    char* blocks_path = string_from_format("%s/physical_blocks", path); //Probar y luego borrar
-    if (control_existencia(path))
+    //Controlo que exista el directorio de bloques fisicos
+    if (control_existencia(string_from_format("%s%s", path, "physical_blocks")))
     {
-        log_debug(logger, "Directorio encontrado, verificando que el block count sea el correcto"); //to_do: borrar este
+        log_error(logger, "[valido_bloques_fisicos] Directorio encontrado, verificando que el block count sea el correcto"); //to_do: borrar este
         int cantidad_bloques = g_fs_size / g_block_size;
-        log_debug(logger, "Cantidad de bloques que deberia haber: %d", cantidad_bloques); //to_do: borrar este
+        log_error(logger, "[valido_bloques_fisicos] Cantidad de bloques que deberia haber: %d", cantidad_bloques); //to_do: borrar este
     }
     else
     {
