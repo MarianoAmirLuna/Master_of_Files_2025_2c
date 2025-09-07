@@ -156,7 +156,7 @@ void iniciar_decode(char *linea_de_instruccion)
 t_list *obtener_instrucciones(char *archivo)
 {
     // la carpeta esta el cw.path_scripts
-    char *path_archivo = strcat(cw.path_scripts, archivo);
+    char *path_archivo = strcat(cw.path_queries, archivo);
     FILE *lector_de_archivo; // Declarar un puntero a FILE
     char *linea;             // linea leida del archivo
 

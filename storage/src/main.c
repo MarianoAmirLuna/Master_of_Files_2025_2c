@@ -51,7 +51,15 @@ void* attend_multiple_clients(void* params)
         memcpy(&ocm, list_get(l, 0), sizeof(op_code_module));
         list_destroy_and_destroy_elements(l, free_element);
 
+        char* superblockpath = string_from_format("%s/%s", cs.punto_montaje, "superblock.config");
+        t_config* c_superblock = config_create(superblockpath);
+        int block_size = config_get_int_value(c_superblock,"BLOCK_SIZE");
 
+        t_packet* pack = create_packet();
+        add_int_to_packet(pack, block_size);
+        send_and_free_packet(pack, sock_client);
+        
+        config_destroy(c_superblock);
 
         void* parameter = malloc(sizeof(int)*3);
         int offset = 0;
@@ -168,11 +176,11 @@ void eliminar_contenido(const char* path) {
 
     while ((entry = readdir(dir)) != NULL) {
         // Ignorar "." y ".."
-        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+        if (string_equals_ignore_case(entry->d_name, ".") || string_equals_ignore_case(entry->d_name, ".."))
             continue;
 
         // Ignorar el archivo superblock.config
-        if (strcmp(entry->d_name, "superblock.config") == 0)
+        if (string_equals_ignore_case(entry->d_name, "superblock.config"))
             continue;
 
         // Construir path completo
@@ -246,6 +254,29 @@ tratar_mensaje(pack, sock_client)
     
 } 
 
+void ejecutar_storage_instruction(storage_operation so, char* par1, char* par2){
+    if(so == CREATE_FILE){
+        
+    }
+    if(so == TRUNCATE_FILE){
+        
+    }
+    if(so == TAG_FILE){
+        
+    }
+    if(so == COMMIT_TAG){
+        
+    }
+    if(so == WRITE_BLOCK){
+        
+    }
+    if(so == READ_BLOCK){
+        
+    }
+    if(so == DELETE_TAG){
+        
+    }
+}
 
 
 /*

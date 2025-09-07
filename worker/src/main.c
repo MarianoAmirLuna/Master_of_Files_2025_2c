@@ -73,6 +73,10 @@ void* connect_to_server(void* params){
 
     if(ocm == MODULE_STORAGE){
         send_john_snow_packet(itself_ocm, wcl);
+        t_list* l = recv_operation_packet(wcl);
+        int block_size = list_get_int(l, 0);
+        log_orange(logger, "TENGO EL BLOCK SIZE DEL STORAGE: %d", block_size);
+        list_destroy_and_destroy_elements(l, free_element);
     }
     if(ocm == MODULE_MASTER){
         t_packet* p = create_packet();
