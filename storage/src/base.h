@@ -8,6 +8,7 @@
 #include "inc/libs.h"
 #include "exts/array_ext.h"
 #include "exts/list_ext.h"
+#include "exts/file_ext.h"
 
 int g_block_size;
 int g_fs_size;

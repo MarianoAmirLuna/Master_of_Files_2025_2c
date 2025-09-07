@@ -502,7 +502,7 @@ void crear_archivo (const char* path, const char* nombre, const char* extension)
 {
     log_error(logger, "antes de entrar");
     //if (!control_existencia_file("home/utnso/tp-2025-2c-Pizza/no_borrar_propiedad_de_storage_team/physical_blocks/block0030.dat"))
-    if (!control_existencia_file(string_from_format("%s/%s.%s", path, nombre, extension)))
+    if (!file_exists(string_from_format("%s/%s.%s", path, nombre, extension)))
     {
         log_error(logger, "entro");
 
