@@ -192,7 +192,7 @@ void valido_bitmap(const char* p_path)
         bitmap = fopen(path, "wb");
         
         if(bitmap == NULL){
-            log_error(logger, "Error raro al crear el bitmap"); // to_do: sacar despues
+            log_error(logger, "Error raro al crear el bitmap"); // to_do: sacar despues.
         }
         inicializar_bitmap();
     }
