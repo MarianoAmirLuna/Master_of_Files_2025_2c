@@ -9,6 +9,9 @@
 #include "exts/array_ext.h"
 #include "exts/list_ext.h"
 
+int g_block_size;
+int g_fs_size;
+t_config* g_archivo_hash;
 
 config_storage cs;
 op_code_module itself_ocm;

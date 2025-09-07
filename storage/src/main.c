@@ -1,8 +1,15 @@
 #include "main.h"
 
-//Configuracion File System  
-int g_block_size;
-int g_fs_size;
+//Configuracion File System - Variables globales para simplificar desarrollo de las funciones.
+
+
+
+/*
++----------------------------------------------------------------------------------------------+
+|                        Inicio de Modulo - Conexion con Otros Modulos                         |
++----------------------------------------------------------------------------------------------+
+*/
+
 
 int main(int argc, char* argv[]) {
     //TODO: ESTE MODULO TAMBIEN TIENE EL superblock.config y el blocks_hash_index.config
@@ -138,8 +145,11 @@ void disconnect_callback(void* params){
 }
 
 
-
-
+/*
++----------------------------------------------------------------------------------------------+
+|                        Inicio de Modulo - Conexion con Otros Modulos                         |
++----------------------------------------------------------------------------------------------+
+*/
 
 
 
@@ -165,27 +175,35 @@ void inicializar_file_system()
     {
         log_pink(logger, "no limpio el storage"); //to_do: borrar
     }
-    log_orange(logger, "llego aca bien"); //to_do: borrar
     valido_bitmap(cs.punto_montaje);
-    log_orange(logger, "valido bitmap"); //to_do: borrar
     valido_hash(cs.punto_montaje);
-    log_orange(logger, "valido hash"); //to_do: borrar
     valido_bloques_fisicos(cs.punto_montaje);
-    log_orange(logger, "valido bloques fisicos"); //to_do: borrar
     valido_inicial_file(cs.punto_montaje);
-    log_orange(logger, "valido initial file"); //to_do: borrar
 }
 
 void valido_inicial_file(char* path)
 {
-    NULL;
+    // Controlo que exista cada directorio, y en caso que no exista se creada
+    // Hayque integrar aca dentro la creacion del meta.config y el 000000.dat, y en el caso de que exista el directorio veriticar la existencia de dichos archivos.
+    if (!control_existencia(string_from_format("%s%s", path, "files")))
+    {
+        crear_directorio("files", path);
+    }
+    if (!control_existencia(string_from_format("%s%s", path, "files/BASE")))
+    {
+        crear_directorio("BASE",string_from_format("%s%s", path, "files/"));
+    }
+    if (!control_existencia(string_from_format("%s%s", path, "files/BASE/logical_blocks")))
+    {
+        crear_directorio("logical_blocks",string_from_format("%s%s", path, "files/BASE/"));
+    }
 }
 
-// valido si existe el archivo 
 void valido_bitmap(const char* p_path)
 {
     char* path = string_from_format("%s%s", p_path, "bitmap.bin");
     FILE* bitmap = fopen(path, "rb");
+    // valido si existe el archivo 
     if(bitmap == NULL)
     {
         log_debug(logger, "No se encontro el archivo bitmap en el path %s", path); // to_do: sacar despues
@@ -203,7 +221,8 @@ void inicializar_bitmap() {
 
     size_t bitmap_size = (size_t) ceil((double) num_blocks / 8);
 
-    FILE* bitmap = fopen("bitmap.bin", "wb");
+    char* path = string_from_format("%s%s", cs.punto_montaje, "bitmap.bin");
+    FILE* bitmap = fopen(path, "wb");
     if (bitmap == NULL) {
         log_error(logger, "Error al crear el archivo bitmap"); //to_do: sacar despues
         return;
@@ -234,29 +253,44 @@ void inicializar_bitmap() {
 
 
 // valido que exista el archivo blokcs_hash_index.config, si no existe lo creo en blanco
-void valido_hash(const char* path)
+void valido_hash(const char* p_path)
 {
-    // buscar funcion de dimi para crear config.
+    char* path = string_from_format("%s%s", p_path, "blocks_hash_index.config");
+    FILE* bitmap = fopen(path, "r");
+    // valido si existe el archivo 
+    if(bitmap == NULL)
+    {
+        log_debug(logger, "No se encontro el archivo bitmap en el path %s", path); // to_do: sacar despues
+        bitmap = fopen(path, "w");
+        
+        if(bitmap == NULL){
+            log_error(logger, "Error raro al crear el bitmap"); // to_do: sacar despues.
+        }
+    }
+    else
+    {
+        fclose(bitmap);
+    }
+    free(path);
 }
+
+
 
 bool control_existencia(const char* path)
 {
     //Controlo que no se me envie un path vacio
     if (path==NULL)
     {
-        log_orange(logger, "[control_existencia] PATH Vacio"); // to_do: borrar este
         return false;
     }
     struct stat statbuf;
     if (stat(path, &statbuf)==0)
     {
         //Path encontrado
-        log_orange(logger, "[control_existencia] Path encontrado: %s", path); // to_do: borrar este
         return true;
     }
     else 
     {
-        log_orange(logger, "[control_existencia] Path no encontrado: %s", path); // to_do: borrar este
         //Path no encontrado
         return false;
     }
@@ -269,9 +303,9 @@ void valido_bloques_fisicos(const char* path)
     //Controlo que exista el directorio de bloques fisicos
     if (control_existencia(string_from_format("%s%s", path, "physical_blocks")))
     {
-        log_error(logger, "[valido_bloques_fisicos] Directorio encontrado, verificando que el block count sea el correcto"); //to_do: borrar este
+        log_light_green(logger, "[valido_bloques_fisicos] Directorio encontrado, verificando que el block count sea el correcto"); //to_do: borrar este
         int cantidad_bloques = g_fs_size / g_block_size;
-        log_error(logger, "[valido_bloques_fisicos] Cantidad de bloques que deberia haber: %d", cantidad_bloques); //to_do: borrar este
+        log_light_blue(logger, "[valido_bloques_fisicos] Cantidad de bloques que deberia haber: %d", cantidad_bloques); //to_do: borrar este
     }
     else
     {
@@ -292,7 +326,7 @@ void crear_directorio(char* nombre, char* path)
 
     if(mkdir(dir, 0777) == 0) 
     {
-        log_debug(logger, "Se creo el directorio %s, en el path %s", nombre, path); //to_do: borrar este
+        log_pink(logger, "Se creo el directorio %s, en el path %s", nombre, path); //to_do: borrar este
     }
 
 }

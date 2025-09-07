@@ -18,3 +18,4 @@ void valido_hash(const char* path);
 void valido_bloques_fisicos(const char* path);
 void valido_inicial_file(char* path);
 void inicializar_bitnap();
+bool control_existencia(const char* path);
