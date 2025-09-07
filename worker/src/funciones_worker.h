@@ -11,7 +11,6 @@ char* archivo_query_actual;
 #include "fase_execute.h"
 
 // FASE EXECUTE //
-
 void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, char *parametro3)
 {
     log_debug(logger, "%s | %s | %s", parametro1, parametro2, parametro3);
@@ -19,12 +18,26 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     {
         char *file = strtok(parametro1, ":");
         char *tag  = strtok(NULL, "");
+
+        //paquete
+        t_packet* paq = create_packet();
+        add_int_to_packet(paq, CREATE_FILE);
+        add_string_to_packet(paq, file);
+        add_string_to_packet(paq, tag);
+        send_and_free_packet(paq, sock_storage);
     }
     else if(caso==TRUNCATE)
     {
         char* file = strtok(parametro1, ":");
         char* tag = strtok(NULL, "");
         int tam = atoi(parametro2);
+
+        t_packet* paq = create_packet();
+        add_int_to_packet(paq, CREATE_FILE);
+        add_string_to_packet(paq, file);
+        add_string_to_packet(paq, tag);
+        add_int_to_packet(paq, tam);
+        send_and_free_packet(paq, sock_storage);
     }
     else if(caso == WRITE)
     {
@@ -47,25 +60,57 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
 
         char* file_new = strtok(parametro2, ":");
         char* tag_new = strtok(NULL, "");
+
+        t_packet* paq = create_packet();
+        add_int_to_packet(paq, TAG_FILE);
+        add_string_to_packet(paq, file_old);
+        add_string_to_packet(paq, tag_old);
+        add_string_to_packet(paq, file_new);
+        add_string_to_packet(paq, tag_new);
+        send_and_free_packet(paq, sock_storage);
+        
     }
     else if(caso==COMMIT)
     {
         char* file = strtok(parametro1, ":");
         char* tag = strtok(NULL, "");
+
+        //paquete
+        t_packet* paq = create_packet();
+        add_int_to_packet(paq, CREATE_FILE);
+        add_string_to_packet(paq, file);
+        add_string_to_packet(paq, tag);
+        send_and_free_packet(paq, sock_storage);
     }
     else if(caso==FLUSH)
     {
         char* file = strtok(parametro1, ":");
         char* tag = strtok(NULL, "");
+
+        //paquete
+        t_packet* paq = create_packet();
+        add_int_to_packet(paq, CREATE_FILE);
+        add_string_to_packet(paq, file);
+        add_string_to_packet(paq, tag);
+        send_and_free_packet(paq, sock_storage);
     }
     else if(caso==DELETE)
     {
         char* file = strtok(parametro1, ":");
         char* tag = strtok(NULL, "");
+
+        //paquete
+        t_packet* paq = create_packet();
+        add_int_to_packet(paq, DELETE_TAG);
+        add_string_to_packet(paq, file);
+        add_string_to_packet(paq, tag);
+        send_and_free_packet(paq, sock_storage);
     }
     else if(caso == END)
     {
-        //??????????????????????    
+        t_packet* paq = create_packet();
+        add_int_to_packet(paq, QUERY_END);
+        send_and_free_packet(paq, sock_master); 
     }
 }
 
@@ -84,29 +129,6 @@ END
 // FASE EXECUTE //
 
 // FASE DECODE //
-//[DEPRECATED] USE instr_code cast_code(char*) INSTEAD
-/*instr_code str_to_enum(char *instruccion)
-{
-    if (strcmp(instruccion, "CREATE") == 0)
-        return CREATE;
-    if (strcmp(instruccion, "TRUNCATE") == 0)
-        return TRUNCATE;
-    if (strcmp(instruccion, "WRITE") == 0)
-        return WRITE;
-    if (strcmp(instruccion, "READ") == 0)
-        return READ;
-    if (strcmp(instruccion, "TAG") == 0)
-        return TAG;
-    if (strcmp(instruccion, "COMMIT") == 0)
-        return COMMIT;
-    if (strcmp(instruccion, "FLUSH") == 0)
-        return FLUSH;
-    if (strcmp(instruccion, "DELETE") == 0)
-        return DELETE;
-    if (strcmp(instruccion, "END") == 0)
-        return END;
-    return INVALID_INSTRUCTION;
-}*/
 
 void quitar_salto_linea(char *linea)
 {
@@ -117,7 +139,7 @@ void quitar_salto_linea(char *linea)
     }
 }
 
-void iniciar_decode(char *linea_de_instruccion)
+void decode_y_execute(char *linea_de_instruccion)
 {
 
     char *instruccion = NULL, *parametro1 = NULL, *parametro2 = NULL, *parametro3 = NULL;
@@ -201,7 +223,7 @@ void loop_atender_queries()
             // Fase Fetch
             char *instruccion = list_get(instrucciones, pc_actual);
 
-            iniciar_decode(instruccion);
+            decode_y_execute(instruccion);
         }
     }
 }

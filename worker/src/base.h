@@ -15,6 +15,7 @@
 
 //#include "semaphore.h"
 #include "funciones_worker.h"
+#include "memoria.h"
 
 op_code_module itself_ocm;
 int sock_master,sock_storage;

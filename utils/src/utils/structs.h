@@ -79,4 +79,15 @@ typedef struct{
 }worker;
 
 
+/// @brief Estructuras para manejo de memoria principal
+typedef struct{
+    int marco;
+    int pag;
+}entrada_tabla_pags;
+
+typedef struct{
+    char* file_y_tag;
+    t_list tabla_pags; //lista con elementos de tipo "entrada_tabla_pags"
+}file_y_tabla_pags
+
 #endif

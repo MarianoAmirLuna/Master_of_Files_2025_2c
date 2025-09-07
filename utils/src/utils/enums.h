@@ -173,4 +173,8 @@ typedef enum{
     READ_WRITE_OVERFLOW
 }errors_operation;
 
+typedef enum{
+    QUERY_END=READ_WRITE_OVERFLOW+1
+}master_operation;
+
 #endif
