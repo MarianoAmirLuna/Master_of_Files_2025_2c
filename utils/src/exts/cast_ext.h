@@ -47,4 +47,49 @@ instr_code cast_code(char* code){
     log_error(logger, "No se encontró instrucción %s:%d", __func__,__LINE__);
     return INVALID_INSTRUCTION;
 }
+
+storage_operation cast_storage_oper(char* code){
+    if(string_equals_ignore_case(code, CREATE_FILE)){
+        return CREATE_FILE;
+    }
+    if(string_equals_ignore_case(code, TRUNCATE_FILE)){
+        return TRUNCATE_FILE;
+    }
+    if(string_equals_ignore_case(code, TAG_FILE)){
+        return TAG_FILE;
+    }
+    if(string_equals_ignore_case(code, COMMIT_TAG)){
+        return COMMIT_TAG;
+    }
+    if(string_equals_ignore_case(code, WRITE_BLOCK)){
+        return WRITE_BLOCK;
+    }
+    if(string_equals_ignore_case(code, READ_BLOCK)){
+        return READ_BLOCK;
+    }
+    if(string_equals_ignore_case(code, DELETE_TAG)){
+        return DELETE_TAG;
+    }
+    return ERROR;
+}
+
+errors_operation cast_error_operation(char* code){
+    if(string_equals_ignore_case(code, FILE_NOT_FOUND)){
+        return FILE_NOT_FOUND;
+    }
+    if(string_equals_ignore_case(code, TAG_NOT_FOUND)){
+        return TAG_NOT_FOUND;
+    }
+    if(string_equals_ignore_case(code, INSUFFICIENT_SPACE)){
+        return INSUFFICIENT_SPACE;
+    }
+    if(string_equals_ignore_case(code, WRITE_NO_PERMISSION)){
+        return WRITE_NO_PERMISSION;
+    }
+    if(string_equals_ignore_case(code, READ_WRITE_OVERFLOW)){
+        return READ_WRITE_OVERFLOW;
+    }
+    return ERROR;
+}
+    
 #endif
