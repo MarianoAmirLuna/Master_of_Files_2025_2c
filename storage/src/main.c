@@ -146,7 +146,6 @@ void disconnect_callback(void* params){
 +----------------------------------------------------------------------------------------------+
 
 
-
 ************************************************************************************************
 
 
@@ -290,7 +289,6 @@ void valido_bloques_fisicos(const char* path)
                 crear_bloques_fisicos (bloques_restantes, string_from_format("%s%s", path, "physical_blocks"), cant_elementos_directorio(string_from_format("%s%s", path, "physical_blocks")));
             }
             while(cant_elementos_directorio(string_from_format("%s%s", path, "physical_blocks")) < cantidad_bloques);
-
 
             //Cantidad de bloques superior
             do 
@@ -501,8 +499,7 @@ int cant_elementos_directorio (const char *path)
 void crear_archivo (const char* path, const char* nombre, const char* extension)
 {
     log_error(logger, "antes de entrar");
-    //if (!control_existencia_file("home/utnso/tp-2025-2c-Pizza/no_borrar_propiedad_de_storage_team/physical_blocks/block0030.dat"))
-    if (!file_exists(string_from_format("%s/%s.%s", path, nombre, extension)))
+    if (!control_existencia(string_from_format("%s/%s.%s", path, nombre, extension)))
     {
         log_error(logger, "entro");
 
@@ -517,7 +514,7 @@ void crear_archivo (const char* path, const char* nombre, const char* extension)
 
 void eliminar_archivo (const char* path, const char* nombre)
 {
-    if (control_existencia_file(string_from_format("%s/%s", path, nombre)))
+    if (control_existencia(string_from_format("%s/%s", path, nombre)))
     {
         FILE * archivo = fopen(string_from_format("%s/%s", path, nombre), "r");
         remove(archivo);
