@@ -17,7 +17,7 @@ void execute_worker(){
     for(int i=0;i<sz;i++){
         worker* w = list_get(workers, i);
         //Obviamente hace falta mejorar esta poronga
-        if(w->id_query != -1 && w->sp == STATE_READY){
+        /*if(w->id_query != -1 && w->sp == STATE_READY){
             //A este worker no se asignó un query y está en ready lo puedo mandar a ejecutar seleccionando la query en base a prioridad blabla
             query* q = get_query_available();
             if(q != NULL){
@@ -29,7 +29,7 @@ void execute_worker(){
                 w->id_query = q->id;
                 send_and_free_packet(p, w->fd);
             }
-        }
+        }*/
     }
 }
 //Se debe instanciar en un nuevo subproceso

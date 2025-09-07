@@ -124,11 +124,11 @@ void packet_callback(void* params){
         if(op_code == EJECUTAR_QUERY){
             archivo_query_actual =list_get_str(packet, 1);
             pc_actual = list_get_int(packet, 2);
-            
             is_free=false;
         }
     }
     if(ocm == MODULE_STORAGE){
+        
         //ACA RECIBIS UN PAQUETE PROVENIENTE DE STORAGE
     }
     

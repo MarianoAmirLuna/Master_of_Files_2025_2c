@@ -8,6 +8,10 @@ int main(int argc, char* argv[]) {
     
     queries = list_create();
     workers = list_create();
+    dict_state = dictionary_create();
+    for(int i=STATE_READY;i<=STATE_EXIT;i++){
+        dictionary_put(dict_state, state_to_string(i), list_create());
+    }
     sem_init(&sem_idx, 0,1);
     
     int sock_server = server_connection(cm.puerto_escucha);
@@ -56,6 +60,7 @@ void* attend_multiple_clients(void* params)
         op_code_module ocm;
         memcpy(&ocm, list_get(l, 0), sizeof(op_code_module));
 
+        int id = -1;
         if(ocm == MODULE_QUERY_CONTROL){
             char* archive_query= (char*)list_get(l, 1);
             int prioridad = list_get_int(l,2);
@@ -65,6 +70,8 @@ void* attend_multiple_clients(void* params)
             strcpy(q->archive_query, archive_query);
             q->priority = prioridad;
             q->id = increment_idx();
+            q->sp = STATE_READY;
+            id = q->id;
             list_add(queries, q);
         }
         if(ocm == MODULE_WORKER){
@@ -72,12 +79,11 @@ void* attend_multiple_clients(void* params)
             worker* w = malloc(sizeof(worker));
             w->id = id_worker;
             w->id_query = -1; //No se asignó ningún query a este worker
-            w->sp = STATE_READY;
             w->fd = sock_client;
+            id = id_worker;
 
             list_add(workers, w);
             degree_multiprocess = list_size(workers);
-
             //Acaso cuando recibo el id_worker en seguida le tengo que asignar un query?? de ahí para pasar el path de la query al worker???????
             log_orange(logger, "Recibi el id_worker de Worker: ID_WORKER = %d", id_worker);
         }
@@ -91,13 +97,15 @@ void* attend_multiple_clients(void* params)
         /*if(ocm == MODULE_QUERY_CONTROL){
             //Se podría justo en este momento al recibir el prioridad y path queries agregar en una lista de query_control sus campos
         }*/
-        void* parameter = malloc(sizeof(int)*3);
+        void* parameter = malloc(sizeof(int)*4);
         int offset = 0;
         memcpy(parameter, &sock_client, sizeof(int));
         offset+=sizeof(int);
         memcpy(parameter+offset, &ocm, sizeof(int));
         offset+=sizeof(int);
         memcpy(parameter+offset, &sock, sizeof(int));
+        offset+=sizeof(int);
+        memcpy(parameter+offset, &id, sizeof(int));
         pthread_t* pth = malloc(sizeof(pthread_t));
         pthread_create(pth, NULL,go_loop_net, parameter);
         pthread_detach(*pth);
@@ -105,7 +113,7 @@ void* attend_multiple_clients(void* params)
 }
 
 void* go_loop_net(void* params){
-    int len=sizeof(int)*3;
+    int len=sizeof(int)*4;
     void* data = malloc(len);
     memcpy(data, params, len);
     int sock_client = 0;
@@ -127,24 +135,39 @@ void disconnect_callback(void* params){
     op_code_module ocm= 0;
     int sock_server=0;
     int offset= 0;
+    int id =-1;
     memcpy(&sock_client, params+offset, sizeof(int));
     offset+=sizeof(int);
     memcpy(&ocm, params+offset, sizeof(int));
     offset+=sizeof(int);
     memcpy(&sock_server, params+offset, sizeof(int));
-    
-    
+    offset+=sizeof(int);
+    memcpy(&id, params+offset, sizeof(int));
     
     if(ocm == MODULE_QUERY_CONTROL){
         //TODO: Si se desconectó y la query se encuentra en Ready se debe mandar exit directamente
         //TODO: ahora si estaba en Exec se debe notificar al Worker que la está ejecutando justo ese query y debe desalojar la query.
+        qid id_query = id;
+        query* q = get_query_by_qid(id_query);
+        if(q->sp == STATE_READY){
+            //Se debe mandar a exit directamente
+        }
     }
     
     if(ocm == MODULE_WORKER){
+        wid id_worker = id;
         //Si se desconectó un worker la query que se encontraba en ejecución en ese Worker se finalizará con error y notificará al Query Control correspondiente.
         //TODO: En Params buscar la forma de hacer que se pueda identificar que poronga de Worker es para saber cuál query estaba corriendo este Worker que se desconectó.
+        int idx = -1;
+        worker* w = get_worker_by_wid(id_worker);
+        //worker* w = get_worker_by_fd(sock_client, &idx);
+        if(idx != -1 && w != NULL){
+            //TODO: free pointer worker
+            list_remove(workers, idx);
+        }
+        degree_multiprocess = list_size(workers);
     }
-    log_warning(logger, "Se desconecto el cliente de %s QUERY CONTROL fd:%d", ocm_to_string(ocm), sock_client);
+    log_warning(logger, "Se desconecto el cliente de %s fd:%d", ocm_to_string(ocm), sock_client);
 }
 
 void packet_callback(void* params){
@@ -169,12 +192,20 @@ void packet_callback(void* params){
     
     if(ocm == MODULE_QUERY_CONTROL) {
         log_pink(logger, "RECIBI DATOS DEL QUERY_CONTROL");
-        //Si se quiere responder se utiliza el sock_client
-        //Ejemplo send_and_free_packet(packet, sock_client);
+        work_query_control(pack, sock_client);
     }
     if(ocm == MODULE_WORKER){
         log_pink(logger, "RECIBI DATOS DEL MODULE WORKER");
+        work_worker(pack, sock_client);
     }
 
     list_destroy_and_destroy_elements(pack, free_element);
+}
+
+void work_query_control(t_list* packet, int sock){
+
+}
+
+void work_work(t_list* pack, int sock){
+
 }

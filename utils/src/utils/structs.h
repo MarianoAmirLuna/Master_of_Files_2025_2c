@@ -2,7 +2,7 @@
 #define UTILS_STRUCTS_H
 
 #include <unistd.h>
-
+#include "typedef.h"
 #ifndef UTILS_ENUMS_H
 #include "enums.h"
 #endif
@@ -62,7 +62,8 @@ typedef struct{
 
 /// @brief Es la estructura que usa el Master para administrar las query
 typedef struct{
-    int id;
+    qid id;
+    state_process sp;
     int pc;
     char* archive_query;
     int priority;
@@ -71,10 +72,10 @@ typedef struct{
 }query;
 
 typedef struct{
-    int id;
-    int id_query;
+    wid id;
+    qid id_query;
     int fd;
-    state_process sp;
+    
 }worker;
 
 
