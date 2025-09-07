@@ -100,6 +100,8 @@ void packet_callback(void* params){
     log_info(logger, "En el packet callback sock_client: %d, ocm: %d, sock_server:%d", sock_client, ocm, sock_server);
     t_list* pack = recv_packet(sock_client); // aca estarian las operaciones
 
+    tratar_mensaje(pack, sock_client); // aca
+
     if(pack == NULL) {
         log_error(logger, "Error recibiendo paquete");
         return;
@@ -216,6 +218,79 @@ por ejemplo: "00000…". Dicho File/Tag no se podrá borrar.
 
 
 // fin inicializacion del modulo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// decodificacion de mensaje y su derivacion para su tratamiento
+
+    tratar_mensaje(pack, sock_client)
+    {
+        
+    } 
+
+
+
+/*
+
+void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2)
+{
+    switch (caso)
+    {
+    case READ:
+        acceder_a_espacio_usuario(0, parametro1, parametro2);
+        break;
+    case WRITE:
+        acceder_a_espacio_usuario(1, parametro1, parametro2);
+        break;
+    case INIT_PROC:
+        init_proc(parametro1, parametro2);
+        break;
+    case GOTO:
+        go_to(parametro1);
+        break;
+    case IO:
+        io(parametro1, parametro2); // En el enunciado es un parametro, pero a ellos no les sube el agua al tanque
+        break;
+    case NOOP:
+        noop();
+        break;
+    case DUMP_MEMORY:
+        dump_memory();
+        break;
+    case INSTR_SYSCALL_EXIT:
+        salir();
+        break;
+    case INVALID_INSTRUCTION:
+        log_info(cpu_logger, "Matate y grabalo ludoBo");
+        break;
+    }
+}
+
+    instr_code cast_code(instruccion)
+
+*/
+
+// fin decodificacion de mensaje y su derivacion para su tratamiento
+
+
+
 
 
 

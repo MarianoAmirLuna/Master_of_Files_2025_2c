@@ -11,3 +11,4 @@ void packet_callback(void* params);
 void* attend_multiple_clients(void* params);
 void disconnect_callback(void* params);
 void inicializar_file_system();
+void tratar_mensaje(t_list* pack, int cliente);
