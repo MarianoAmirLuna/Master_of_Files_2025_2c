@@ -256,21 +256,7 @@ void inicializar_bitmap() {
 void valido_hash(const char* p_path)
 {
     char* path = string_from_format("%s%s", p_path, "blocks_hash_index.config");
-    FILE* bitmap = fopen(path, "r");
-    // valido si existe el archivo 
-    if(bitmap == NULL)
-    {
-        log_debug(logger, "No se encontro el archivo bitmap en el path %s", path); // to_do: sacar despues
-        bitmap = fopen(path, "w");
-        
-        if(bitmap == NULL){
-            log_error(logger, "Error raro al crear el bitmap"); // to_do: sacar despues.
-        }
-    }
-    else
-    {
-        fclose(bitmap);
-    }
+    create_blocks_hash_index(path);
     free(path);
 }
 
