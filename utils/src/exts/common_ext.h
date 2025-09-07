@@ -93,6 +93,11 @@ int file_exists(char* filename){
     return stat(filename, &buffer) == 0 ? 1 : 0;
 }
 
+int directory_exists(char* dir){
+    struct stat sb;
+    return stat(dir, &sb) == 0 && S_ISDIR(sb.st_mode) ? 1 : 0;
+}
+
 int file_create(char* filename){
     FILE* f = fopen(filename, "w+b"); //Quiero crear o abrir el archivo como binario
     return fclose(f);
