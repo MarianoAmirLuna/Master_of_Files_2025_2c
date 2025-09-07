@@ -7,6 +7,8 @@ int main(int argc, char* argv[]) {
     log_violet(logger, "%s", "Hola soy MASTER");
     
     queries = list_create();
+    workers = list_create();
+    sem_init(&sem_idx, 0,1);
     
     int sock_server = server_connection(cm.puerto_escucha);
     
@@ -58,14 +60,25 @@ void* attend_multiple_clients(void* params)
             char* archive_query= (char*)list_get(l, 1);
             int prioridad = list_get_int(l,2);
             log_orange(logger, "Recibi el dato de Query Control: Query:%s, Prioridad: %d", archive_query, prioridad);
-            query* query = malloc(sizeof(query));
-            strcpy(query->archive_query, archive_query);
-            query->priority = prioridad;
-            //query->query_id = 
-            //list_add(queries, )
+            query* q = malloc(sizeof(query));
+            q->archive_query = malloc(strlen(archive_query)+1);
+            strcpy(q->archive_query, archive_query);
+            q->priority = prioridad;
+            q->id = increment_idx();
+            list_add(queries, q);
         }
         if(ocm == MODULE_WORKER){
             int id_worker = list_get_int(l,1);
+            worker* w = malloc(sizeof(worker));
+            w->id = id_worker;
+            w->id_query = -1; //No se asignó ningún query a este worker
+            w->sp = STATE_READY;
+            w->fd = sock_client;
+
+            list_add(workers, w);
+            degree_multiprocess = list_size(workers);
+
+            //Acaso cuando recibo el id_worker en seguida le tengo que asignar un query?? de ahí para pasar el path de la query al worker???????
             log_orange(logger, "Recibi el id_worker de Worker: ID_WORKER = %d", id_worker);
         }
 

@@ -122,8 +122,9 @@ void packet_callback(void* params){
     if(ocm == MODULE_MASTER){
         //ACA RECIBIS UN PAQUETE PROVENIENTE DE MASTER
         if(op_code == EJECUTAR_QUERY){
-            archivo_query_actual = (char*)list_get(packet, 1);
-            pc_actual = (int)list_get(packet, 2);
+            archivo_query_actual =list_get_str(packet, 1);
+            pc_actual = list_get_int(packet, 2);
+            
             is_free=false;
         }
     }

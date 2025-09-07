@@ -248,7 +248,7 @@ por ejemplo: "00000…". Dicho File/Tag no se podrá borrar.
 
 // decodificacion de mensaje y su derivacion para su tratamiento
 
-tratar_mensaje(pack, sock_client)
+void tratar_mensaje(t_list* pack, int sock_client)
 {
     storage_operation so = list_get_int(pack, 0); 
     
