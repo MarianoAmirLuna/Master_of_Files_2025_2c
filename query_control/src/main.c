@@ -80,4 +80,4 @@ int main(int argc, char* argv[]) {
     }
     log_info(logger, "## Query Finalizada - %s", "Anotar motivo...");
     return 0;
-}
+};

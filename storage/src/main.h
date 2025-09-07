@@ -13,3 +13,8 @@ void disconnect_callback(void* params);
 void inicializar_file_system();
 void tratar_mensaje(t_list* p, int cliente);
 void ejecutar_storage_instruction(storage_operation so, char* par1, char* par2);
+void valido_bitmap(const char* path);
+void valido_hash(const char* path);
+void valido_bloques_fisicos(const char* path);
+void valido_inicial_file(const char* path);
+void inicializar_bitnap();

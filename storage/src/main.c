@@ -1,5 +1,9 @@
 #include "main.h"
 
+//Configuracion File System  
+int g_block_size;
+int g_fs_size;
+
 int main(int argc, char* argv[]) {
     //TODO: ESTE MODULO TAMBIEN TIENE EL superblock.config y el blocks_hash_index.config
     itself_ocm = MODULE_STORAGE;
@@ -146,6 +150,11 @@ void disconnect_callback(void* params){
 
 void inicializar_file_system()
 {
+    char* path_superblock_config = string_from_format("%s/%s", cs.punto_montaje, "superblock.config");
+    t_config* c_superblock = config_create(path_superblock_config);
+
+    g_block_size = config_get_int_value(c_superblock, "BLOCK_SIZE");
+    g_fs_size = config_get_int_value(c_superblock, "FS_SIZE");
 
     if (cs.fresh_start) // si es 1 (true)
     {
@@ -156,9 +165,125 @@ void inicializar_file_system()
         log_pink(logger, "limpio el storage"); //to_do: borrar
         limpiar_fs();
     }
+    valido_bitmap(cs.punto_montaje);
+    valido_hash(cs.punto_montaje);
+    valido_bloques_fisicos(cs.punto_montaje);
+    valido_inicial_file(cs.punto_montaje);
+}
+
+// valido si existe el archivo 
+void valido_bitmap(const char* path)
+{
+    FILE* bitmap = fopen(path, "rb");
+    if(bitmap == NULL)
+    {
+        log_debug(logger, "No se encontro el archivo bitmap en el path %s", path); // to_do: sacar despues
+        bitmap = fopen(path, "wb");
+        
+        if(bitmap == NULL){
+            log_error(logger, "Error raro al crear el bitmap"); // to_do: sacar despues
+        }
+        inicializar_bitnap();
+    }
+}
+
+void inicializar_bitmap() {
+    size_t num_blocks = g_fs_size / g_block_size;
+
+    size_t bitmap_size = (size_t) ceil((double) num_blocks / 8);
+
+    FILE* bitmap = fopen("bitmap.bin", "wb");
+    if (bitmap == NULL) {
+        log_error(logger, "Error al crear el archivo bitmap"); //to_do: sacar despues
+        return;
+    }
+
+    // crear un bitmap vacío (todos los bits en 0)
+    unsigned char* bitmap_data = (unsigned char*) calloc(bitmap_size, sizeof(unsigned char));
+
+    if (bitmap_data == NULL) {
+        log_error(logger, "Error al reservar memoria para el bitmap");
+        fclose(bitmap);
+        return;
+    }
+
+    // Escribir el bitmap vacío en el archivo
+    size_t bytes_written = fwrite(bitmap_data, sizeof(unsigned char), bitmap_size, bitmap);
+    if (bytes_written != bitmap_size) {
+        log_error(logger, "Error al escribir el bitmap en el archivo");//to_do: sacar despues
+    } else {
+        log_debug(logger, "Bitmap creado correctamente", "bitmap.bin");//to_do: sacar despues
+    }
+
+    free(bitmap_data);
+
+    fclose(bitmap);
 }
 
 
+
+// valido que exista el archivo blokcs_hash_index.config, si no existe lo creo en blanco
+void valido_hash(const char* path)
+{
+    // buscar funcion de dimi para crear config.
+}
+
+bool control_existencia(const char* path)
+{
+    //Controlo que no se me envie un path vacio
+    if (path==NULL)
+    {
+        log_orange(logger, "PATH Vacio");
+        return false;
+    }
+    struct stat statbuf;
+    if (stat(path, &statbuf)==0)
+    {
+        //Path encontrado
+        return true;
+    }
+    else 
+    {
+        //Path no encontrado
+        return false;
+    }
+}
+
+// valido que exista el directorio de bloques fisicos, y que tenga la cantidad necesaria de bloques
+// si falta algun bloque lo creo (funcion crear_bloque_fisico(tamaño bloque, nombre_de_bloque), eliminar_bloque_fisico(numero_bloque))
+void valido_bloques_fisicos(const char* path)
+{
+    //Controlo que exista el directorio blocks
+    char* blocks_path = string_from_format("%s/physical_blocks", path); //Probar y luego borrar
+    if (control_existencia(path))
+    {
+        log_debug(logger, "Directorio encontrado, verificando que el block count sea el correcto"); //to_do: borrar este
+        int cantidad_bloques = g_fs_size / g_block_size;
+        log_debug(logger, "Cantidad de bloques que deberia haber: %d", cantidad_bloques); //to_do: borrar este
+    }
+    else
+    {
+        crear_directorio("physical_blocks", path);
+        //crear_bloques_fisicos (cantidad_bloques) para crear los bloques fisicos faltantes
+    }
+   
+}
+
+
+
+
+void crear_directorio(char* nombre, char* path)
+{
+    char dir[1024];
+
+    snprintf(dir, sizeof(dir), "%s/%s", path, nombre);
+
+    if(mkdir(dir, 0777) == 0) 
+    {
+        log_debug(logger, "Se creo el directorio %s, en el path %s", nombre, path); //to_do: borrar este
+    }
+
+}
 
 
 void limpiar_fs() {
