@@ -1,9 +1,5 @@
 #include "main.h"
 
-//Configuracion File System - Variables globales para simplificar desarrollo de las funciones.
-
-
-
 /*
 +----------------------------------------------------------------------------------------------+
 |                        Inicio de Modulo - Conexion con Otros Modulos                         |
@@ -144,19 +140,20 @@ void disconnect_callback(void* params){
     log_warning(logger, "Se desconectó el cliente %s fd:%d", ocm_to_string(ocm), sock_client);
 }
 
-
 /*
 +----------------------------------------------------------------------------------------------+
-|                        Inicio de Modulo - Conexion con Otros Modulos                         |
+|                              Fin de Conexion con Otros Modulos                               |
++----------------------------------------------------------------------------------------------+
+
+
+
+************************************************************************************************
+
+
++----------------------------------------------------------------------------------------------+
+|                                 Inicializacion de Modulo                                     |
 +----------------------------------------------------------------------------------------------+
 */
-
-
-
-
-
-
-// inicializacion del modulo
 
 void inicializar_file_system()
 {
@@ -184,7 +181,7 @@ void inicializar_file_system()
 void valido_inicial_file(char* path)
 {
     // Controlo que exista cada directorio, y en caso que no exista se creada
-    // Hayque integrar aca dentro la creacion del meta.config y el 000000.dat, y en el caso de que exista el directorio veriticar la existencia de dichos archivos.
+    // Hay que integrar aca dentro la creacion del meta.config y el 000000.dat, y en el caso de que exista el directorio veriticar la existencia de dichos archivos.
     if (!control_existencia(string_from_format("%s%s", path, "files")))
     {
         crear_directorio("files", path);
@@ -251,7 +248,6 @@ void inicializar_bitmap() {
 }
 
 
-
 // valido que exista el archivo blokcs_hash_index.config, si no existe lo creo en blanco
 void valido_hash(const char* p_path)
 {
@@ -261,29 +257,6 @@ void valido_hash(const char* p_path)
 }
 
 
-
-bool control_existencia(const char* path)
-{
-    //Controlo que no se me envie un path vacio
-    if (path==NULL)
-    {
-        return false;
-    }
-    struct stat statbuf;
-    if (stat(path, &statbuf)==0)
-    {
-        //Path encontrado
-        return true;
-    }
-    else 
-    {
-        //Path no encontrado
-        return false;
-    }
-}
-
-// valido que exista el directorio de bloques fisicos, y que tenga la cantidad necesaria de bloques
-// si falta algun bloque lo creo (funcion crear_bloque_fisico(tamaño bloque, nombre_de_bloque), eliminar_bloque_fisico(numero_bloque))
 void valido_bloques_fisicos(const char* path)
 {
     //Controlo que exista el directorio de bloques fisicos
@@ -296,31 +269,18 @@ void valido_bloques_fisicos(const char* path)
     else
     {
         crear_directorio("physical_blocks", path);
-        //crear_bloques_fisicos (cantidad_bloques) para crear los bloques fisicos faltantes
+
+        //crear_bloques_fisicos (cantidad_bloques, path) para crear los bloques fisicos faltantes
     }
    
 }
 
 
-
-
-void crear_directorio(char* nombre, char* path)
+void limpiar_fs() 
 {
-    char dir[1024];
-
-    snprintf(dir, sizeof(dir), "%s/%s", path, nombre);
-
-    if(mkdir(dir, 0777) == 0) 
-    {
-        log_pink(logger, "Se creo el directorio %s, en el path %s", nombre, path); //to_do: borrar este
-    }
-
-}
-
-
-void limpiar_fs() {
     eliminar_contenido(cs.punto_montaje);
 }
+
 
 void eliminar_contenido(const char* path) {
     DIR* dir = opendir(path);
@@ -382,28 +342,71 @@ por ejemplo: "00000…". Dicho File/Tag no se podrá borrar.
 */
 
 
-// fin inicializacion del modulo
+/*
++----------------------------------------------------------------------------------------------+
+|                                Fin de Inicio de Modulo                                       |
++----------------------------------------------------------------------------------------------+
+
+
+************************************************************************************************
+
+
++----------------------------------------------------------------------------------------------+
+|                                 Funciones Multipleuso                                        |
++----------------------------------------------------------------------------------------------+
+*/
+
+
+void crear_directorio(char* nombre, char* path)
+{
+    char dir[1024];
+
+    snprintf(dir, sizeof(dir), "%s/%s", path, nombre);
+
+    if(mkdir(dir, 0777) == 0) 
+    {
+        log_pink(logger, "Se creo el directorio %s, en el path %s", nombre, path); //to_do: borrar este
+    }
+
+}
+
+
+bool control_existencia(const char* path)
+{
+    //Controlo que no se me envie un path vacio
+    if (path==NULL)
+    {
+        return false;
+    }
+    struct stat statbuf;
+    if (stat(path, &statbuf)==0)
+    {
+        //Path encontrado
+        return true;
+    }
+    else 
+    {
+        //Path no encontrado
+        return false;
+    }
+}
 
 
 
+/*
++----------------------------------------------------------------------------------------------+
+|                                 Fin de Funciones Generales                                   |
++----------------------------------------------------------------------------------------------+
 
 
+************************************************************************************************
 
 
++----------------------------------------------------------------------------------------------+
+|                        Decodifcaciones de Mensajes de Otros Modulos                          |
++----------------------------------------------------------------------------------------------+
+*/
 
-
-
-
-
-
-
-
-
-
-
-
-
-// decodificacion de mensaje y su derivacion para su tratamiento
 
 void tratar_mensaje(t_list* pack, int sock_client)
 {
@@ -476,9 +479,19 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2)
 
 */
 
-// fin decodificacion de mensaje y su derivacion para su tratamiento
+/*
++----------------------------------------------------------------------------------------------+
+|                     Fin de Decodifcaciones de Mensajes de Otros Modulos                      |
++----------------------------------------------------------------------------------------------+
 
 
+************************************************************************************************
+
+
++----------------------------------------------------------------------------------------------+
+|                        Otros                                                                  |
++----------------------------------------------------------------------------------------------+
+*/
 
 
 
