@@ -197,7 +197,10 @@ t_config* create_super_block(char* path, int fs_size, int block_size)
 }
 
 t_config* create_blocks_hash_index(char* path){
-    return config_create(path);
+    t_config* config = malloc(sizeof(t_config));
+    config->path = strdup(path);
+    config_save(config);
+    return config;
 }
 
 t_config* insert_hash_block(t_config* block_hash_index, char* hash, char* block){
