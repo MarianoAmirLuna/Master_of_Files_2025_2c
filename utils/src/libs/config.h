@@ -195,6 +195,7 @@ t_config* create_super_block(char* path, int fs_size, int block_size)
     if(superblock == NULL){
         superblock = malloc(sizeof(t_config));
         superblock->path = strdup(path);
+        superblock->properties = dictionary_create();
     }
     config_set_value(superblock, "FS_SIZE", string_itoa(fs_size));
     config_set_value(superblock, "BLOCK_SIZE", string_itoa(block_size));
@@ -206,6 +207,7 @@ t_config* create_super_block(char* path, int fs_size, int block_size)
 t_config* create_blocks_hash_index(char* path){
     t_config* config = malloc(sizeof(t_config));
     config->path = strdup(path);
+    config->properties = dictionary_create();
     config_save(config);
     return config;
 }
@@ -228,6 +230,7 @@ t_config* create_metadata(char* path, int size, t_list* blocks, state_metadata s
         //https://github.com/sisoputnfrba/so-commons-library/blob/master/src/commons/config.c
         metadata = malloc(sizeof(t_config));
         metadata->path = strdup(path);
+        metadata->properties = dictionary_create();
         config_save(metadata);
         metadata = config_create(path);
     }
