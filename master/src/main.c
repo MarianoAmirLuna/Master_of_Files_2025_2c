@@ -73,6 +73,8 @@ void* attend_multiple_clients(void* params)
             q->sp = STATE_READY;
             id = q->id;
             list_add(queries, q);
+            
+            //Deberia hacer una planificación ahora mismo para saber si puede asignar un 
         }
         if(ocm == MODULE_WORKER){
             int id_worker = list_get_int(l,1);
@@ -90,13 +92,6 @@ void* attend_multiple_clients(void* params)
 
         list_destroy_and_destroy_elements(l, free_element);
 
-        //TODO: Implement query structure of this id_worker, etc. 
-        //list_add(queries, )
-
-
-        /*if(ocm == MODULE_QUERY_CONTROL){
-            //Se podría justo en este momento al recibir el prioridad y path queries agregar en una lista de query_control sus campos
-        }*/
         void* parameter = malloc(sizeof(int)*4);
         int offset = 0;
         memcpy(parameter, &sock_client, sizeof(int));

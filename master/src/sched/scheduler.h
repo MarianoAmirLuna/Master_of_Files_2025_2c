@@ -13,6 +13,10 @@ query* get_query_available(){
 }
 
 void execute_worker(){
+    log_light_blue(logger, "%s", "On ExecuteWorker");
+    
+    //TODO: Tengo que agarrar un worker libre (si lo hay) y si existe algún query a ejecutar en ready tengo que agarrar ese y mandarlo a EXEC
+
     int sz =list_size(workers);
     for(int i=0;i<sz;i++){
         worker* w = list_get(workers, i);
