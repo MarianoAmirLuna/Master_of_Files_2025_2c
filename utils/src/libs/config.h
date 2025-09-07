@@ -49,7 +49,7 @@ typedef struct{
     int tam_memoria;
     int retardo_memoria;
     replace_algorithm algoritmo_reemplazo;
-    char* path_scripts;
+    char* path_queries;
     t_log_level log_level;
 }config_worker;
 
@@ -152,7 +152,7 @@ config_worker load_config_worker(){
     cw.tam_memoria=config_get_int_value(config, "TAM_MEMORIA");
     cw.retardo_memoria=config_get_int_value(config, "RETARDO_MEMORIA");
     cw.algoritmo_reemplazo = get_replace_algorithm();
-    cw.path_scripts=config_get_string_value(config, "PATH_SCRIPTS");
+    cw.path_queries=config_get_string_value(config, "PATH_QUERIES");
     cw.log_level = get_log_level();
     return cw;
 }
@@ -165,7 +165,7 @@ config_storage load_config_storage(){
     check_null_config();
     config_storage cs;
     cs.puerto_escucha=config_get_int_value(config, "PUERTO_ESCUCHA");
-    cs.fresh_start=get_boolean_config("FRESH_START");
+    cs.fresh_start=get_boolean_config(config_get_string_value(config, "FRESH_START"));
     cs.punto_montaje=config_get_string_value(config, "PUNTO_MONTAJE");
     cs.retardo_operacion=config_get_int_value(config, "RETARDO_OPERACION");
     cs.retardo_acceso_bloque=config_get_int_value(config, "RETARDO_ACCESO_BLOQUE");
@@ -206,7 +206,7 @@ t_config* insert_hash_block(t_config* block_hash_index, char* hash, char* block)
         printf("%s (%s:%d)", "El Config block hash index no está creado...", __func__,__LINE__);
         exit(EXIT_FAILURE);
     }
-    
+
     config_set_value(block_hash_index, hash, block);
     return block_hash_index;
 }

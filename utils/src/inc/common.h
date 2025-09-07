@@ -9,3 +9,8 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <limits.h>
+
+
+// agregado por lseijas
+#include <dirent.h>
+#include <sys/stat.h>
