@@ -78,6 +78,5 @@ int main(int argc, char* argv[]) {
         if(list_size(l) == 0)
             break;
     }
-    log_info(logger, "## Query Finalizada - %s", "Anotar motivo...");
     return 0;
 };
