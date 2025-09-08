@@ -21,9 +21,11 @@ void inicializar_bitnap();
 bool control_existencia(const char* path);
 int cant_elementos_directorio (const char *path);
 void crear_bloques_fisicos (int cantidad_bloques, char* path, int bloques_actuales);
-void vincular_bloque(char* path_bloque_logico, char* path_bloque_fisico);
+void crear_hard_link(char* path_bloque_logico, char* path_bloque_fisico);
 void crear_archivo (const char* path, const char* nombre, const char* extension);
 void eliminar_archivo (const char* path, const char* nombre);
-
+t_config* crear_metadata_config(char* path, int tamanio, t_list* bloques, state_metadata estado);
+void llenar_archivo_con_ceros(char* path_archivo);
+bool control_existencia_file(const char* path);
 
 
