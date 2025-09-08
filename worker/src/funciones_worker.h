@@ -3,8 +3,8 @@
 
 #include "inicializar_worker.h"
 
+
 int pc_actual;
-config_worker cw;
 
 char* archivo_query_actual;
 
@@ -14,10 +14,10 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     log_debug(logger, "%s | %s | %s", parametro1, parametro2, parametro3);
     if (caso == CREATE)
     {
+        //El tamaño del archivo debe ser 0
         char *file = strtok(parametro1, ":");
         char *tag  = strtok(NULL, "");
 
-        //paquete
         t_packet* paq = create_packet();
         add_int_to_packet(paq, CREATE_FILE);
         add_string_to_packet(paq, file);
@@ -29,6 +29,8 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         char* file = strtok(parametro1, ":");
         char* tag = strtok(NULL, "");
         int tam = atoi(parametro2);
+
+        ejecutar_truncate(strcat(file, tag), tam);
 
         t_packet* paq = create_packet();
         add_int_to_packet(paq, CREATE_FILE);

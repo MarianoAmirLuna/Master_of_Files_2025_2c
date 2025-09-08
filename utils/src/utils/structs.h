@@ -84,11 +84,21 @@ typedef struct{
 typedef struct{
     int marco;
     int pag;
+    bool presente; //la pagina puede estar cargada en memoria virtual y no estar presenta en memoria real
+    bool modificada; //clock-m
+    bool uso; //clock-m
+
 }entrada_tabla_pags;
 
 typedef struct{
     char* file_y_tag;
     t_list tabla_pags; //lista con elementos de tipo "entrada_tabla_pags"
 }file_y_tabla_pags;
+
+typedef struct{
+    bool libre;
+    void* inicio;
+}marco;
+
 
 #endif

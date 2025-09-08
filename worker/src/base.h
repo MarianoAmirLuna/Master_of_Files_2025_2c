@@ -17,8 +17,11 @@ op_code_module itself_ocm;
 int sock_master,sock_storage;
 void* memory;
 int id_worker;
+config_worker cw;
+int block_size;
 
-
-
+//mutex por ser globales en los get y add
+t_list* archivos_cargados;
+t_list* lista_frames;
 
 #endif
