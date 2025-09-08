@@ -2,9 +2,9 @@
 #define STORAGE_BASE_H
 
 #include "inc/common.h"
-#include "pthread.h"
+#include <pthread.h>
+#include <signal.h>
 #include "modules/sockets/network.h"
-
 #include "inc/libs.h"
 #include "exts/array_ext.h"
 #include "exts/list_ext.h"
