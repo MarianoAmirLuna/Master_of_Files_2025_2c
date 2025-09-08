@@ -1,14 +1,12 @@
 #ifndef FUNCIONES_WORKER_H
 #define FUNCIONES_WORKER_H
 
-//#include "base.h"
+#include "inicializar_worker.h"
+
 int pc_actual;
 config_worker cw;
 
 char* archivo_query_actual;
-
-#include "inicializar_worker.h"
-#include "fase_execute.h"
 
 // FASE EXECUTE //
 void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, char *parametro3)

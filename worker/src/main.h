@@ -1,4 +1,3 @@
-#include "base.h"
 #include "funciones_worker.h"
 
 void packet_callback(void* params);

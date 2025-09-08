@@ -1,5 +1,4 @@
 #include "main.h"
-#include "inicializar_worker.h"
 
 int main(int argc, char* argv[]) {
     itself_ocm = MODULE_WORKER;

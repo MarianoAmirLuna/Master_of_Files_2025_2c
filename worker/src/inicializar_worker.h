@@ -1,8 +1,10 @@
 #ifndef INICIALIZAR_WORKER_H
 #define INICIALIZAR_WORKER_H
 
-//#include "base.h"
 #include "semaphore.h"
+#include "base.h"
+#include "fase_execute.h"
+#include "memoria.h"
 
 sem_t sem_query_recibida;
 /// @brief Cuando el worker está libre para una nueva ejecución que quiera hacer el Master

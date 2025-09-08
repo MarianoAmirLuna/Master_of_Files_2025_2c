@@ -1,8 +1,6 @@
 #ifndef FASE_EXECUTE_H
 #define FASE_EXECUTE_H
 
-//#include "base.h"
-
 void ejecutar_create(char* file, char* tag)
 {
 
