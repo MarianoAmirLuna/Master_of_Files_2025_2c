@@ -128,8 +128,11 @@ void packet_callback(void* params){
         }
     }
     if(ocm == MODULE_STORAGE){
-        
         //ACA RECIBIS UN PAQUETE PROVENIENTE DE STORAGE
+        if(op_code == BLOCK_SIZE)
+        {
+            storage_block_size = list_get_int(packet, 1);
+        }
     }
     
 
