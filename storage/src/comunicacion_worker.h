@@ -45,6 +45,14 @@ void tratar_mensaje(t_list* pack, int sock_client)
     case TRUNCATE_FILE:
         if(args != NULL && args[0] != NULL && args[1] != NULL && args[2] != NULL)
         {
+            /*Esta operación se encargará de modificar el tamaño del File:Tag especificados agrandando o achicando el tamaño del mismo 
+            para reflejar el nuevo tamaño deseado (actualizando la metadata necesaria).
+            Al incrementar el tamaño del File, se le asignarán tantos bloques lógicos (hard links) como sea necesario. 
+            Inicialmente, todos ellos deberán apuntar el bloque físico nro 0.
+            Al reducir el tamaño del File, se deberán desasignar tantos bloques lógicos como sea necesario (empezando por el final del archivo). 
+            Si el bloque físico al que apunta el bloque lógico eliminado no es referenciado por ningún otro File:Tag, 
+            deberá ser marcado como libre en el bitmap.*/
+            // Para la implementación de esta parte se recomienda consultar la documentación de la syscall stat(2).
             log_info(logger, "Ejecutando la operacion TRUNCATE_FILE");
         }
         break;
@@ -52,6 +60,9 @@ void tratar_mensaje(t_list* pack, int sock_client)
     case TAG_FILE:
         if(args != NULL && args[0] != NULL && args[1] != NULL && args[2] != NULL && args[3] != NULL)
         {
+            /*Esta operación creará una copia completa del directorio nativo correspondiente al Tag de origen en un 
+            nuevo directorio correspondiente al Tag destino y modificará en el archivo de metadata del Tag destino 
+            para que el mismo se encuentre en estado WORK_IN_PROGRESS.*/
             log_info(logger, "Ejecutando la operacion TAG_FILE");
         }
         break;
@@ -59,6 +70,13 @@ void tratar_mensaje(t_list* pack, int sock_client)
     case COMMIT_TAG:
         if(args != NULL && args[0] != NULL && args[1] != NULL)
         {
+            /*Confirmará un File:Tag pasado por parámetro. En caso de que un Tag ya se encuentre confirmado, 
+            esta operación no realizará nada. Para esto se deberá actualizar el archivo metadata del Tag pasando su estado a “COMMITED”.
+            Se deberá, por cada bloque lógico, buscar si existe algún bloque físico que tenga el mismo contenido 
+            (utilizando el hash y archivo blocks_hash_index.config). 
+            En caso de encontrar uno, se deberá liberar el bloque físico actual y 
+            reapuntar el bloque lógico al bloque físico pre-existente. En caso contrario, 
+            simplemente se agregará el hash del nuevo contenido al archivo blocks_hash_index.config.*/
             log_info(logger, "Ejecutando la operacion COMMIT_TAG");
         }
         break;
@@ -66,6 +84,12 @@ void tratar_mensaje(t_list* pack, int sock_client)
     case WRITE_BLOCK:
         if(args != NULL && args[0] != NULL && args[1] != NULL && args[2] != NULL && args[3] != NULL)
         {
+            /*Esta operación recibirá el contenido de un bloque lógico de un File:Tag y guardará los cambios en el 
+            bloque físico correspondiente, siempre y cuando el File:Tag no se encuentre en estado COMMITED y 
+            el bloque lógico se encuentre asignado.
+            Si el bloque lógico a escribir fuera el único referenciando a su bloque físico asignado, 
+            se escribirá dicho bloque físico directamente. En caso contrario, se deberá buscar un nuevo bloque físico, 
+            escribir en el mismo y asignarlo al bloque lógico en cuestión.*/
             log_info(logger, "Ejecutando la operacion WRITE_BLOCK");
         }
         break;
@@ -73,6 +97,7 @@ void tratar_mensaje(t_list* pack, int sock_client)
     case READ_BLOCK:
         if(args != NULL && args[0] != NULL && args[1] != NULL && args[2] != NULL)
         {
+            /*Dado un File:Tag y número de bloque lógico, la operación de lectura obtendrá y devolverá el contenido del mismo.*/
             log_info(logger, "Ejecutando la operacion READ_BLOCK");
         }
         break;
@@ -80,6 +105,10 @@ void tratar_mensaje(t_list* pack, int sock_client)
     case DELETE_TAG:
         if(args != NULL && args[0] != NULL && args[1] != NULL)
         {
+            /*Esta operación eliminará el directorio correspondiente al File:Tag indicado. 
+            Al realizar esta operación, si el bloque físico al que apunta cada bloque lógico eliminado 
+            no es referenciado por ningún otro File:Tag, deberá ser marcado como libre en el bitmap.*/
+            // Para la implementación de esta parte se recomienda consultar la documentación de la syscall stat(2).
             log_info(logger, "Ejecutando la operacion DELETE_TAG");
         }
         break;
