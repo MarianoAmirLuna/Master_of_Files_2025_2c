@@ -63,9 +63,10 @@ void* attend_multiple_clients(void* params)
         int block_size = config_get_int_value(c_superblock,"BLOCK_SIZE");
 
         t_packet* pack = create_packet();
+        add_int_to_packet(g_block_size);
         add_int_to_packet(pack, block_size);
         send_and_free_packet(pack, sock_client);
-        
+        s
         config_destroy(c_superblock);
 
         void* parameter = malloc(sizeof(int)*3);
@@ -114,14 +115,12 @@ void packet_callback(void* params){
     memcpy(&sock_server, params+offset, sizeof(int));
     log_info(logger, "En el packet callback sock_client: %d, ocm: %d, sock_server:%d", sock_client, ocm, sock_server);
     t_list* pack = recv_packet(sock_client); // aca estarian las operaciones
-
-    //tratar_mensaje(pack, sock_client); // aca
-
-    if(pack == NULL) {
-        log_error(logger, "Error recibiendo paquete");
-        return;
-    }
     log_pink(logger, "RECIBI DATOS DEL %s", ocm_to_string(ocm));
+
+
+    tratar_mensaje(pack, sock_client); // aca
+
+
     // aca es el trabajo del modulo ?
     list_destroy_and_destroy_elements(pack, free_element);
 }
