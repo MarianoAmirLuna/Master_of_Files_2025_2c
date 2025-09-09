@@ -46,57 +46,71 @@ void query_to(query* q, state_process to){
     //if(is_valid_sp (q->))
 }
 
+worker* cast_worker(void* elem){
+    if(elem == NULL)
+        return NULL;
+    return (worker*)elem;
+}
 
 
-worker* get_worker_by_fd(int fd, int* idx)
+query* cast_query(void* elem){
+    if(elem == NULL)
+        return NULL;
+    return (query*)elem;
+}
+int by_worker_free(void* elem, void *by){
+    worker* wa = (worker*)elem;
+    int byval = (int)by;
+    return wa->is_free == byval;
+}
+
+
+int by_worker_fd(void* elem, void *by){
+    worker* wa = (worker*)elem;
+    int byval = (int)by;
+    return wa->fd == byval;
+}
+
+int by_worker_wid(void* elem, void *by){
+    worker* wa = (worker*)elem;
+    wid byval = (wid)by;
+    return wa->id == byval;
+}
+
+int by_worker_qid(void* elem, void *by){
+    worker* wa = (worker*)elem;
+    qid byval = (qid)by;
+    return wa->id_query == byval;
+}
+
+int by_query_qid(void* elem, void* by){
+    query* qa = (query*)elem;
+    qid byval = (qid)by;
+    return qa->id == byval;
+}
+
+worker* get_first_worker_free()
 {
-    int sz = list_size(workers);
-    for(int i=0;i<sz;i++){
-        worker* w = list_get(workers, i);
-        
-        if(w->fd == fd){
-            *idx = i;
-            return w;
-        }
-    }
-    *idx = -1;
-    return NULL;
+    void* w = list_find_by(workers, by_worker_free, (int)1);
+    if(w == NULL)
+        return w;
+    return (worker*)w;
 }
+
+worker* get_worker_by_fd(int fd, int* idx){
+    return cast_worker(list_find_by_idx_list(workers, by_worker_fd, fd, idx));
+}
+
 worker* get_worker_by_qid(qid id){
-     int sz = list_size(workers);
-    for(int i=0;i<sz;i++){
-        worker* w = list_get(workers, i);
-        if(w == NULL){
-            continue;
-        }
-        if(w->id_query == id)
-            return w;
-    }
-    return NULL;
+    return cast_worker(list_find_by(workers, by_worker_qid, id));
 }
+
 worker* get_worker_by_wid(wid id){
-    int sz = list_size(workers);
-    for(int i=0;i<sz;i++){
-        worker* w = list_get(workers, i);
-        if(w == NULL){
-            continue;
-        }
-        if(w->id == id)
-            return w;
-    }
-    return NULL;
+    return cast_worker(list_find_by(workers, by_worker_wid, id));
 }
 
 query* get_query_by_qid(qid id){
-    int sz = list_size(queries);
-    for(int i=0;i<sz;i++){
-        query* q = list_get(queries, i);
-        if(q == NULL)
-            continue;
-        if(q->id == id)
-            return q;
-    }
-    return NULL;
+    return cast_query(list_find_by(queries, by_query_qid, id));
 }
 
 int increment_idx(){

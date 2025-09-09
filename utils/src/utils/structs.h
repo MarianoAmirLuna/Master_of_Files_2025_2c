@@ -76,7 +76,7 @@ typedef struct{
     wid id;
     qid id_query;
     int fd;
-    
+    int is_free;
 }worker;
 
 

@@ -46,7 +46,8 @@ t_list* list_filter_by_and_by(t_list* l, int(*condition)(void*, void*, void*), v
 /// @return el elemento, si no existe retorna NULL
 void* list_find_by(t_list* l, int(*condition)(void*, void*), void* by){
     
-    for(int i=0;i<list_size(l);i++){
+    int sz = list_size(l);
+    for(int i=0;i<sz;i++){
         void* elem = list_get(l, i);
         if(condition(elem, by))
             return elem;
@@ -54,6 +55,23 @@ void* list_find_by(t_list* l, int(*condition)(void*, void*), void* by){
     return NULL;
 }
 
+/// @brief Busca el primer elemento que conicida con su condición
+/// @param l 
+/// @param condition 
+/// @param by 
+/// @return el elemento, si no existe retorna NULL
+void* list_find_by_idx_list(t_list* l, int(*condition)(void*, void*), void* by, int* idx){
+    int sz = list_size(l);
+    for(int i=0;i<sz;i++){
+        void* elem = list_get(l, i);
+        if(condition(elem, by)){
+            *idx = 1;
+            return elem;
+        }
+    }
+    *idx=-1;
+    return NULL;
+}
 int list_exists(t_list* l, int(*condition)(void*, void*), void* by)
 {
     return list_find_by(l,condition, by) != NULL;
