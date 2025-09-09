@@ -21,6 +21,7 @@ void inicializar_variables()
 
 void inicializar_listas(){
     archivos_cargados = list_create();
+    lista_tablas_pags = list_create();
 }
 
 void inicializar_worker()

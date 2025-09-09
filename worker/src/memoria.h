@@ -13,5 +13,19 @@ void inicializar_memoria(){
     
 }
 
+int buscar_base_frame(int n)
+{
+    return n * storage_block_size;
+}
+
+file_y_tabla_pags* nueva_tabla_pags(char* file_y_tag)
+{
+    file_y_tabla_pags* ret = malloc(sizeof(file_y_tabla_pags));
+    ret->file_y_tag = malloc(sizeof(file_y_tag));
+    strcpy(ret->file_y_tag, file_y_tag);
+    ret->tabla_pags=list_create();
+}
+
+
 
 #endif

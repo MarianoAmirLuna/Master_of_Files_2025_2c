@@ -177,4 +177,8 @@ typedef enum{
     QUERY_END=READ_WRITE_OVERFLOW+1
 }master_operation;
 
+typedef enum{
+    BLOCK_SIZE = QUERY_END+1
+}storage_to_worker_data;
+
 #endif
