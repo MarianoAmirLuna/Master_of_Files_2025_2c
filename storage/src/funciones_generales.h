@@ -99,7 +99,7 @@ void crear_archivo (const char* path, const char* nombre, const char* extension)
     }
     free(p_path);
 }
-
+/*
 void eliminar_archivo (const char* path, const char* nombre)
 {
     char* p_path = string_from_format("%s/%s", path, nombre);
@@ -114,6 +114,19 @@ void eliminar_archivo (const char* path, const char* nombre)
     }
     free(p_path);
 }
+*/
+void eliminar_archivo (const char* path, const char* nombre)
+{
+    char* p_path = string_from_format("%s/%s", path, nombre);
+    if (control_existencia(p_path)) {
+        remove(p_path);   // ✅ recibe const char*
+    } else {
+        log_error(logger, "El archivo %s no existe en el path %s", nombre, path);
+    }
+    free(p_path);
+}
+
+
 
 void crear_hard_link(char* path_bloque_fisico, char* path_bloque_logico)
 {
@@ -209,7 +222,7 @@ void eliminar_bloques_fisicos (int cantidad_bloques_de_mas, char* path, int bloq
     {
         p_path = string_from_format("block%04d.dat", bloques_actuales-i);
         eliminar_archivo(path, p_path);
-        freade(p_path);
+        free(p_path);
     }
 }
 

@@ -1,31 +1,13 @@
 #include "base.h"
 #include "signal.h"
-
+#include "funciones_generales.h"
+#include "inicializacion_storage.h"
 
 
 volatile sig_atomic_t status=0;
 void instance_signal_handler(void);
-
+void* attend_multiple_clients(void* params);
 void* go_loop_net(void* params);
 void packet_callback(void* params);
-void* attend_multiple_clients(void* params);
 void disconnect_callback(void* params);
-void inicializar_file_system();
-void tratar_mensaje(t_list* p, int cliente);
-void ejecutar_storage_instruction(storage_operation so, char* par1, char* par2);
-void valido_bitmap(const char* path);
-void valido_hash(const char* path);
-void valido_bloques_fisicos(const char* path);
-void valido_inicial_file(char* path);
-void inicializar_bitnap();
-bool control_existencia(const char* path);
-int cant_elementos_directorio (const char *path);
-void crear_bloques_fisicos (int cantidad_bloques, char* path, int bloques_actuales);
-void crear_hard_link(char* path_bloque_logico, char* path_bloque_fisico);
-void crear_archivo (const char* path, const char* nombre, const char* extension);
-void eliminar_archivo (const char* path, const char* nombre);
-t_config* crear_metadata_config(char* path, int tamanio, t_list* bloques, state_metadata estado);
-void llenar_archivo_con_ceros(char* path_archivo);
-bool control_existencia_file(const char* path);
-
 
