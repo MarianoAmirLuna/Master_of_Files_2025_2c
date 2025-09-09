@@ -87,28 +87,32 @@ int cant_elementos_directorio (const char *path)
 
 void crear_archivo (const char* path, const char* nombre, const char* extension)
 {
-    if (!control_existencia(string_from_format("%s/%s.%s", path, nombre, extension)))
+    char* p_path = string_from_format("%s/%s.%s", path, nombre, extension);
+    if (!control_existencia(p_path))
     {
-        FILE * archivo = fopen(string_from_format("%s/%s.%s", path, nombre, extension), "w");
+        FILE * archivo = fopen(p_path, "w");
         fclose(archivo);
     }
     else
     {
         log_warning(logger, "El archivo %s.%s ya existe en el path %s", nombre, extension, path);
     }
+    free(p_path);
 }
 
 void eliminar_archivo (const char* path, const char* nombre)
 {
-    if (control_existencia(string_from_format("%s/%s", path, nombre)))
+    char* p_path = string_from_format("%s/%s", path, nombre);
+    if (control_existencia(p_path))
     {
-        FILE * archivo = fopen(string_from_format("%s/%s", path, nombre), "r");
+        FILE * archivo = fopen(p_path, "r");
         remove(archivo);
     }
     else
     {
         log_error(logger, "El archivo %s no existe en el path %s", nombre, path);
     }
+    free(p_path);
 }
 
 void crear_hard_link(char* path_bloque_fisico, char* path_bloque_logico)
@@ -200,9 +204,12 @@ void llenar_archivo_con_ceros(char* path_archivo)
 void eliminar_bloques_fisicos (int cantidad_bloques_de_mas, char* path, int bloques_actuales)
 {
     // Elimino los bloques fisicos que sobren
+    char* p_path;
     for (int i = 0; i < cantidad_bloques_de_mas; i++)
     {
-        eliminar_archivo(path, string_from_format("block%04d.dat", bloques_actuales-i));
+        p_path = string_from_format("block%04d.dat", bloques_actuales-i);
+        eliminar_archivo(path, p_path);
+        freade(p_path);
     }
 }
 
