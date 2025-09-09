@@ -53,7 +53,14 @@ void tratar_mensaje(t_list* pack, int sock_client)
             Si el bloque físico al que apunta el bloque lógico eliminado no es referenciado por ningún otro File:Tag, 
             deberá ser marcado como libre en el bitmap.*/
             // Para la implementación de esta parte se recomienda consultar la documentación de la syscall stat(2).
+
+            /* EXCEPCIONES A TENER EN CUENTA EN ESTE PROCEDIMIENTO
+                File_inexistente
+                Tag_inexistente
+                Espacio_Insuficiente
+            */
             log_info(logger, "Ejecutando la operacion TRUNCATE_FILE");
+
         }
         break;
 
@@ -63,6 +70,11 @@ void tratar_mensaje(t_list* pack, int sock_client)
             /*Esta operación creará una copia completa del directorio nativo correspondiente al Tag de origen en un 
             nuevo directorio correspondiente al Tag destino y modificará en el archivo de metadata del Tag destino 
             para que el mismo se encuentre en estado WORK_IN_PROGRESS.*/
+
+            /* EXCEPCIONES A TENER EN CUENTA EN ESTE PROCEDIMIENTO
+                File_inexistente
+                Tag_inexistente
+            */ //son los mismos hard links no nuevos bloques, por lo que el espacio no seria un problema 
             log_info(logger, "Ejecutando la operacion TAG_FILE");
         }
         break;
@@ -77,6 +89,11 @@ void tratar_mensaje(t_list* pack, int sock_client)
             En caso de encontrar uno, se deberá liberar el bloque físico actual y 
             reapuntar el bloque lógico al bloque físico pre-existente. En caso contrario, 
             simplemente se agregará el hash del nuevo contenido al archivo blocks_hash_index.config.*/
+
+            /* EXCEPCIONES A TENER EN CUENTA EN ESTE PROCEDIMIENTO
+                File_inexistente
+                Tag_inexistente
+            */ // cuidado de no borrar hard links incorrectos
             log_info(logger, "Ejecutando la operacion COMMIT_TAG");
         }
         break;
@@ -90,6 +107,14 @@ void tratar_mensaje(t_list* pack, int sock_client)
             Si el bloque lógico a escribir fuera el único referenciando a su bloque físico asignado, 
             se escribirá dicho bloque físico directamente. En caso contrario, se deberá buscar un nuevo bloque físico, 
             escribir en el mismo y asignarlo al bloque lógico en cuestión.*/
+
+            /* EXCEPCIONES A TENER EN CUENTA EN ESTE PROCEDIMIENTO
+                File_inexistente
+                Tag_inexistente
+                Espacio_Insuficiente
+                Escritura_no_permitida
+                Lectura_o_escritura_fuera_de_limite
+            */
             log_info(logger, "Ejecutando la operacion WRITE_BLOCK");
         }
         break;
@@ -98,6 +123,12 @@ void tratar_mensaje(t_list* pack, int sock_client)
         if(args != NULL && args[0] != NULL && args[1] != NULL && args[2] != NULL)
         {
             /*Dado un File:Tag y número de bloque lógico, la operación de lectura obtendrá y devolverá el contenido del mismo.*/
+            
+            /* EXCEPCIONES A TENER EN CUENTA EN ESTE PROCEDIMIENTO
+                File_inexistente
+                Tag_inexistente
+                Lectura_o_escritura_fuera_de_limite
+            */
             log_info(logger, "Ejecutando la operacion READ_BLOCK");
         }
         break;
@@ -109,6 +140,11 @@ void tratar_mensaje(t_list* pack, int sock_client)
             Al realizar esta operación, si el bloque físico al que apunta cada bloque lógico eliminado 
             no es referenciado por ningún otro File:Tag, deberá ser marcado como libre en el bitmap.*/
             // Para la implementación de esta parte se recomienda consultar la documentación de la syscall stat(2).
+
+            /* EXCEPCIONES A TENER EN CUENTA EN ESTE PROCEDIMIENTO
+                File_inexistente
+                Tag_inexistente
+            */
             log_info(logger, "Ejecutando la operacion DELETE_TAG");
         }
         break;
@@ -129,10 +165,8 @@ void tratar_mensaje(t_list* pack, int sock_client)
         string_iterate_lines(args, (void*) free);
         free(args);
     }
-    
 
 }
-
 
 
 /* posibles errores que hay que manejar
