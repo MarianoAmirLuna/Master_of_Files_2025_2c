@@ -43,38 +43,55 @@ void valido_inicial_file(char* path)
 {
     // Controlo que exista cada directorio, y en caso que no exista se creada
     // Hay que integrar aca dentro la creacion del meta.config y el 000000.dat, y en el caso de que exista el directorio veriticar la existencia de dichos archivos.
-    if (!control_existencia(string_from_format("%s/%s", path, "files")))
+    char* p_path = string_from_format("%s/%s", path, "files");
+
+    if (!control_existencia(p_path))
     {
         crear_directorio("files", path);
+        free(p_path);
     }
-    if (!control_existencia(string_from_format("%s/%s", path, "files/initial_file")))
+    p_path = string_from_format("%s/%s", path, "files/initial_file");
+    if (!control_existencia(p_path))
     {
         crear_directorio("files/initial_file", path);
+        free(p_path);
     }
-    if (!control_existencia(string_from_format("%s/%s", path, "files/initial_file/BASE")))
+    p_path = string_from_format("%s/%s", path, "files/initial_file/BASE");
+    if (!control_existencia(p_path))
     {
-        crear_directorio("BASE",string_from_format("%s/%s", path, "files/initial_file/"));
+        free(p_path);
+        p_path = string_from_format("%s/%s", path, "files/initial_file");
+        crear_directorio("BASE",p_path);
+        free(p_path);
     }
-    if (!control_existencia(string_from_format("%s/%s", path, "files/initial_file/BASE/metadata.config")))
+    p_path = string_from_format("%s/%s", path, "files/initial_file/BASE/metadata.config");
+    if (!control_existencia(p_path))
     {
-        //crear_config_path(string_from_format("%s/%s", path, "files/initial_file/BASE/"), "metadata.config");
-            // Armo lista de bloques inicial
+        //crear_config_path(string_from_format("%s/%s", path, "files/initial_file/BASE/"), "metadata.config"); todo: borrar despues
+        // Armo lista de bloques inicial
         t_list* bloques = list_create();
         int* b0 = malloc(sizeof(int));
         *b0 = 0;
         list_add(bloques, b0);
-
+        free(p_path)
         char* meta_path = string_from_format("%s/%s", path, "files/initial_file/BASE/metadata.config");
         crear_metadata_config(meta_path, g_block_size, bloques, COMMITED);
 
         list_destroy_and_destroy_elements(bloques, free);
         free(meta_path);
     }    
-    if (!control_existencia(string_from_format("%s/%s", path, "files/initial_file/BASE/logical_blocks")))
+    p_path = string_from_format("%s/%s", path, "files/initial_file/BASE/logical_blocks");
+    if (!control_existencia(p_path))
     {
-        crear_directorio("logical_blocks",string_from_format("%s/%s", path, "files/initial_file/BASE/"));
+        free(p_path);
+        p_path = string_from_format("%s/%s", path, "files/initial_file/BASE/");
+        crear_directorio("logical_blocks",p_path);
         //Se elimina el crear_archivo porque la funcion link genera el archivo para crear el hardlink
-        crear_hard_link(string_from_format("%s/%s", path, "physical_blocks/block0000.dat"), string_from_format("%s/%s", path, "files/initial_file/BASE/logical_blocks/000000.dat"));
+        char* p2_path = string_from_format("%s/%s", path, "files/initial_file/BASE/logical_blocks/000000.dat");
+        p_path = string_from_format("%s/%s", path, "physical_blocks/block0000.dat");
+        crear_hard_link(p_path, p2_path);
+        free(p_path);
+        free(p2_path);
     }
 }
 
@@ -149,15 +166,19 @@ void valido_hash(const char* p_path)
 void valido_bloques_fisicos(const char* path)
 {
     //Controlo que exista el directorio de bloques fisicos
-    if (control_existencia(string_from_format("%s/%s", path, "physical_blocks")))
+    char* p_path = string_from_format("%s/%s", path, "physical_blocks");
+    if (control_existencia(p_path))
     {
+        free(p_path);
         log_light_green(logger, "[valido_bloques_fisicos] Directorio encontrado, verificando que el block count sea el correcto"); //to_do: borrar este
         int cantidad_bloques = g_fs_size / g_block_size;
         log_light_blue(logger, "[valido_bloques_fisicos] Cantidad de bloques que deberia haber: %d", cantidad_bloques); //to_do: borrar este
 
         //Veriifico la cantidad de bloques fisicos que hay
-        if (cant_elementos_directorio(string_from_format("%s/%s", path, "physical_blocks")) == cantidad_bloques)
+        p_path = string_from_format("%s/%s", path, "physical_blocks");
+        if (cant_elementos_directorio(p_path) == cantidad_bloques)
         {
+            free(p_path);
             //Cantidad de bloques correcta, por lo tanto no no hay que crear nuevos bloques
             log_light_green(logger, "[valido_bloques_fisicos] La cantidad de bloques fisicos es correcta"); //to_do: borrar este
         }
@@ -166,23 +187,24 @@ void valido_bloques_fisicos(const char* path)
             //Cantidad de bloques incorrecta, por lo tanto hay que crear los bloques faltantes o eliminar los bloques de mas
 
             //Cantidad de bloques inferior
+            p_path = string_from_format("%s/%s", path, "physical_blocks")
             do 
             {
-                int bloques_restantes = cantidad_bloques - cant_elementos_directorio(string_from_format("%s/%s", path, "physical_blocks"));
+                int bloques_restantes = cantidad_bloques - cant_elementos_directorio(p_path);
                 log_orange(logger, "[valido_bloques_fisicos] La cantidad de bloques fisicos es INFERIOR, faltan %d bloques", bloques_restantes); //to_do: borrar este
-                crear_bloques_fisicos (bloques_restantes, string_from_format("%s/%s", path, "physical_blocks"), cant_elementos_directorio(string_from_format("%s/%s", path, "physical_blocks")));
+                crear_bloques_fisicos (bloques_restantes, p_path, cant_elementos_directorio(p_path));
             }
-            while(cant_elementos_directorio(string_from_format("%s/%s", path, "physical_blocks")) < cantidad_bloques);
+            while(cant_elementos_directorio(p_path) < cantidad_bloques);
 
             //Cantidad de bloques superior
             do 
             {
-                int bloques_restantes = cantidad_bloques - cant_elementos_directorio(string_from_format("%s/%s", path, "physical_blocks"));
+                int bloques_restantes = cantidad_bloques - cant_elementos_directorio(p_path);
                 log_orange(logger, "[valido_bloques_fisicos] La cantidad de bloques fisicos es SUPERIOR, sobran %d bloques", bloques_restantes); //to_do: borrar este
-                eliminar_bloques_fisicos(bloques_restantes, string_from_format("%s/%s", path, "physical_blocks"), cant_elementos_directorio(string_from_format("%s/%s", path, "physical_blocks")));
+                eliminar_bloques_fisicos(bloques_restantes, p_path, cant_elementos_directorio(p_path));
             }
-            while(cant_elementos_directorio(string_from_format("%s/%s", path, "physical_blocks")) > cantidad_bloques);
-
+            while(cant_elementos_directorio(p_path) > cantidad_bloques);
+            free(p_path);
         }
         
     }
@@ -191,7 +213,9 @@ void valido_bloques_fisicos(const char* path)
         log_light_blue(logger, "[valido_bloques_fisicos] No se encontro el directorio physical_blocks, creando el directorio y los bloques fisicos"); //to_do: borrar este
         int cantidad_bloques = g_fs_size / g_block_size;
         crear_directorio("physical_blocks", path);
-        crear_bloques_fisicos (cantidad_bloques, string_from_format("%s/%s", path, "physical_blocks"), 0);
+        p_path = string_from_format("%s/%s", path, "physical_blocks");
+        crear_bloques_fisicos (cantidad_bloques, p_path, 0);
+        free(p_path);
     }
 
 }
