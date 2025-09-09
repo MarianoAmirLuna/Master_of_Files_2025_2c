@@ -63,6 +63,7 @@ void* attend_multiple_clients(void* params)
         int block_size = config_get_int_value(c_superblock,"BLOCK_SIZE");
 
         t_packet* pack = create_packet();
+        add_int_to_packet(BLOCK_SIZE);
         add_int_to_packet(pack, block_size);
         send_and_free_packet(pack, sock_client);
 
