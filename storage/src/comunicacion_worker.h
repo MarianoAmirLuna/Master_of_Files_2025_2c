@@ -42,9 +42,13 @@ void tratar_mensaje(t_list* pack, int sock_client)
             path = string_from_format("%s/%s", path, args[0]); // uso el path porque es dentro del archivo
             crear_directorio(args[1], path); // creo el tag
 
+            // espacio de bloques logicos
             path = string_from_format("%s/%s", path, args[1]);
             crear_directorio("logical_blocks", path);
-            crear_metadata_config(path, g_block_size, NULL, WORK_IN_PROGRESS);
+
+            // metadata
+            path = string_from_format("%s/metadata.config", path);
+            crear_metadata_config(path, g_block_size, list_create(), WORK_IN_PROGRESS);
             free(path);
         }
         break;
@@ -155,7 +159,7 @@ void tratar_mensaje(t_list* pack, int sock_client)
             log_info(logger, "Ejecutando la operacion DELETE_TAG");
         }
         break;
-    
+
     default:
         log_error(logger, "CODIGO DE OPERACION INVALIDO CODIGO: %d", opcode);
         break;
