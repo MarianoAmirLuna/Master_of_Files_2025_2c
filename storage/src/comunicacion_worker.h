@@ -31,10 +31,14 @@ void tratar_mensaje(t_list* pack, int sock_client)
         {
             /*Esta operación creará un nuevo File dentro del FS. Para ello recibirá el nombre del File y un Tag inicial para crearlo.
             Deberá crear el archivo de metadata en estado WORK_IN_PROGRESS y no asignarle ningún bloque.*/
+            char* path = string_from_format("%s/files", cs.punto_montaje);
             log_info(logger, "Ejecutando la operacion CREATE_FILE");
-            crear_directorio(args[0], cs.punto_montaje); // creo el archivo (no verifico si existe)
-            char* path = string_from_format("%s/%s", cs.punto_montaje, args[0]);
-            crear_directorio(args[1], path);
+            crear_directorio(args[0], path); // creo el archivo (no verifico si existe)
+
+            // creo el tag
+            path = string_from_format("%s/%s", path, args[0]); // uso el path porque es dentro del archivo
+            crear_directorio(args[1], path); // creo el tag
+
             path = string_from_format("%s/%s", path, args[1]);
             crear_directorio("logical_blocks", path);
             crear_metadata_config(path, g_block_size, NULL, WORK_IN_PROGRESS);
