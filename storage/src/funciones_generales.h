@@ -255,3 +255,34 @@ void crear_bloques_fisicos (int cantidad_bloques_faltantes, char* path, int bloq
         free(full_path);
     }
 }
+
+
+
+
+
+
+// cosas del bitmap
+
+void ocupar_bloque(int nro_bloque) {
+    bitarray_set_bit(g_bitmap, nro_bloque);
+    msync(g_bitmap->bitarray, g_bitmap_size, MS_SYNC);
+    log_debug(logger, "Bloque %d marcado como OCUPADO", nro_bloque);
+}
+
+void liberar_bloque(int nro_bloque) {
+    bitarray_clean_bit(g_bitmap, nro_bloque);
+    msync(g_bitmap->bitarray, g_bitmap_size, MS_SYNC);
+    log_debug(logger, "Bloque %d marcado como LIBRE", nro_bloque);
+}
+
+bool bloque_ocupado(int nro_bloque) {
+    return bitarray_test_bit(g_bitmap, nro_bloque);
+}
+
+void destruir_bitmap() {
+    bitarray_destroy(g_bitmap);
+    close(g_bitmap_fd);
+}
+
+
+// fin cosas bitmap

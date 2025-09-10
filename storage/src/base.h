@@ -5,6 +5,10 @@
 #include "pthread.h"
 #include "modules/sockets/network.h"
 
+#include <sys/stat.h>
+#include <fcntl.h> 
+#include <unistd.h>
+#include <sys/mman.h>
 #include "inc/libs.h"
 #include "exts/array_ext.h"
 #include "exts/list_ext.h"
@@ -16,6 +20,12 @@
 int g_block_size;
 int g_fs_size;
 t_config* g_archivo_hash;
+
+// cosas del bitmap
+t_bitarray* g_bitmap;
+int g_bitmap_fd;
+size_t g_bitmap_size;
+
 
 config_storage cs;
 op_code_module itself_ocm;

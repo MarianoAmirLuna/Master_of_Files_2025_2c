@@ -126,56 +126,48 @@ void valido_inicial_file(char* path)
     }
 }
 
-
-void inicializar_bitmap() {
+void inicializar_bitmap(const char* punto_montaje) {
     size_t num_blocks = g_fs_size / g_block_size;
+    g_bitmap_size = (size_t) ceil((double) num_blocks / 8);
 
-    size_t bitmap_size = (size_t) ceil((double) num_blocks / 8);
+    char* path = string_from_format("%s/bitmap.bin", punto_montaje);
 
-    char* path = string_from_format("%s/%s", cs.punto_montaje, "bitmap.bin");
-    FILE* bitmap = fopen(path, "wb");
-    if (bitmap == NULL) {
-        log_error(logger, "Error al crear el archivo bitmap"); //to_do: sacar despues
+    // creo bitmap
+    g_bitmap_fd = open(path, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    if (g_bitmap_fd == -1) {
+        perror("open bitmap.bin");
+        free(path);
+        return;
+    }
+    ftruncate(g_bitmap_fd, g_bitmap_size);
+
+    // mapeo en memoria
+    void* bitmap_data = mmap(NULL, g_bitmap_size, PROT_READ | PROT_WRITE, MAP_SHARED, g_bitmap_fd, 0);
+    if (bitmap_data == MAP_FAILED) {
+        perror("mmap");
+        close(g_bitmap_fd);
+        free(path);
         return;
     }
 
-    // crear un bitmap vacío (todos los bits en 0)
-    unsigned char* bitmap_data = (unsigned char*) calloc(bitmap_size, sizeof(unsigned char));
+    // bitarray
+    g_bitmap = bitarray_create_with_mode((char*) bitmap_data, g_bitmap_size, LSB_FIRST);
 
-    if (bitmap_data == NULL) {
-        log_error(logger, "Error al reservar memoria para el bitmap");
-        fclose(bitmap);
-        return;
-    }
-
-    // Escribir el bitmap vacío en el archivo
-    size_t bytes_written = fwrite(bitmap_data, sizeof(unsigned char), bitmap_size, bitmap);
-    if (bytes_written != bitmap_size) {
-        log_error(logger, "Error al escribir el bitmap en el archivo");//to_do: sacar despues
+    // si es fresh_start limpio
+    if (cs.fresh_start) {
+        memset(g_bitmap->bitarray, 0, g_bitmap_size);
+        msync(g_bitmap->bitarray, g_bitmap_size, MS_SYNC);
+        log_info(logger, "Bitmap inicializado vacío con %zu bloques", num_blocks);
     } else {
-        log_debug(logger, "Bitmap creado correctamente");//to_do: sacar despues
+        log_info(logger, "Bitmap cargado desde archivo existente");
     }
 
-    free(bitmap_data);
-
-    fclose(bitmap);
+    free(path);
 }
 
 
-void valido_bitmap(const char* p_path)
-{
-    char* path = string_from_format("%s/%s", p_path, "bitmap.bin");
-    FILE* bitmap = fopen(path, "rb");
-    // valido si existe el archivo 
-    if(bitmap == NULL)
-    {
-        log_debug(logger, "No se encontro el archivo bitmap en el path %s", path); // to_do: sacar despues
-        bitmap = fopen(path, "wb");
-        if(bitmap == NULL){
-            log_error(logger, "Error raro al crear el bitmap"); // to_do: sacar despues.
-        }
-        inicializar_bitmap();
-    }
+void valido_bitmap(const char* punto_montaje) {
+    inicializar_bitmap(punto_montaje);
 }
 
 
