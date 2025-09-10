@@ -1,6 +1,12 @@
 #ifndef TEST_STORAGE_H
 #define TEST_STORAGE_H
+
+#ifndef STORAGE_BASE_H
 #include "base.h"
+#endif 
+#ifndef COMUNICATION_WORKER_H
+#include "comunicacion_worker.h"
+#endif
 
 // agrega un int a la lista
 static inline void add_int(t_list* list, int value) {

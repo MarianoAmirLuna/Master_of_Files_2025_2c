@@ -1,3 +1,6 @@
+#ifndef COMUNICATION_WORKER_H
+#define COMUNICATION_WORKER_H
+
 #include "base.h"
 
 
@@ -185,3 +188,5 @@ void tratar_mensaje(t_list* pack, int sock_client)
     Lectura o escritura fuera de limite
         Una query intenta leer o escribir por fuera del tamaño del File:Tag.
 */
+
+#endif
