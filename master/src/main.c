@@ -187,6 +187,7 @@ void disconnect_callback(void* params){
                 send_and_free_packet(p,q->fd);
                 
             }
+            q->sp == STATE_EXIT;
             int id_worker = w->id;
             int qid = w->id_query;
             //TODO: free pointer worker

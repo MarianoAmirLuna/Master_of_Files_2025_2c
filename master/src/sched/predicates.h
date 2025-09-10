@@ -13,7 +13,7 @@
     if(wa->is_free == byval)
         return 1;
     return 0;
-}
+}*/
 
 #endif
 
