@@ -152,6 +152,9 @@ void disconnect_callback(void* params){
         qid id_query = id;
         query* q = get_query_by_qid(id_query);
         if(q->sp == STATE_READY){
+            t_queue* que = get_queue_by_sp(STATE_READY);
+            list_remove_by_condition_by(que->elements, by_query_qid, id_query);
+            query_to(q, STATE_EXIT);
             //Se debe mandar a exit directamente
         }
         if(q->sp == STATE_EXEC){
@@ -164,6 +167,11 @@ void disconnect_callback(void* params){
                 add_int_to_packet(p, REQUEST_DESALOJO);
                 add_int_to_packet(p, q->id);
                 send_and_free_packet(p, w->fd);
+                t_list* recpd = recv_operation_packet(w->fd);
+                response resp = list_get_int(recpd ,0);
+                if(resp == SUCCESS){
+                    //Ok puedo notificar error al Query
+                }
                 //Me tendra que responder el PC???
                 //log_info(logger, "## Se desaloja la Query")
             }
@@ -173,23 +181,24 @@ void disconnect_callback(void* params){
     if(ocm == MODULE_WORKER){
         wid id_worker = id;
         //Si se desconectó un worker la query que se encontraba en ejecución en ese Worker se finalizará con error y notificará al Query Control correspondiente.
-        //TODO: En Params buscar la forma de hacer que se pueda identificar que poronga de Worker es para saber cuál query estaba corriendo este Worker que se desconectó.
         int idx = -1;
         worker* w = get_worker_by_wid(id_worker);
         //worker* w = get_worker_by_fd(sock_client, &idx);
         
         if(idx != -1 && w != NULL){
+
             query* q = get_query_by_qid(w->id_query);
             if(q != NULL){
                 //Notificar al query
                 t_packet* p = create_packet();
                 add_int_to_packet(p, ERROR);
-                send_and_free_packet(p,q->fd);
                 
+                send_and_free_packet(p, q->fd);
             }
-            q->sp == STATE_EXIT;
+            q->sp = STATE_EXIT;
             int id_worker = w->id;
             int qid = w->id_query;
+            
             //TODO: free pointer worker
             list_remove(workers, idx);
             degree_multiprocess = list_size(workers);
@@ -199,6 +208,7 @@ void disconnect_callback(void* params){
                 qid,
                 degree_multiprocess
             );
+            w->is_free=1;
         }
         
     }
@@ -248,7 +258,7 @@ void work_query_control(t_list* packet, int id, int sock){
 void work_worker(t_list* pack, int id, int sock){
     int opcode = list_get_int(pack, 0);
 
-    if(opcode = QUERY_END){
+    if(opcode == QUERY_END){
         worker* w = get_worker_by_wid(id);
         log_info(logger, "## Se terminó la Query: %d en el Worker %d",
             w->id_query, id

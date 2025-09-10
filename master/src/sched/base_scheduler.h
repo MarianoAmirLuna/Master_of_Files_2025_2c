@@ -37,6 +37,13 @@ int is_valid_sp(state_process from, state_process to){
     return 0;
 }
 
+int is_queue_sp(state_process sp){
+    return sp == STATE_READY;
+}
+int is_list_sp(state_process sp){
+    return !is_queue_sp(sp);
+}
+
 t_list* get_list_by_sp(state_process sp){
     if(sp == STATE_READY){
         log_error(logger, "State Process inválido para retorno de t_list: %s", state_to_string(sp));
@@ -59,12 +66,6 @@ void add_query_on_state(query* q, state_process sp){
         return;
     }
     list_add(get_list_by_sp(sp), q);
-}
-int is_queue_sp(state_process sp){
-    return sp == STATE_READY;
-}
-int is_list_sp(state_process sp){
-    return !is_queue_sp(sp);
 }
 
 int count_by_sp(state_process sp){
@@ -89,33 +90,39 @@ query* cast_query(void* elem){
     }
     return (query*)elem;
 }
+int cast_int(void* elem){
+    return (int)elem;
+    //TODO: check this
+    /*int res = 0;
+    memcpy(&res, elem, sizeof(int));
+    return res;*/
+}
+
 int by_worker_free(void* elem, void *by){
-    return ((worker*)elem)->is_free == (int)by;
+    return ((worker*)elem)->is_free ==cast_int(by);
 }
 
 
 int by_worker_fd(void* elem, void *by){
-    return ((worker*)elem)->fd == (int)by;
+    return ((worker*)elem)->fd == cast_int(by);
 }
 
 int by_worker_wid(void* elem, void *by){
-    return ((worker*)elem)->id == (wid)by;
+    return ((worker*)elem)->id == cast_int(by);
 }
 
 int by_worker_qid(void* elem, void *by){
-    return ((worker*)elem)->id_query == (qid)by;
+    return ((worker*)elem)->id_query == cast_int(by);
 }
 
 int by_query_qid(void* elem, void* by){
-    return ((query*)elem)->id == (qid)by;
+    return ((query*)elem)->id == cast_int(by);
 }
 
 worker* get_first_worker_free()
 {
     void* w = list_find_by(workers, by_worker_free, (int)1);
-    if(w == NULL)
-        return w;
-    return (worker*)w;
+    return cast_worker(w);
 }
 
 worker* get_worker_by_fd(int fd, int* idx){
@@ -123,15 +130,15 @@ worker* get_worker_by_fd(int fd, int* idx){
 }
 
 worker* get_worker_by_qid(qid id){
-    return cast_worker(list_find_by(workers, by_worker_qid, id));
+    return cast_worker(list_find_by(workers, by_worker_qid, (int)id));
 }
 
 worker* get_worker_by_wid(wid id){
-    return cast_worker(list_find_by(workers, by_worker_wid, id));
+    return cast_worker(list_find_by(workers, by_worker_wid, (int)id));
 }
 
 query* get_query_by_qid(qid id){
-    return cast_query(list_find_by(queries, by_query_qid, id));
+    return cast_query(list_find_by(queries, by_query_qid, (int)id));
 }
 
 int increment_idx(){
@@ -152,7 +159,7 @@ void query_to(query* q, state_process to){
     if(is_list_sp(q->sp))
     {
         t_list* l= get_list_by_sp(q->sp); 
-        list_remove_by_condition_by(l, by_query_qid, q->id); //remove from this 
+        list_remove_by_condition_by(l, by_query_qid, (void*)q->id); //remove from this 
         add_query_on_state(q, to); //No le importa el t_queue por que t_queue se invocó previamente un pop y ese pop ya lo removió
     }
     q->sp = to;
