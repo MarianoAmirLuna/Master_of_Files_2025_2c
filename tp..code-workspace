@@ -17,6 +17,10 @@
       "path": "storage"
     },
     {
+      "name": "test",
+      "path": "test"
+    },
+    {
       "name": "utils",
       "path": "utils"
     },
