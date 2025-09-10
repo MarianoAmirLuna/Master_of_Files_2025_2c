@@ -14,6 +14,9 @@ cuyo contenido será un (1) bloque lógico con el bloque físico nro 0 (cero) as
 por ejemplo: "00000…". Dicho File/Tag no se podrá borrar.
 */
 
+//Se debe tomar como si fuera un encabezado o tendrás warning implicit-declaration y puede ser un problema al ejecutarlo
+void eliminar_contenido(const char* path);
+
 
 void limpiar_fs() 
 {
@@ -192,9 +195,7 @@ void valido_hash(const char* p_path)
     free(path);
 }
 
-
-
-void valido_bloques_fisicos(const char* path)
+void valido_bloques_fisicos(char* path)
 {
     //Controlo que exista el directorio de bloques fisicos
     char* p_path = string_from_format("%s/%s", path, "physical_blocks");

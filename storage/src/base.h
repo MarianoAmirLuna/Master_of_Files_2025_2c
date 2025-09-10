@@ -8,6 +8,7 @@
 #include "inc/libs.h"
 #include "exts/array_ext.h"
 #include "exts/list_ext.h"
+#include "math.h"
 /*#ifndef EXTS_FILE_EXT_H
 #include "exts/file_ext.h"
 #endif */
