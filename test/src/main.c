@@ -29,7 +29,18 @@ int main(int argc, char* argv[]) {
     log_orange(logger, "TENGO EL BLOCK SIZE DEL STORAGE: %d", block_size);
     list_destroy_and_destroy_elements(l, free_element);
 
-     void* parameters = malloc(sizeof(int)*3);
+
+
+    t_packet* pack = create_packet();
+
+    add_int_to_packet(pack, CREATE_FILE);
+    add_string_to_packet(pack, "test_file2 tag_0001");
+
+    send_and_free_packet(pack, wcl);
+
+
+
+    void* parameters = malloc(sizeof(int)*3);
     int len_args = 2;
     
     int offset = 0;

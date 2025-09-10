@@ -19,8 +19,6 @@ int main(int argc, char* argv[]) {
 
     int sock_server = server_connection(cs.puerto_escucha);
 
-    test_create_file();
-
     void* param = malloc(sizeof(int)*2);
     memcpy(param, &sock_server, sizeof(int));
     memcpy(param+sizeof(int), &cs.puerto_escucha, sizeof(int));
