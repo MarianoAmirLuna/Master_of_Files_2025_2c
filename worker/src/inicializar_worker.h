@@ -2,12 +2,9 @@
 #define INICIALIZAR_WORKER_H
 
 #include "semaphore.h"
+#ifndef FASE_EXECUTE_H
 #include "fase_execute.h"
-//#include "base.h"
-
-sem_t sem_query_recibida;
-/// @brief Cuando el worker está libre para una nueva ejecución que quiera hacer el Master
-int is_free;
+#endif
 
 void inicializar_semaforos()
 {

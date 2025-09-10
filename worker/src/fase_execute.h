@@ -1,8 +1,9 @@
 #ifndef FASE_EXECUTE_H
 #define FASE_EXECUTE_H
 
+#ifndef MEMORIA_H
 #include "memoria.h"
-
+#endif
 
 void ejecutar_create(char* file, char* tag)
 {

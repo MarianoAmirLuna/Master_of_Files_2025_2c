@@ -1,8 +1,6 @@
 #ifndef MEMORIA_H
 #define MEMORIA_H
 
-#include "base.h"
-
 void inicializar_memoria(){
     int cant_frames = sizeof(memory)%block_size;
     lista_frames = list_create();
@@ -12,6 +10,24 @@ void inicializar_memoria(){
     }
     
 }
+
+
+/// @brief devuelve la tabla de paginas correspondiente para el par file:tag enviado como argumento 
+/// @param file_y_tag 
+/// @return el file_y_tabla_pags* que corresponda
+file_y_tabla_pags* buscar_tabla_pags(char* file_y_tag)
+{
+    for(int i=0;i<list_size(lista_tablas_pags);i++)
+    {
+        file_y_tabla_pags* aux = list_get(lista_tablas_pags, i);
+        if(!strcmp(aux->file_y_tag, file_y_tag))
+        {
+            return aux;
+        }
+    }
+    return NULL;
+}
+
 
 /// @brief dado un numero de frame, devuelve la base del mismo en la memoria
 /// @param n 
@@ -43,6 +59,7 @@ int buscar_base_pagina(char* file_y_tag, int pag)
 {
     file_y_tabla_pags* tabla = buscar_tabla_pags(file_y_tag);
 
+    return ERROR;
 }
 
 /// @brief crea una nueav tabla de paginas y la mete a la lista
@@ -58,23 +75,10 @@ file_y_tabla_pags* nueva_tabla_pags(char* file_y_tag)
     return ret;
 }
 
-/// @brief devuelve la tabla de paginas correspondiente para el par file:tag enviado como argumento 
-/// @param file_y_tag 
-/// @return el file_y_tabla_pags* que corresponda
-file_y_tabla_pags* buscar_tabla_pags(char* file_y_tag)
+entrada_tabla_pags* nueva_entrada()
 {
-    for(int i=0;i<list_size(lista_tablas_pags);i++)
-    {
-        file_y_tabla_pags* aux = list_get(lista_tablas_pags, i);
-        if(!strcmp(aux->file_y_tag, file_y_tag))
-        {
-            return aux;
-        }
-    }
     return NULL;
 }
-
-entrada_tabla_pags* nueva_entrada()
 
 
 
