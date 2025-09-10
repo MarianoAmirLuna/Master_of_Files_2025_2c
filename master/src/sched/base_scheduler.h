@@ -12,9 +12,12 @@
 #include "commons/collections/queue.h"
 
 config_master cm;
+//TODO: t_queue* of this queries
 /// @brief struct de query
 t_list* queries;
 t_list* workers;
+
+//<state_process, List<query*>>
 t_dictionary* dict_state;
 
 /// @brief Es como PID, es incremental desde 0, doc página 13
@@ -34,59 +37,77 @@ int is_valid_sp(state_process from, state_process to){
     return 0;
 }
 
-
 t_list* get_list_by_sp(state_process sp){
+    if(sp == STATE_READY){
+        log_error(logger, "State Process inválido para retorno de t_list: %s", state_to_string(sp));
+        return NULL;
+    }
     return (t_list*)dictionary_get(dict_state, state_to_string(sp));
 }
 t_queue* get_queue_by_sp(state_process sp){
+    if(sp != STATE_READY){
+        log_error(logger, "State Process inválido para retorno de t_queue: %s", state_to_string(sp));
+        return NULL;
+    }
+    return (t_queue*)dictionary_get(dict_state, state_to_string(sp));
     // debido al FIFO
 }
 
-void query_to(query* q, state_process to){
-    //if(is_valid_sp (q->))
+void add_query_on_state(query* q, state_process sp){
+    if(is_queue_sp(sp)){
+        queue_push(get_queue_by_sp(sp), q);
+        return;
+    }
+    list_add(get_list_by_sp(sp), q);
+}
+int is_queue_sp(state_process sp){
+    return sp == STATE_READY;
+}
+int is_list_sp(state_process sp){
+    return !is_queue_sp(sp);
+}
+
+int count_by_sp(state_process sp){
+    //void* elem = dictionary_get(dict_state,sp);
+    if(is_queue_sp(sp))
+        return queue_size(get_queue_by_sp(sp));
+    return list_size(get_list_by_sp(sp));
 }
 
 worker* cast_worker(void* elem){
-    if(elem == NULL)
+    if(elem == NULL){
+        log_warning(logger, "elem is null in (%s:%d)", __func__, __LINE__);
         return NULL;
+    }
     return (worker*)elem;
 }
 
-
 query* cast_query(void* elem){
-    if(elem == NULL)
+    if(elem == NULL){
+        log_warning(logger, "elem is null in (%s:%d)", __func__, __LINE__);
         return NULL;
+    }
     return (query*)elem;
 }
 int by_worker_free(void* elem, void *by){
-    worker* wa = (worker*)elem;
-    int byval = (int)by;
-    return wa->is_free == byval;
+    return ((worker*)elem)->is_free == (int)by;
 }
 
 
 int by_worker_fd(void* elem, void *by){
-    worker* wa = (worker*)elem;
-    int byval = (int)by;
-    return wa->fd == byval;
+    return ((worker*)elem)->fd == (int)by;
 }
 
 int by_worker_wid(void* elem, void *by){
-    worker* wa = (worker*)elem;
-    wid byval = (wid)by;
-    return wa->id == byval;
+    return ((worker*)elem)->id == (wid)by;
 }
 
 int by_worker_qid(void* elem, void *by){
-    worker* wa = (worker*)elem;
-    qid byval = (qid)by;
-    return wa->id_query == byval;
+    return ((worker*)elem)->id_query == (qid)by;
 }
 
 int by_query_qid(void* elem, void* by){
-    query* qa = (query*)elem;
-    qid byval = (qid)by;
-    return qa->id == byval;
+    return ((query*)elem)->id == (qid)by;
 }
 
 worker* get_first_worker_free()
@@ -122,4 +143,32 @@ int increment_idx(){
     return aux;
 }
 
+void query_to(query* q, state_process to){
+    
+    if(!is_valid_sp(q->sp, to)){
+        log_error(logger, "is nota valid from to state process exit(1) is INVOKED");
+        exit(EXIT_FAILURE);
+    }
+    if(is_list_sp(q->sp))
+    {
+        t_list* l= get_list_by_sp(q->sp); 
+        list_remove_by_condition_by(l, by_query_qid, q->id); //remove from this 
+        add_query_on_state(q, to); //No le importa el t_queue por que t_queue se invocó previamente un pop y ese pop ya lo removió
+    }
+    q->sp = to;
+}
+
+void print_query(query* q){
+    log_orange(logger, "ID: %d, State Process: %s, Priority: %d", q->id, state_to_string(q->sp), q->priority);
+}
+
+void print_queries(){
+    log_light_blue(logger, "Start print queries");
+    int sz = list_size(queries);
+    for(int i=0;i<sz;i++){
+        print_query(cast_query(list_get(queries, i)));
+    }
+    log_light_blue(logger, "End print queries");
+}
+    
 #endif

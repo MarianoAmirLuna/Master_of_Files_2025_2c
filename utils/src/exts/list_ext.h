@@ -154,4 +154,16 @@ char* list_array_int_as_string(t_list* l){
     string_append(&res, "]");
     return res;
 }
+
+void* list_remove_by_condition_by(t_list* l, int(*condition)(void*, void*), void* by){
+    int sz = list_size(l);
+    for(int i=0;i<sz;i++){
+        void* elem = list_get(l, i);
+        if(condition(elem, by)){
+            list_remove(l, i);
+            return elem;
+        }
+    }
+    return NULL;
+}
 #endif
