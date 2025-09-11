@@ -8,6 +8,7 @@
 #endif
 
 #include "commons/collections/list.h"
+#include "commons/collections/queue.h"
 #include "commons/bitarray.h"
 #include "commons/temporal.h"
 //#include "exts/temporal_ext.h"
@@ -79,7 +80,6 @@ typedef struct{
     int is_free;
 }worker;
 
-
 /// @brief Estructuras para manejo de memoria principal
 typedef struct{
     int marco;
@@ -92,7 +92,7 @@ typedef struct{
 
 typedef struct{
     char* file_y_tag;
-    t_list* tabla_pags; //lista con elementos de tipo "entrada_tabla_pags" 
+    t_queue* tabla_pags; //lista con elementos de tipo "entrada_tabla_pags" 
 }file_y_tabla_pags;
 
 typedef struct{

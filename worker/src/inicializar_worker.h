@@ -9,23 +9,27 @@
 void inicializar_semaforos()
 {
     sem_init(&sem_query_recibida, 0, 0);
+    sem_init(&tabla_pag_en_uso, 0, 0);
+    sem_init(&tabla_frame_en_uso, 0, 0);
 }
 
 void inicializar_variables()
 {
     is_free=true;
+    dimitri_gay = true;
 }
 
-void inicializar_listas(){
+void inicializar_colecciones(){
     archivos_cargados = list_create();
-    lista_tablas_pags = list_create();
+    tablas_pags = list_create();
 }
 
 void inicializar_worker()
 {
     inicializar_semaforos();
     inicializar_variables();
-    inicializar_listas();
+    inicializar_colecciones();
+    inicializar_memoria();
 }
 
 

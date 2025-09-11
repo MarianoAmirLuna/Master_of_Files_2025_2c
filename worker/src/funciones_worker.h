@@ -214,7 +214,7 @@ void loop_atender_queries()
 
     for (;;) // 1 iteracionn por query atendida
     {
-        sem_wait(&sem_query_recibida);
+        sem_wait(&sem_query_recibida); //TODO: no se hace post
 
         t_list *instrucciones = obtener_instrucciones(archivo_query_actual);
         is_free = false;

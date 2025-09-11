@@ -12,8 +12,10 @@
 #include "inc/libs.h"
 #include "exts/array_ext.h"
 #include "exts/list_ext.h"
+#include "commons/collections/queue.h"
 
 op_code_module itself_ocm;
+bool dimitri_gay;
 int sock_master,sock_storage;
 void* memory;
 int id_worker;
@@ -23,11 +25,13 @@ int block_size;
 int storage_block_size;
 
 //mutex por ser globales en los get y add
+t_list* lista_frames; //Se conoce el inicio de un frame, no el fin y si esta libre o no
 t_list* archivos_cargados;
-t_list* lista_frames;
-t_list* lista_tablas_pags;
+t_list* tablas_pags;  //lista que contiene file_y_tabla_pags
 
 sem_t sem_query_recibida;
+sem_t tabla_pag_en_uso;
+sem_t tabla_frame_en_uso;
 /// @brief Cuando el worker está libre para una nueva ejecución que quiera hacer el Master
 int is_free;
 
