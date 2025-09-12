@@ -29,6 +29,8 @@ void ejecutar_instruccion_v2(instr_code caso, char* instr){
         add_file_tag_to_packet(pack, left);
         add_int_to_packet(pack, atoi(right));
         send_and_free_packet(pack, sock_storage);
+        free(left);
+        free(right);
         return;
     }
     if(caso == READ || caso == WRITE){
@@ -45,6 +47,9 @@ void ejecutar_instruccion_v2(instr_code caso, char* instr){
         }
 
         send_and_free_packet(pack, sock_storage);
+        free(left);
+        free(middle);
+        free(right);
         return;
     }
     if(caso == END){
