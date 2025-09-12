@@ -16,12 +16,16 @@
 void ejecutar_instruccion_v2(instr_code caso, char* instr){
     t_packet* pack = create_packet();
     add_int_to_packet(pack, caso);
-    if(caso == CREATE || caso == FLUSH || caso == COMMIT || caso == DELETE){
+    
+    if(caso == CREATE || caso == FLUSH || caso == COMMIT || caso == DELETE) //estos casos tienen siempre "file:tag"
+    {
+        
         add_file_tag_to_packet(pack, instr);
         send_and_free_packet(pack, sock_storage);
         return;
     }
-    if(caso == TRUNCATE){
+    if(caso == TRUNCATE) //este caso tiene siempre "file:tag número"
+    {
         char* left = string_new();
         char* right = string_new();
         get_space_instr(instr, left, right);
@@ -33,7 +37,8 @@ void ejecutar_instruccion_v2(instr_code caso, char* instr){
         free(right);
         return;
     }
-    if(caso == READ || caso == WRITE){
+    if(caso == READ || caso == WRITE) //este caso tiene siempre "file:tag número <número (si es READ) | cadena (si es WRITE)>"
+    {
         char* left = string_new();
         char* middle = string_new();
         char* right = string_new();
@@ -52,7 +57,8 @@ void ejecutar_instruccion_v2(instr_code caso, char* instr){
         free(right);
         return;
     }
-    if(caso == END){
+    if(caso == END) //este caso no tiene una goma
+    {
         send_and_free_packet(pack, sock_storage);
     }
 
