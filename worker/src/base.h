@@ -16,7 +16,6 @@
 
 bool esta_libre(void *elem);
 op_code_module itself_ocm;
-bool dimitri_gay;
 int sock_master,sock_storage;
 void* memory;
 int id_worker;
