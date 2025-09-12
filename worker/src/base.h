@@ -14,6 +14,7 @@
 #include "exts/list_ext.h"
 #include "commons/collections/queue.h"
 
+bool esta_libre(void *elem);
 op_code_module itself_ocm;
 bool dimitri_gay;
 int sock_master,sock_storage;
@@ -38,6 +39,8 @@ int is_free;
 int pc_actual;
 
 char* archivo_query_actual;
+
+char *tag_buscado;
 
 
 #endif

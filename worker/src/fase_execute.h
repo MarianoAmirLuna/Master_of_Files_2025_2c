@@ -5,7 +5,6 @@
 #include "memoria.h"
 #endif
 
-static char *tag_buscado;
 
 void ejecutar_create(char *file, char *tag)
 {
@@ -15,9 +14,6 @@ void ejecutar_truncate(char *file_y_tag, int tam)
 {
 }
 
-int realizar_escritura(frame, contenido){
-    return 0;
-}
 
 /*
     caso 1: tabla de paginas tiene la pagina
@@ -58,6 +54,10 @@ bool existe_tabla_paginas(char *ft)
     return r;
 }
 
+//Why in the name of fuck you put realizar_escritura twice???
+/*int realizar_escritura(frame, contenido){
+    return 0;
+}*/
 void realizar_escritura(char* file_tag, int dir_logica, char* contenido)
 {
     int frame = obtener_frame(file_tag, dir_logica);
@@ -69,12 +69,12 @@ void realizar_escritura(char* file_tag, int dir_logica, char* contenido)
 
     if(strlen(contenido) > espacio_restante_en_marco) //si no me alcanza con lo que queda de marco
     {
-        memccpy(base+offset, contenido, espacio_restante_en_marco);
+        memcpy(base+offset, contenido, espacio_restante_en_marco);
         realizar_escritura(file_tag, dir_logica+espacio_restante_en_marco, contenido+espacio_restante_en_marco); //feo con ganas eh
     }   
     else
     {
-        memccpy(base+offset, contenido, strlen(contenido));
+        memcpy(base+offset, contenido, strlen(contenido));
     }
 }
 
