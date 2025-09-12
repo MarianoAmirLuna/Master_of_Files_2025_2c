@@ -31,25 +31,19 @@ void ejecutar_instruccion_v2(instr_code caso, char* instr){
         send_and_free_packet(pack, sock_storage);
         return;
     }
-    if(caso == READ){
-        char* left = string_new();
-        char* middle = string_new();
-        char* right = string_new();
-        get_two_space_instr(instr, left, middle, right);
-        add_file_tag_to_packet(pack, left);
-        add_int_to_packet(pack, atoi(middle));
-        add_int_to_packet(pack, atoi(right));
-        send_and_free_packet(pack, sock_storage);
-        return;
-    }
-    if(caso == WRITE){
+    if(caso == READ || caso == WRITE){
         char* left = string_new();
         char* middle = string_new();
         char* right = string_new();
         get_two_space_instr(instr, left, middle, right);
         add_file_tag_to_packet(pack, left);
         add_int_to_packet(pack,atoi(middle));
-        add_string_to_packet(pack,right);
+        if(caso == READ){
+            add_int_to_packet(pack,atoi(right));
+        }else{
+            add_string_to_packet(pack,right);
+        }
+
         send_and_free_packet(pack, sock_storage);
         return;
     }
