@@ -16,7 +16,6 @@ void inicializar_semaforos()
 void inicializar_variables()
 {
     is_free=true;
-    dimitri_gay = true;
 }
 
 void inicializar_colecciones(){
