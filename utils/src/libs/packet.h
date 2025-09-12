@@ -114,4 +114,15 @@ void set_opcode_to_packet(t_packet* packet, int opcode){
     packet->opcode = opcode;
 }
 
+void add_file_tag_to_packet(t_packet* packet, char* instr){
+    char* file=string_new();
+    char* tag= string_new();;
+    get_tag_file(instr, file,tag);
+    add_string_to_packet(packet, file);
+    add_string_to_packet(packet, tag);
+    free(file);
+    free(tag);
+}
+
+
 #endif

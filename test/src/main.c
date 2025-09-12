@@ -12,10 +12,14 @@ int main(int argc, char* argv[]) {
     config_storage cs = load_config_storage();
 
     log_info(logger, "%d", cs.puerto_escucha);
-    /*test_create_file();
-    //crear_directorio("pepito", "/home/utnso");
-    */
-   op_code_module ocm = MODULE_STORAGE;
+
+    parse_code(CREATE, "MATERIAS:BASE");
+    parse_code(TAG, "MATERIAS:BASE MATERIAS:V2");
+    parse_code(TRUNCATE, "MATERIAS:BASE 1024");
+    return 0;
+
+
+    op_code_module ocm = MODULE_STORAGE;
     int wcl = client_connection("127.0.0.1", cs.puerto_escucha);
     if(handshake(wcl, 0) != 0)
     {

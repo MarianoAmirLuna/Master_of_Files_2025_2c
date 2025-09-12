@@ -9,6 +9,59 @@
 #include "base.h"
 #endif
 
+#ifndef EXTS_STRING_H
+#include "exts/string_ext.h"
+#endif
+
+void ejecutar_instruccion_v2(instr_code caso, char* instr){
+    t_packet* pack = create_packet();
+    add_int_to_packet(pack, caso);
+    if(caso == CREATE || caso == FLUSH || caso == COMMIT || caso == DELETE){
+        add_file_tag_to_packet(pack, instr);
+        send_and_free_packet(pack, sock_storage);
+        return;
+    }
+    if(caso == TRUNCATE){
+        char* left = string_new();
+        char* right = string_new();
+        get_space_instr(instr, left, right);
+
+        add_file_tag_to_packet(pack, left);
+        add_int_to_packet(pack, atoi(right));
+        send_and_free_packet(pack, sock_storage);
+        return;
+    }
+    if(caso == READ){
+        char* left = string_new();
+        char* right = string_new();
+        get_space_instr(instr, left, right);
+        add_file_tag_to_packet(pack, left);
+
+        int a=0;
+        int b=0;
+        get_both_num_instr(right, &a, &b);
+        add_int_to_packet(pack, a);
+        add_int_to_packet(pack, b);
+        send_and_free_packet(pack, sock_storage);
+        return;
+    }
+    if(caso == WRITE){
+        char* left = string_new();
+        char* middle = string_new();
+        char* right = string_new();
+        get_two_space_instr(instr, left, middle, right);
+        add_file_tag_to_packet(pack, left);
+        add_int_to_packet(pack,atoi(middle));
+        add_string_to_packet(pack,right);
+        send_and_free_packet(pack, sock_storage);
+        return;
+    }
+    if(caso == END){
+        send_and_free_packet(pack, sock_storage);
+    }
+
+}
+
 // FASE EXECUTE //
 void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, char *parametro3)
 {
@@ -140,6 +193,16 @@ void quitar_salto_linea(char *linea)
         linea[len - 1] = '\0';
     }
 }
+void decode_y_execute_v2(char *linea_de_instruccion)
+{
+    char* instr = string_new();
+    char* case_str = string_new();
+    get_space_instr(linea_de_instruccion, instr, case_str);
+    instr_code caso = cast_code(case_str);
+    ejecutar_instruccion_v2(caso, instr);
+    free(instr);
+    free(case_str);
+}
 
 void decode_y_execute(char *linea_de_instruccion)
 {
@@ -176,6 +239,35 @@ void decode_y_execute(char *linea_de_instruccion)
 // FASE DECODE //
 
 // FASE FETCH //
+
+t_list* obtener_instrucciones_v2(char* archivo){
+    char* fullpath = string_from_format("%s/%s", cw.path_queries, archivo);
+    if(!file_exists(fullpath)){
+        log_error(logger, "El archivo \"%s\" no existe", fullpath);
+        return NULL;
+    }
+    FILE* f = fopen(fullpath, "r");
+    if(f == NULL){
+        log_error(logger, "No se pudo abrir el archivo en %s:%d", __func__, __LINE__);
+        return NULL;
+    }    
+    t_list* instrs = list_create();
+    char* line = NULL;
+    size_t len=0;
+    ssize_t read;
+    
+    while((read = getline(&line, &len, f)) != -1){
+        if(string_is_empty(line))
+            break;
+        list_add(instrs, string_to_buffer(line));
+        if(feof(f))
+            break;
+    }
+    fclose(f);
+    if(line)
+        free(line);
+    return instrs;
+}
 
 t_list *obtener_instrucciones(char *archivo)
 {
