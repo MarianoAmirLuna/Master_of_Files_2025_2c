@@ -33,15 +33,12 @@ void ejecutar_instruccion_v2(instr_code caso, char* instr){
     }
     if(caso == READ){
         char* left = string_new();
+        char* middle = string_new();
         char* right = string_new();
-        get_space_instr(instr, left, right);
+        get_two_space_instr(instr, left, middle, right);
         add_file_tag_to_packet(pack, left);
-
-        int a=0;
-        int b=0;
-        get_both_num_instr(right, &a, &b);
-        add_int_to_packet(pack, a);
-        add_int_to_packet(pack, b);
+        add_int_to_packet(pack, atoi(middle));
+        add_int_to_packet(pack, atoi(right));
         send_and_free_packet(pack, sock_storage);
         return;
     }

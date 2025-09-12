@@ -98,6 +98,7 @@ void get_both_num_instr(char* instr, int* a, int* b)
 {
     char* sa = string_new();
     char* sb = string_new();
+    printf("Refer: %s", instr);
     get_space_instr(instr, sa,sb);
     *a = atoi(sa);
     *b = atoi(sb);

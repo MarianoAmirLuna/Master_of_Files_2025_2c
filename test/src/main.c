@@ -3,7 +3,6 @@
 #include "../../storage/src/inicializacion_storage.h"
 #include "../../storage/src/comunicacion_worker.h"
 #include "../../storage/src/test.h"
-
 int main(int argc, char* argv[]) {
     
     create_log("test", LOG_LEVEL_TRACE);
@@ -16,6 +15,7 @@ int main(int argc, char* argv[]) {
     parse_code(CREATE, "MATERIAS:BASE");
     parse_code(TAG, "MATERIAS:BASE MATERIAS:V2");
     parse_code(TRUNCATE, "MATERIAS:BASE 1024");
+    parse_code(READ, "MATERIAS:BASE 0 8");
     return 0;
 
 

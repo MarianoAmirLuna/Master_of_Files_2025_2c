@@ -24,6 +24,22 @@ void parse_code(instr_code code, char* instr){
         free(file);
         free(tag);
     }
+    if(code == READ){
+        char* left = string_new();
+        char* middle = string_new();
+        char* right = string_new();
+        get_two_space_instr(instr, left, middle, right);
+        log_orange(logger, "LEFT: %s", left);
+        log_orange(logger, "MIDDLE: %s", middle);
+        log_orange(logger, "RIGHT: %s", right);
+
+
+        /*int a=0;
+        int b=0;
+        get_both_num_instr(right, &a, &b);*/
+        log_orange(logger, "A= %d, B=%d", atoi(middle), atoi(right));
+        return;
+    }
     if(code == TAG){
         char* left_side = string_new();
         char* right_side = string_new();
