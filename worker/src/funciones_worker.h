@@ -46,6 +46,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         char* tag = strtok(NULL, "");
         int dir_base = atoi(parametro2);
         char* contenido = parametro3;
+        ejecutar_write(parametro1, dir_base, contenido);
     }
     else if(caso == READ)
     {

@@ -29,7 +29,12 @@ int obtener_frame(char* archivo,int donde_comenzar)
     // 1. Encontrar la tabla de paginas del file:tag
     // 2. calcular la pagina en base a la dir_base
     // 3. Si la pagina esta presente en memoria retorno el frame
+    return 0;
+}
 
+int obtener_offset(char* archivo,int donde_comenzar)
+{
+    return 0;
 }
 
 bool esta_libre(void *elem)
@@ -37,26 +42,7 @@ bool esta_libre(void *elem)
     marco *entry = (marco *)elem;
     return entry->libre;
 }
-bool hay_espacio_memoria(char *contenido)
-{
-    int length = string_length(contenido);
-    int cant_pags = (length + block_size - 1) / block_size;
 
-    sem_wait(&tabla_pag_en_uso);
-    t_list *frames_libres = list_filter(lista_frames, esta_libre);
-    sem_post(&tabla_pag_en_uso);
-
-    bool aux = list_size(frames_libres) >= cant_pags;
-    list_destroy(frames_libres);
-
-    return aux;
-}
-
-bool coincide_tag(void *elem)
-{
-    file_y_tabla_pags *entry = (file_y_tabla_pags *)elem;
-    return strcmp(entry->file_y_tag, tag_buscado) == 0;
-}
 
 bool existe_tabla_paginas(char *ft)
 {
@@ -72,9 +58,28 @@ bool existe_tabla_paginas(char *ft)
     return r;
 }
 
-void ejecutar_write(char *file, char *tag, int dir_base, char *contenido)
+void realizar_escritura(char* file_tag, int dir_logica, char* contenido)
 {
-    char *file_tag = strcat(file, tag);
+    int frame = obtener_frame(file_tag, dir_logica);
+    int offset = obtener_offset(file_tag, dir_logica);
+    marco* el_marco = list_get(lista_frames, frame);
+    void* base = el_marco->inicio;
+
+    int espacio_restante_en_marco = block_size-offset;
+
+    if(strlen(contenido) > espacio_restante_en_marco) //si no me alcanza con lo que queda de marco
+    {
+        memccpy(base+offset, contenido, espacio_restante_en_marco);
+        realizar_escritura(file_tag, dir_logica+espacio_restante_en_marco, contenido+espacio_restante_en_marco); //feo con ganas eh
+    }   
+    else
+    {
+        memccpy(base+offset, contenido, strlen(contenido));
+    }
+}
+
+void ejecutar_write(char *file_tag, int dir_base, char *contenido)
+{
     int direccion_logica = dir_base;
 
     //TODO: Se debe realizar en el momento de la escritura, no sabes si estas reemplazando la página que vas a escribir
@@ -88,10 +93,8 @@ void ejecutar_write(char *file, char *tag, int dir_base, char *contenido)
         nueva_tabla_pags(tag_buscado); // crea la tabla y la añade a la lista de tablas de paginas usando mutex
     }
 
-    while(direccion_logica>=0){
-        int frame = obtener_frame(file_tag, direccion_logica);
-        direccion_logica = realizar_escritura(frame, contenido);
-    }
+    realizar_escritura(file_tag, direccion_logica, contenido);
+    
 
     /*
     caso 1: contenido = pagina

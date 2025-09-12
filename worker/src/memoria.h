@@ -35,6 +35,27 @@ file_y_tabla_pags *buscar_tabla_pags(char *file_y_tag)
     return NULL;
 }
 
+bool hay_espacio_memoria(char *contenido)
+{
+    int length = string_length(contenido);
+    int cant_pags = (length + block_size - 1) / block_size;
+
+    sem_wait(&tabla_pag_en_uso);
+    t_list *frames_libres = list_filter(lista_frames, esta_libre);
+    sem_post(&tabla_pag_en_uso);
+
+    bool aux = list_size(frames_libres) >= cant_pags;
+    list_destroy(frames_libres);
+
+    return aux;
+}
+
+bool coincide_tag(void *elem)
+{
+    file_y_tabla_pags *entry = (file_y_tabla_pags *)elem;
+    return strcmp(entry->file_y_tag, tag_buscado) == 0;
+}
+
 /// @brief dado un numero de frame, devuelve la base del mismo en la memoria
 /// @param n
 /// @return
