@@ -48,6 +48,38 @@ instr_code cast_code(char* code){
     return INVALID_INSTRUCTION;
 }
 
+int convert_instr_code_to_storage_operation(instr_code code){
+    if(code == CREATE)
+    {
+        return CREATE_FILE;
+    }
+    if(code == TRUNCATE)
+    {
+        return TRUNCATE_FILE;
+    }
+    if(code == TAG)
+    {
+        return TAG_FILE;
+    }
+    if(code == COMMIT)
+    {
+        return COMMIT_TAG;
+    }
+    if(code == WRITE)
+    {
+        return WRITE_BLOCK;
+    }
+    if(code == READ)
+    {
+        return READ_BLOCK;
+    }
+    if(code == DELETE)
+    {
+        return DELETE_TAG;
+    }
+    return code;
+}
+
 storage_operation cast_storage_oper(char* code){
     if(string_equals_ignore_case(code, "CREATE_FILE")){
         return CREATE_FILE;

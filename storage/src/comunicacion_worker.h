@@ -26,7 +26,10 @@ void tratar_mensaje(t_list* pack, int sock_client)
     {
         args = string_split(params, " ");
     }
-
+    
+    //Descomentar esto sólo si desde worker usan el ejecutar_instruccion_v2
+    //opcode = convert_instr_code_to_storage_operation(opcode);
+    
     switch (opcode)
     {
     case CREATE_FILE:

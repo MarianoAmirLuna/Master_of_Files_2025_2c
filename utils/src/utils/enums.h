@@ -158,6 +158,7 @@ typedef enum{
     READ_BLOCK,
     /// @brief Esta operación eliminará el directorio correspondiente al File:Tag indicado. Al realizar esta operación, si el bloque físico al que apunta cada bloque lógico eliminado no es referenciado por ningún otro File:Tag, deberá ser marcado como libre en el bitmap.
     DELETE_TAG
+    
 }storage_operation;
 
 typedef enum{
