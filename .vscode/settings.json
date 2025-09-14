@@ -1,0 +1,22 @@
+{
+    "files.associations": {
+        "*.pl": "prolog",
+        "main.h": "c",
+        "inicializar_worker.h": "c",
+        "funciones_worker.h": "c",
+        "base.h": "c",
+        "fase_execute.h": "c",
+        "network.h": "c",
+        "memoria.h": "c",
+        "semaphore.h": "c",
+        "common.h": "c",
+        "threads_manager.h": "c",
+        "node.h": "c",
+        "pthread.h": "c",
+        "list.h": "c",
+        "libs.h": "c",
+        "queue.h": "c",
+        "list_ext.h": "c",
+        "stdbool.h": "c"
+    }
+}

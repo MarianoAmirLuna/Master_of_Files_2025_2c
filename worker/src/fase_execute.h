@@ -33,13 +33,6 @@ int obtener_offset(char* archivo,int donde_comenzar)
     return 0;
 }
 
-bool esta_libre(void *elem)
-{
-    marco *entry = (marco *)elem;
-    return entry->libre;
-}
-
-
 bool existe_tabla_paginas(char *ft)
 {
     tag_buscado = ft;
@@ -54,10 +47,6 @@ bool existe_tabla_paginas(char *ft)
     return r;
 }
 
-//Why in the name of fuck you put realizar_escritura twice???
-/*int realizar_escritura(frame, contenido){
-    return 0;
-}*/
 void realizar_escritura(char* file_tag, int dir_logica, char* contenido)
 {
     int frame = obtener_frame(file_tag, dir_logica);
@@ -78,23 +67,68 @@ void realizar_escritura(char* file_tag, int dir_logica, char* contenido)
     }
 }
 
+int calcular_pagina(int dir_base){
+    return dir_base/block_size; //En teoría como son enteros la division redondea al entero inferior siempre
+}
+
+bool file_tag_en_tp(char* file_tag){
+    return NULL != buscar_tabla_pags(file_tag);
+}
+
+int reservar_frame(char *file_tag){
+    return 0;
+}
+
+bool dl_en_tp(pagina){
+    return true;
+}
 void ejecutar_write(char *file_tag, int dir_base, char *contenido)
 {
-    int direccion_logica = dir_base;
 
+
+    int pagina = calcular_pagina(dir_base);
+    if(!file_tag_en_tp(file_tag))
+    {
+        if(!hay_espacio_memoria(contenido)){
+            log_info(logger, "Iniciando algoritmo de reemplazo");
+        }
+
+        nueva_tabla_pags(tag_buscado);
+
+        int frame = reservar_frame(file_tag);
+    }
+
+    if(!dl_en_tp(pagina)){
+        if(!hay_espacio_memoria(contenido)){
+            log_info(logger, "Iniciando algoritmo de reemplazo");
+        }
+
+        reservar_frame(file_tag);
+        
+        //Apartir de acá puede ser una falopeada, no sé si se va a comportar como espero
+        ejecutar_write(file_tag, dir_base, contenido); 
+        
+        return;
+    }
+
+    realizar_escritura(file_tag, dir_base, contenido);
+
+    //int direccion_logica = dir_base;
+
+    /*
     //TODO: Se debe realizar en el momento de la escritura, no sabes si estas reemplazando la página que vas a escribir
     if (!hay_espacio_memoria(contenido))
     {
         log_info(logger, "Iniciando algoritmo de reemplazo");
     }
 
-    if (!existe_tabla_paginas(file_tag)) // si no existe la tabla de paginas y hay espacio en memoria
+    if (!existe_tabla_paginas(file_tag)) // si no existe la tabla de paginas
     {
         nueva_tabla_pags(tag_buscado); // crea la tabla y la añade a la lista de tablas de paginas usando mutex
     }
 
     realizar_escritura(file_tag, direccion_logica, contenido);
-    
+    */
 
     /*
     caso 1: contenido = pagina

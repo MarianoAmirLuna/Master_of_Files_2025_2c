@@ -19,22 +19,6 @@ void inicializar_memoria()
     }
 }
 
-/// @brief devuelve la tabla de paginas correspondiente para el par file:tag enviado como argumento
-/// @param file_y_tag
-/// @return el file_y_tabla_pags* que corresponda
-file_y_tabla_pags *buscar_tabla_pags(char *file_y_tag)
-{
-    for (int i = 0; i < list_size(tablas_pags); i++)
-    {
-        file_y_tabla_pags *aux = list_get(tablas_pags, i);
-        if (!strcmp(aux->file_y_tag, file_y_tag))
-        {
-            return aux;
-        }
-    }
-    return NULL;
-}
-
 bool hay_espacio_memoria(char *contenido)
 {
     int length = string_length(contenido);
@@ -54,6 +38,35 @@ bool coincide_tag(void *elem)
 {
     file_y_tabla_pags *entry = (file_y_tabla_pags *)elem;
     return strcmp(entry->file_y_tag, tag_buscado) == 0;
+}
+
+/// @brief devuelve la tabla de paginas correspondiente para el par file:tag enviado como argumento
+/// @param file_y_tag
+/// @return el file_y_tabla_pags* que corresponda
+file_y_tabla_pags *buscar_tabla_pags(char *file_y_tag)
+{
+    for (int i = 0; i < list_size(tablas_pags); i++)
+    {
+        file_y_tabla_pags *aux = list_get(tablas_pags, i);
+        if (!strcmp(aux->file_y_tag, file_y_tag))
+        {
+            return aux;
+        }
+    }
+    return NULL;
+}
+
+bool esta_libre(void* element){
+    marco * marco_element = (marco *) element;
+    return marco_element->libre;
+}
+
+
+/***
+ * @brief retorna el primer marco que este libre o NULL
+ */
+int buscar_frame_libre(){
+    return list_find (lista_frames, esta_libre);
 }
 
 /// @brief dado un numero de frame, devuelve la base del mismo en la memoria
@@ -108,6 +121,30 @@ file_y_tabla_pags *nueva_tabla_pags(char *file_y_tag)
 entrada_tabla_pags *nueva_entrada()
 {
     return NULL;
+}
+
+
+/*
+==============================
+*/
+void buscar_victima_lru(){
+
+}
+
+void buscar_victima_clock_modificado(){
+
+}
+
+void buscar_victima()
+{
+    if (R_LRU == cw.algoritmo_reemplazo)
+    {
+        buscar_victima_lru();
+    }
+    else
+    {
+        buscar_victima_clock_modificado();
+    }
 }
 
 #endif
