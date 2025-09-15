@@ -49,6 +49,12 @@ int main(int argc, char* argv[]) {
     add_string_to_packet(pack, "test_file2 tag_0001 2 aaaa");
     send_and_free_packet(pack, wcl);
 
+/*
+    add_int_to_packet(pack, WRITE_BLOCK);
+    add_string_to_packet(pack, "test_file2 tag_0005 2 aaaa");
+    send_and_free_packet(pack, wcl);
+*/
+
 
     void* parameters = malloc(sizeof(int)*3);
     int len_args = 2;

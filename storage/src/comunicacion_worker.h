@@ -73,6 +73,24 @@ void tratar_mensaje(t_list* pack, int sock_client)
                 Tag_inexistente
                 Espacio_Insuficiente
             */
+
+            char* file = args[0];
+            char* tag  = args[1];
+
+            // valido existencia file
+            char* path = string_from_format("%s/%s", cs.punto_montaje, file);
+            if (control_existencia_file(path))
+            {
+                log_error(logger, "No se encontro el file deseado");
+            }
+
+            // valido existencia tag
+            path = string_from_format("%s/%s/", cs.punto_montaje, file, tag);
+            if (control_existencia_file(path))
+            {
+                log_error(logger, "No se encontro el tag deseado");
+            }
+
             log_info(logger, "Ejecutando la operacion TRUNCATE_FILE");
 
         }
@@ -134,6 +152,19 @@ void tratar_mensaje(t_list* pack, int sock_client)
             int bloque_logico = atoi(args[2]);
             char* contenido   = args[3];
 
+            // valido existencia file
+            char* path = string_from_format("%s/%s", cs.punto_montaje, file);
+            if (control_existencia_file(path))
+            {
+                log_error(logger, "No se encontro el file deseado");
+            }
+
+            // valido existencia tag
+            path = string_from_format("%s/%s/", cs.punto_montaje, file, tag);
+            if (control_existencia_file(path))
+            {
+                log_error(logger, "No se encontro el tag deseado");
+            }
             // lock del file tag (bloqueo logico para que no toquen el mismo tag al mismo tiempo)
             pthread_mutex_t* tag_lock = get_file_tag_lock(file, tag);
             pthread_mutex_lock(tag_lock);
