@@ -83,7 +83,10 @@ int reservar_frame(char *file_tag){
 }
 
 bool dl_en_tp(char* file_tag, int pagina){
+    t_list* tabla_de_paginas = obtener_tabla_paginas(file_tag);
+
     
+
     return true;
 }
 void ejecutar_write(char *file_tag, int dir_base, char *contenido)
@@ -96,7 +99,6 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
         if(!hay_espacio_memoria(contenido)){
             log_info(logger, "Iniciando algoritmo de reemplazo");
         }
-
         
         reservar_frame(file_tag);
         

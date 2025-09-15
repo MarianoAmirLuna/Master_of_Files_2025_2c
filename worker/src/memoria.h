@@ -45,6 +45,19 @@ bool esta_libre(void* element){
     return marco_element->libre;
 }
 
+/***
+ * @brief Te dice si un archivo:tag esta en la T.P. y borra la T.P
+ */
+bool existe_fileTag_en_tp(char* file_tag, t_list* tabla_de_paginas){
+    sem_wait(&sem_file_tag_buscado);
+    file_tag_buscado=file_tag;
+    bool aux = list_any_satisfy (tabla_de_paginas, coincide_tag);
+    sem_post(&sem_file_tag_buscado);
+
+    list_destroy(tabla_de_paginas);
+
+    return aux;
+}
 
 /***
  * @brief retorna el primer marco que este libre o NULL
@@ -66,8 +79,10 @@ int buscar_base_marco(int n)
 /// @return el t_list* como filtro de la cola global
 t_list* obtener_tabla_paginas(char *file_y_tag)
 {
+    sem_wait(&sem_file_tag_buscado);
     file_tag_buscado=file_y_tag;
     t_list* ret = list_filter(tabla_pags_global->elements, coincide_tag);
+    sem_post(&sem_file_tag_buscado);
 
     return ret;
 }
