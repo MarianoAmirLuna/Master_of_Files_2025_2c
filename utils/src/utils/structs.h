@@ -90,7 +90,10 @@ typedef struct{
 
 }entrada_tabla_pags;
 
-
+typedef struct{
+    int pag;
+    char* file_tag;
+}dto_file_tag_pag;
 
 typedef struct{
     bool libre;

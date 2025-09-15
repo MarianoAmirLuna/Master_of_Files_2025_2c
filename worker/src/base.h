@@ -42,5 +42,6 @@ char* archivo_query_actual;
 
 char *file_tag_buscado;
 
+marco* frame_buscado;
 
 #endif

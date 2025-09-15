@@ -34,6 +34,28 @@ bool hay_espacio_memoria(char *contenido)
     return aux;
 }
 
+bool comparar_marcos(void* a, void* b) {
+    marco* m1 = (marco*)a;
+    marco* m2 = (marco*)b;
+    return m1->inicio == m2->inicio;  // criterio: mismo inicio
+}
+
+int list_index_of(t_list *self, void *data, bool (*comp)(void *, void *))
+{
+    int index = 0;
+    t_link_element *current = self->head;
+    while (current != NULL)
+    {
+        if (comp(current->data, data))
+        {
+            return index;
+        }
+        current = current->next;
+        index++;
+    }
+    return -1; // Elemento no encontrado
+}
+
 bool coincide_tag(void *elem)
 {
     entrada_tabla_pags *entry = (entrada_tabla_pags *)elem;
@@ -45,16 +67,19 @@ bool esta_libre(void* element){
     return marco_element->libre;
 }
 
-/***
- * @brief Te dice si un archivo:tag esta en la T.P. y borra la T.P
- */
-bool existe_fileTag_en_tp(char* file_tag, t_list* tabla_de_paginas){
-    sem_wait(&sem_file_tag_buscado);
-    file_tag_buscado=file_tag;
-    bool aux = list_any_satisfy (tabla_de_paginas, coincide_tag);
-    sem_post(&sem_file_tag_buscado);
+dto_file_tag_pag dto_buscado;
+bool coincide_tag_y_pagina(void* element){
+    entrada_tabla_pags * entrada_pag_element = (entrada_tabla_pags *) element;
+    return (entrada_pag_element->pag == dto_buscado.pag) && (entrada_pag_element->file_tag == dto_buscado.file_tag);
+}
 
-    list_destroy(tabla_de_paginas);
+/***
+ * @brief Te dice si un archivo:tag esta en la T.P.
+ */
+bool existe_fileTag_y_pag_en_tp(char* file_tag, int pagina, t_list* tabla_de_paginas){
+    dto_buscado.pag = pagina;
+    dto_buscado.file_tag = file_tag;
+    bool aux = list_any_satisfy (tabla_de_paginas, coincide_tag_y_pagina);
 
     return aux;
 }
@@ -62,7 +87,7 @@ bool existe_fileTag_en_tp(char* file_tag, t_list* tabla_de_paginas){
 /***
  * @brief retorna el primer marco que este libre o NULL
  */
-int buscar_frame_libre(){
+marco* buscar_frame_libre(){
     return list_find (lista_frames, esta_libre);
 }
 
@@ -79,10 +104,8 @@ int buscar_base_marco(int n)
 /// @return el t_list* como filtro de la cola global
 t_list* obtener_tabla_paginas(char *file_y_tag)
 {
-    sem_wait(&sem_file_tag_buscado);
     file_tag_buscado=file_y_tag;
     t_list* ret = list_filter(tabla_pags_global->elements, coincide_tag);
-    sem_post(&sem_file_tag_buscado);
 
     return ret;
 }
@@ -119,9 +142,16 @@ int buscar_base_pagina(char *file_y_tag, int pag)
     return df;
 }
 
-entrada_tabla_pags *nueva_entrada()
+entrada_tabla_pags *nueva_entrada(char* file_tag, int pagina, int marco)
 {
-    return NULL;
+    entrada_tabla_pags* ret = malloc(sizeof(entrada_tabla_pags));
+    ret->file_tag=malloc(strlen(file_tag)+1);
+    strcpy(ret->file_tag, file_tag);
+    ret->marco=marco;
+    ret->modificada=false;
+    ret->pag=pagina;
+    ret->uso=false;
+    return ret;
 }
 
 
