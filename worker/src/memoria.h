@@ -91,7 +91,7 @@ marco* buscar_frame_libre(){
     return list_find (lista_frames, esta_libre);
 }
 
-/// @brief dado un numero de frame, devuelve la base del mismo en la memoria
+/// @brief dado un numero de frame, devuelve el indice de la base del mismo en la memoria
 /// @param n
 /// @return
 int buscar_base_marco(int n)
@@ -130,11 +130,9 @@ int buscar_marco_en_tabla(char *file_y_tag, int n_pag)
     return -1;
 }
 
-
+/// @brief Retorna el desplazamiento en la memoria real necesario para llegar al inicio de una pagina
 int buscar_base_pagina(char *file_y_tag, int pag)
 {
-    t_list *tabla = obtener_tabla_paginas(file_y_tag);
-
     int n_marco = buscar_marco_en_tabla(file_y_tag, pag);
 
     int df = buscar_base_marco(n_marco);

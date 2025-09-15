@@ -179,7 +179,9 @@ typedef enum{
 }master_operation;
 
 typedef enum{
-    BLOCK_SIZE = QUERY_END+1
-}storage_to_worker_data;
+    BLOCK_SIZE = QUERY_END+1,
+    GET_BLOCK_DATA,
+    RETURN_BLOCK_DATA
+}storage_worker_data;
 
 #endif

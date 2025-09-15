@@ -33,13 +33,16 @@ sem_t sem_query_recibida;
 sem_t tabla_pag_en_uso;
 sem_t tabla_frame_en_uso;
 sem_t sem_file_tag_buscado;
+sem_t sem_bloque_recibido;
+
 /// @brief Cuando el worker está libre para una nueva ejecución que quiera hacer el Master
 int is_free;
 
 int pc_actual;
 
-char* archivo_query_actual;
+char* data_bloque;
 
+char* archivo_query_actual;
 char *file_tag_buscado;
 
 marco* frame_buscado;

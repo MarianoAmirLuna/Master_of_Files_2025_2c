@@ -31,20 +31,6 @@ int obtener_offset(char *archivo, int donde_comenzar)
     return 0;
 }
 
-bool existe_tabla_paginas(char *ft)
-{
-    file_tag_buscado = ft;
-
-    sem_wait(&tabla_pag_en_uso);
-    t_list *filtrada = list_filter(tabla_pags_global, coincide_tag);
-    sem_post(&tabla_pag_en_uso);
-
-    bool r = list_is_empty(filtrada); // Redundante para asegurar mutua exclusion
-    list_destroy(filtrada);
-
-    return r;
-}
-
 void realizar_escritura(char *file_tag, int dir_logica, char *contenido)
 {
     int frame = obtener_frame(file_tag, dir_logica);
@@ -65,17 +51,24 @@ void realizar_escritura(char *file_tag, int dir_logica, char *contenido)
     }
 }
 
-int calcular_pagina(int dir_base)
-{
-    return dir_base / block_size; // En teoría como son enteros la division redondea al entero inferior siempre
-}
+void* actualizar_pagina(char *file_tag, int pagina){
+    t_packet* paq = create_packet();
 
-bool file_tag_en_tp(char *file_tag)
-{
-    t_list *l = obtener_tabla_paginas(file_tag);
-    bool cond = (NULL != l);
-    free(l);
-    return cond;
+    char* file = strtok(file_tag, ":");
+    char* tag = strtok(NULL, "");
+
+    add_int_to_packet(paq, GET_BLOCK_DATA);
+    add_string_to_packet(paq, file);
+    add_string_to_packet(paq, tag);
+    add_int_to_packet(paq, pagina);
+
+    send_and_free_packet(paq, sock_storage);
+    
+    sem_wait(&sem_bloque_recibido);
+
+    int base = buscar_base_pagina(file_tag, pagina);
+    
+    memcpy(memory+base, data_bloque, storage_block_size);
 }
 
 void *reservar_frame(char *file_tag, int pagina)
@@ -103,6 +96,12 @@ bool dl_en_tp(char *file_tag, int pagina)
     return aux;
 }
 
+int calcular_pagina(int dir_base)
+{
+    return dir_base / block_size; // En teoría como son enteros la division redondea al entero inferior siempre
+}
+
+
 void ejecutar_write(char *file_tag, int dir_base, char *contenido)
 {
 
@@ -116,6 +115,8 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
         }
 
         reservar_frame(file_tag, pagina);
+
+        actualizar_pagina(file_tag, pagina);
 
         // Apartir de acá puede ser una falopeada, no sé si se va a comportar como espero
         ejecutar_write(file_tag, dir_base, contenido);

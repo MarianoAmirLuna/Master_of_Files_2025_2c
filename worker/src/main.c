@@ -132,6 +132,12 @@ void packet_callback(void* params){
         if(op_code == BLOCK_SIZE)
         {
             storage_block_size = list_get_int(packet, 1);
+            data_bloque = malloc(storage_block_size);
+        }
+        if(op_code == RETURN_BLOCK_DATA){
+            char* data = list_get_int(packet, 1);
+            memcpy(data_bloque, data, storage_block_size);
+            sem_post(&sem_bloque_recibido);
         }
     }
     
