@@ -286,3 +286,29 @@ void destruir_bitmap() {
 
 
 // fin cosas bitmap
+
+
+
+
+
+// escritura bloque
+
+
+void escribir_bloque_fisico(int bloque_fisico, char* contenido)
+{
+    char* path = string_from_format("%s/physical_blocks/block%04d.dat",cs.punto_montaje, bloque_fisico);
+
+    FILE* f = fopen(path, "r+");
+
+    if( f = NULL )
+    {
+        log_error(logger, "[WRITE_BLOCK] no se pudo abrir el bloque fisico %d en %s", bloque_fisico, path);
+        free(path);
+        return;
+    }
+}
+
+
+
+
+// fin escritura bloque

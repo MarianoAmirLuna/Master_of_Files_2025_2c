@@ -29,7 +29,7 @@ void tratar_mensaje(t_list* pack, int sock_client)
     
     //Descomentar esto sólo si desde worker usan el ejecutar_instruccion_v2
     //opcode = convert_instr_code_to_storage_operation(opcode);
-    
+
     switch (opcode)
     {
     case CREATE_FILE:
@@ -129,6 +129,35 @@ void tratar_mensaje(t_list* pack, int sock_client)
                 Escritura_no_permitida
                 Lectura_o_escritura_fuera_de_limite
             */
+            char* file = args[0];
+            char* tag  = args[1];
+            int bloque_logico = atoi(args[2]);
+            char* contenido   = args[3];
+
+            // lock del file tag (bloqueo logico para que no toquen el mismo tag al mismo tiempo)
+            pthread_mutex_t* tag_lock = get_file_tag_lock(file, tag);
+            pthread_mutex_lock(tag_lock);
+
+                log_orange(logger, "estoy bloqueando al otro bobo :)");
+                sleep(30);
+
+/*
+                int bloque_fisico = obtener_bloque_fisico(file, tag, bloque_logico); // todo: declarar funcion obtener_bloque_fisico
+
+                // lock del bloque fisico
+                pthread_mutex_lock(&block_locks[bloque_fisico]);
+                log_debug(logger, "[WRITE_BLOCK] Lock Bloque Físico %d", bloque_fisico);
+
+                escribir_bloque_fisico(bloque_fisico, contenido); // todo: escribir bloque fisico
+
+
+                pthread_mutex_unlock(&block_locks[bloque_fisico]);
+                log_debug(logger, "[WRITE_BLOCK] Unlock Bloque Físico %d", bloque_fisico);
+*/
+
+
+
+            pthread_mutex_unlock(tag_lock);
             log_info(logger, "Ejecutando la operacion WRITE_BLOCK");
         }
         break;

@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
     log_violet(logger, "%s", "Hola soy STORAGE");
 
     inicializar_file_system();
+    creo_semaforos_fs();
 
     int sock_server = server_connection(cs.puerto_escucha);
 

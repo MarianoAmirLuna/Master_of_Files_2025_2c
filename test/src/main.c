@@ -1,8 +1,10 @@
 #include "main.h"
 #include "../../storage/src/funciones_generales.h"
 #include "../../storage/src/inicializacion_storage.h"
+#include "../../storage/src/control_accesos.h"
 #include "../../storage/src/comunicacion_worker.h"
 #include "../../storage/src/test.h"
+
 int main(int argc, char* argv[]) {
     
     create_log("test", LOG_LEVEL_TRACE);
@@ -12,12 +14,13 @@ int main(int argc, char* argv[]) {
 
     log_info(logger, "%d", cs.puerto_escucha);
 
+/*
     parse_code(CREATE, "MATERIAS:BASE");
     parse_code(TAG, "MATERIAS:BASE MATERIAS:V2");
     parse_code(TRUNCATE, "MATERIAS:BASE 1024");
     parse_code(READ, "MATERIAS:BASE 0 8");
     return 0;
-
+*/
 
     op_code_module ocm = MODULE_STORAGE;
     int wcl = client_connection("127.0.0.1", cs.puerto_escucha);
@@ -36,12 +39,15 @@ int main(int argc, char* argv[]) {
 
 
     t_packet* pack = create_packet();
-
+/*
     add_int_to_packet(pack, CREATE_FILE);
     add_string_to_packet(pack, "test_file2 tag_0001");
-
     send_and_free_packet(pack, wcl);
+*/
 
+    add_int_to_packet(pack, WRITE_BLOCK);
+    add_string_to_packet(pack, "test_file2 tag_0001 2 aaaa");
+    send_and_free_packet(pack, wcl);
 
 
     void* parameters = malloc(sizeof(int)*3);

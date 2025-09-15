@@ -2,6 +2,7 @@
 #include "signal.h"
 #include "funciones_generales.h"
 #include "inicializacion_storage.h"
+#include "control_accesos.h"
 #include "comunicacion_worker.h"
 
 volatile sig_atomic_t status=0;
