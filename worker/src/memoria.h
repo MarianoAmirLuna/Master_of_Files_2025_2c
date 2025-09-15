@@ -36,24 +36,8 @@ bool hay_espacio_memoria(char *contenido)
 
 bool coincide_tag(void *elem)
 {
-    file_y_tabla_pags *entry = (file_y_tabla_pags *)elem;
-    return strcmp(entry->file_y_tag, tag_buscado) == 0;
-}
-
-/// @brief devuelve la tabla de paginas correspondiente para el par file:tag enviado como argumento
-/// @param file_y_tag
-/// @return el file_y_tabla_pags* que corresponda
-file_y_tabla_pags *buscar_tabla_pags(char *file_y_tag)
-{
-    for (int i = 0; i < list_size(tablas_pags); i++)
-    {
-        file_y_tabla_pags *aux = list_get(tablas_pags, i);
-        if (!strcmp(aux->file_y_tag, file_y_tag))
-        {
-            return aux;
-        }
-    }
-    return NULL;
+    entrada_tabla_pags *entry = (entrada_tabla_pags *)elem;
+    return strcmp(entry->file_tag, file_tag_buscado) == 0;
 }
 
 bool esta_libre(void* element){
@@ -77,45 +61,47 @@ int buscar_base_marco(int n)
     return n * storage_block_size;
 }
 
+/// @brief obtiene la T.P. en base al file:tag
+/// @param file_y_tag
+/// @return el t_list* como filtro de la cola global
+t_list* obtener_tabla_paginas(char *file_y_tag)
+{
+    file_tag_buscado=file_y_tag;
+    t_list* ret = list_filter(tabla_pags_global->elements, coincide_tag);
+
+    return ret;
+}
+
 /// @brief dado un par file:tag y un numero de pagina, devuelve el numero de marco que le corresponde
 /// @param file_y_tag
 /// @param n_pag
 /// @return
 int buscar_marco_en_tabla(char *file_y_tag, int n_pag)
 {
-    file_y_tabla_pags *tabla = buscar_tabla_pags(file_y_tag);
-    for (int i = 0; i < list_size(tabla->tabla_pags); i++)
+    t_list *tabla = obtener_tabla_paginas(file_y_tag);
+    for (int i = 0; i < list_size(tabla); i++)
     {
-        entrada_tabla_pags *entrada = list_get(tabla->tabla_pags, i);
+        entrada_tabla_pags *entrada = list_get(tabla, i);
         if (entrada->pag == n_pag)
         {
+            list_destroy(tabla);
             return entrada->marco;
         }
     }
+    list_destroy(tabla);
     return -1;
 }
 
+
 int buscar_base_pagina(char *file_y_tag, int pag)
 {
-    file_y_tabla_pags *tabla = buscar_tabla_pags(file_y_tag);
+    t_list *tabla = obtener_tabla_paginas(file_y_tag);
 
-    return ERROR;
-}
+    int n_marco = buscar_marco_en_tabla(file_y_tag, pag);
 
-/// @brief crea una nueva tabla de paginas y la mete a la lista
-/// @param file_y_tag
-/// @return el file_y_tabla_pags* creado
-file_y_tabla_pags *nueva_tabla_pags(char *file_y_tag)
-{
-    file_y_tabla_pags *ret = malloc(sizeof(file_y_tabla_pags));
-    ret->file_y_tag = malloc(sizeof(file_y_tag));
-    strcpy(ret->file_y_tag, file_y_tag); // Identifico la tabla de paginas mediante el file:tag
-    ret->tabla_pags = queue_create();    // Creo la tabla de paginas como una cola(para facilitar clok-m)
+    int df = buscar_base_marco(n_marco);
 
-    sem_wait(&tabla_pag_en_uso);
-    list_add(tablas_pags, ret); // Persisto el conjunto
-    sem_post(&tabla_pag_en_uso);
-    return ret;
+    return df;
 }
 
 entrada_tabla_pags *nueva_entrada()

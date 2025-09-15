@@ -27,7 +27,7 @@ int storage_block_size;
 //mutex por ser globales en los get y add
 t_list* lista_frames; //Se conoce el inicio de un frame, no el fin y si esta libre o no
 t_list* archivos_cargados;
-t_list* tablas_pags;  //lista que contiene file_y_tabla_pags
+t_queue* tabla_pags_global;
 
 sem_t sem_query_recibida;
 sem_t tabla_pag_en_uso;
@@ -39,7 +39,7 @@ int pc_actual;
 
 char* archivo_query_actual;
 
-char *tag_buscado;
+char *file_tag_buscado;
 
 
 #endif

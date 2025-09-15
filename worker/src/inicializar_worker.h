@@ -20,7 +20,7 @@ void inicializar_variables()
 
 void inicializar_colecciones(){
     archivos_cargados = list_create();
-    tablas_pags = list_create();
+    tabla_pags_global = queue_create();
 }
 
 void inicializar_worker()
