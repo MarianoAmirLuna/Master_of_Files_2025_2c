@@ -10,6 +10,8 @@
 #include "exts/array_ext.h"
 #include "exts/list_ext.h"
 #include "commons/collections/queue.h"
+#include "exts/temporal_ext.h"
+
 
 config_master cm;
 //TODO: t_queue* of this queries
@@ -60,6 +62,8 @@ t_queue* get_queue_by_sp(state_process sp){
     // debido al FIFO
 }
 
+
+
 void add_query_on_state(query* q, state_process sp){
     if(is_queue_sp(sp)){
         queue_push(get_queue_by_sp(sp), q);
@@ -96,6 +100,10 @@ int cast_int(void* elem){
     /*int res = 0;
     memcpy(&res, elem, sizeof(int));
     return res;*/
+}
+
+bool order_query_by(void* a, void* b){
+    return cast_query(a)->priority < cast_query(b)->priority;
 }
 
 int by_worker_free(void* elem, void *by){
@@ -141,6 +149,15 @@ query* get_query_by_qid(qid id){
     return cast_query(list_find_by(queries, by_query_qid, (int)id));
 }
 
+int increment_priority(query* q){
+    //Recordar que cuanto menor es el número mayor es su prioridad. No confundir.
+    //Ejemplo, Prioridad =0 es máxima, Prioridad = 4 es baja, etc.
+    q->priority--;
+    if(q->priority <= 0)
+        q->priority = 0;
+    return q->priority;
+}
+
 int increment_idx(){
     //Thread-safe
     sem_wait(&sem_idx);
@@ -155,6 +172,10 @@ void query_to(query* q, state_process to){
     if(!is_valid_sp(q->sp, to)){
         log_error(logger, "is nota valid from to state process exit(1) is INVOKED");
         exit(EXIT_FAILURE);
+    }
+    if(to == STATE_EXEC){
+        q->temp = temporal_create();
+        //MANDAR AL WORKER PARA QUE LO EJECUTE
     }
     if(is_list_sp(q->sp))
     {

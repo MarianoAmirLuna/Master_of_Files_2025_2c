@@ -70,6 +70,7 @@ typedef struct{
     char* archive_query;
     int priority;
     long start_tick;
+    t_temporal* temp;
     long end_tick;
 }query;
 

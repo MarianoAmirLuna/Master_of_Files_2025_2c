@@ -8,8 +8,8 @@
 #include "exts/common_ext.h"
 
 query* get_query_available(){
+    t_queue* q = get_queue_by_sp(STATE_READY);
     if(cm.algoritmo_planificacion == FIFO){
-        t_queue* q = get_queue_by_sp(STATE_READY);
         if(queue_size(q) > 0) //Surprise motherfucker
             return cast_query(queue_pop(q));
         /*int sz = list_size(queries);
@@ -21,6 +21,12 @@ query* get_query_available(){
         return NULL;
     }
     if(cm.algoritmo_planificacion == PRIORITIES){
+        list_sort(q->elements, order_query_by); //Podré hacer eso y recibiré bien en T_queue????
+        if(queue_size(q) > 0) //Surprise motherfucker
+            return cast_query(queue_pop(q));
+        return NULL;
+        
+        //Obtener el primer query de más alta prioridad
         log_error(logger, "%s (%s:%d)", "PLANIF PRIORITIES NOT IMPLEMENTED", __func__, __LINE__);
     }
     //Por prioridad planif, blabla debo buscar el query
@@ -47,6 +53,8 @@ void execute_worker(){
         log_warning(logger, "WTF (%s:%d) exit(1) IS INVOKED",__func__,__LINE__);
         exit(EXIT_FAILURE);
     }
+
+    
     t_packet* p = create_packet();
     add_int_to_packet(p, EJECUTAR_QUERY);
     add_string_to_packet(p, q->archive_query); //enviarle el nombre del query a ejecutar
@@ -57,6 +65,7 @@ void execute_worker(){
 
     t_list* pack = recv_operation_packet(w->fd); //Debería primero recibir después de esto para saber si fue SUCCESS el ejecutar query?? antes de setear como libre el worker.
     if(list_get_int(pack, 0) == SUCCESS){
+        query_to(q, STATE_EXEC);
         w->is_free=0;
     }
 }
@@ -76,7 +85,19 @@ void* scheduler(void* params){
         execute_worker();
         
         log_pink(logger, "%s", "ON AGING sleep");
-        msleep(cm.tiempo_aging);
+
+        int ts = cm.tiempo_aging <= 0 ? 250 : cm.tiempo_aging/4;
+        msleep(ts); //Divido por 4 para prevenir posible margen de error en temporal_gettime tiempo agging
+        int sz = list_size(queries);
+        for(int i=0;i<sz;i++){
+            query* q = cast_query(list_get(queries, i));
+            if(q == NULL)
+                continue;
+            if(!temporal_is_empty(q->temp)){
+                if(temporal_gettime(q->temp) > cm.tiempo_aging)
+                    increment_priority(q);
+            }
+        }
         //Luego de dormir el subproceso si el algoritmo es de Prioridad debo ir disminuyendo el priority para que este sea más prioritario.
     }   
 }
