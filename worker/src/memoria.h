@@ -123,6 +123,9 @@ int buscar_marco_en_tabla(char *file_y_tag, int n_pag)
         if (entrada->pag == n_pag)
         {
             list_destroy(tabla);
+
+            // creo que acá iría if(R_LRU == cw.algoritmo_reemplazo){actualizarPrioridadLRU(entrada)}
+
             return entrada->marco;
         }
     }
@@ -156,6 +159,24 @@ entrada_tabla_pags* nueva_entrada(char* file_tag, int pagina, int marco)
 /*
     ALGORITMOS DE REEMPLAZO
 */
+bool comparar_entrada_tabla_pags(void *a, void *b)
+{
+    entrada_tabla_pags *lineaA = (entrada_tabla_pags *)a;
+    entrada_tabla_pags *lineaB = (entrada_tabla_pags *)b;
+    return (!strcmp(lineaA->file_tag, lineaB->file_tag)) && (lineaA->pag == lineaB->pag);
+}
+
+void actualizarPrioridadLRU(entrada_tabla_pags *entrada)
+{
+    int index = list_index_of(tabla_pags_global->elements, entrada, comparar_entrada_tabla_pags); // Obtengo el índice del que quiero actualizar
+
+    if (index != -1)
+    {                                                                         // Verifica que el elemento esté en la lista
+        entrada_tabla_pags* entradaRemovida = list_remove(tabla_pags_global->elements, index); // Lo borro
+        queue_push(tabla_pags_global, entradaRemovida);                                  // Lo vuelvo a agregar al final
+    }
+}
+
 void actualizar_pagina_en_storage(entrada_tabla_pags *elemento)
 {
     t_packet* paq = create_packet();
@@ -186,7 +207,7 @@ void buscar_victima_lru(){
 void buscar_victima_clock_modificado(){
     //  Primera pasada: Buscar (0,0) 
     for (int i = 0; i < queue_size(tabla_pags_global); i++) {
-        entrada_tabla_pags *elemento = queue_pop(tabla_pags_global);
+        entrada_tabla_pags* elemento = queue_pop(tabla_pags_global);
         if (elemento->uso == false && elemento->modificada == false) {
             liberar_entrada_TPG(elemento);
             return;
