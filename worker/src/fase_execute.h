@@ -54,6 +54,7 @@ void realizar_escritura(char *file_tag, int dir_logica, char *contenido)
 void* actualizar_pagina(char *file_tag, int pagina){
     t_packet* paq = create_packet();
 
+    //TODO: Storage no los necesita juntos?
     char* file = strtok(file_tag, ":");
     char* tag = strtok(NULL, "");
 
@@ -79,8 +80,13 @@ void *reservar_frame(char *file_tag, int pagina)
     frame_buscado->inicio = frame_libre->inicio;
 
     int indice_frame_table = list_index_of(lista_frames, &frame_buscado, comparar_marcos);
+    if(indice_frame_table < 0){
+        log_error(logger, "El indice del frame no se encontro");
+    }
 
     entrada_tabla_pags *nueva = nueva_entrada(file_tag, pagina, indice_frame_table);
+
+    //Si el algoritmo es LRU acá se esta añadiendo una nueva entrada con la referencia más reciente
     queue_push(tabla_pags_global, nueva);
 
     return frame_libre->inicio;
@@ -112,10 +118,13 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
         if (!hay_espacio_memoria(contenido))
         {
             log_info(logger, "Iniciando algoritmo de reemplazo");
+            seleccionar_victima();
         }
 
+        //Apartir de acá hay espacio
         reservar_frame(file_tag, pagina);
 
+        //Trae el contenido del bloque de storage
         actualizar_pagina(file_tag, pagina);
 
         // Apartir de acá puede ser una falopeada, no sé si se va a comportar como espero
@@ -123,6 +132,9 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
 
         return;
     }
+    //Apartir de acá existe la DL en memoria
+
+
 
     // realizar_escritura(file_tag, dir_base, contenido);
 }

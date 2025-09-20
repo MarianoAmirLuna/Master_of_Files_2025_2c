@@ -140,7 +140,7 @@ int buscar_base_pagina(char *file_y_tag, int pag)
     return df;
 }
 
-entrada_tabla_pags *nueva_entrada(char* file_tag, int pagina, int marco)
+entrada_tabla_pags* nueva_entrada(char* file_tag, int pagina, int marco)
 {
     entrada_tabla_pags* ret = malloc(sizeof(entrada_tabla_pags));
     ret->file_tag=malloc(strlen(file_tag)+1);
@@ -154,17 +154,68 @@ entrada_tabla_pags *nueva_entrada(char* file_tag, int pagina, int marco)
 
 
 /*
-==============================
+    ALGORITMOS DE REEMPLAZO
 */
-void buscar_victima_lru(){
+void actualizar_pagina_en_storage(entrada_tabla_pags *elemento)
+{
+    t_packet* paq = create_packet();
+    add_int_to_packet(paq, WRITE_BLOCK);
+    add_string_to_packet(paq, elemento->file_tag);
+    add_string_to_packet(paq, elemento->pag); //numero de bloque
+    send_and_free_packet(paq, sock_storage);
+}
 
+void liberar_entrada_TPG(entrada_tabla_pags *elemento)
+{
+    if (elemento->modificada)
+    {
+        actualizar_pagina_en_storage(elemento);
+    }
+
+    log_info(logger, "Pagina nismeada");
+    return;
+}
+
+void buscar_victima_lru(){
+    //Al actualizar las prioridades de la tabla de paginas global siempre
+    //que se acceda a la misma provoca que al hacer pop(tabla_pags_global)
+    //se saque el de Least Recently Used
+    queue_pop(tabla_pags_global);
 }
 
 void buscar_victima_clock_modificado(){
-
+    //  Primera pasada: Buscar (0,0) 
+    for (int i = 0; i < queue_size(tabla_pags_global); i++) {
+        entrada_tabla_pags *elemento = queue_pop(tabla_pags_global);
+        if (elemento->uso == false && elemento->modificada == false) {
+            liberar_entrada_TPG(elemento);
+            return;
+        }
+        queue_push(tabla_pags_global, elemento);
+    }
+    
+    // Segunda pasada: Buscar (0,1) y resetear el bit de uso ---
+    // Si llegamos a esta parte, no encontramos un (0,0).
+    for (int i = 0; i < queue_size(tabla_pags_global); i++) {
+        
+        entrada_tabla_pags* elemento = queue_pop(tabla_pags_global);
+        
+        if (elemento->uso == false && elemento->modificada == true) {
+            // Encontramos la víctima (0,1). La liberamos y salimos.
+            liberar_entrada_TPG(elemento);
+            return;
+        }
+        
+        // Si no es la víctima, reseteamos su bit de uso.
+        elemento->uso = false;
+        
+        // Lo volvemos a poner al final de la cola para la próxima pasada.
+        queue_push(tabla_pags_global, elemento);
+    }
+    buscar_victima_clock_modificado();
 }
 
-void buscar_victima()
+void seleccionar_victima()
 {
     if (R_LRU == cw.algoritmo_reemplazo)
     {
