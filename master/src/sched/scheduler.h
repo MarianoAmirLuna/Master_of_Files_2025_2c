@@ -88,10 +88,14 @@ void* scheduler(void* params){
 
         int ts = cm.tiempo_aging <= 0 ? 250 : cm.tiempo_aging/4;
         msleep(ts); //Divido por 4 para prevenir posible margen de error en temporal_gettime tiempo agging
+        if(cm.tiempo_aging <= 0)
+            continue;
         int sz = list_size(queries);
         for(int i=0;i<sz;i++){
             query* q = cast_query(list_get(queries, i));
             if(q == NULL)
+                continue; 
+            if(q->sp != STATE_READY) //Increment priority only query that is STATE_READY
                 continue;
             if(!temporal_is_empty(q->temp)){
                 if(temporal_gettime(q->temp) > cm.tiempo_aging)
