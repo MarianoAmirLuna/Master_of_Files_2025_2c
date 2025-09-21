@@ -31,7 +31,12 @@ int obtener_offset(char *archivo, int donde_comenzar)
     return 0;
 }
 
-void realizar_escritura(char *file_tag, int dir_logica, char *contenido)
+/// @brief escribe datos a una direccion logica (como maximo el largo necesario para llenar la pagina)
+/// @param file_tag 
+/// @param dir_logica 
+/// @param contenido 
+/// @return 0 si entró todo el contenido, 1 si falta contenido por escribir
+int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
 {
     int frame = obtener_frame(file_tag, dir_logica);
     int offset = obtener_offset(file_tag, dir_logica);
@@ -40,10 +45,10 @@ void realizar_escritura(char *file_tag, int dir_logica, char *contenido)
 
     int espacio_restante_en_marco = block_size - offset;
 
-    if (strlen(contenido) > espacio_restante_en_marco) // si no me alcanza con lo que queda de marco
+    if (strlen(contenido) > espacio_restante_en_marco) // si no me alcanza con lo que queda de marco, solo copio lo que pueda
     {
         memcpy(base + offset, contenido, espacio_restante_en_marco);
-        realizar_escritura(file_tag, dir_logica + espacio_restante_en_marco, contenido + espacio_restante_en_marco); // feo con ganas eh
+        //realizar_escritura(file_tag, dir_logica + espacio_restante_en_marco, contenido + espacio_restante_en_marco); // feo con ganas eh
     }
     else
     {
@@ -112,29 +117,36 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
 {
 
     int pagina = calcular_pagina(dir_base);
+    int offset = obtener_offset(file_tag, dir_base);
+    int restante_en_pag = block_size-offset;
+    int espacio_ya_escrito=0;
 
-    if (!dl_en_tp(file_tag, pagina))
+    for(int indice=dir_base; espacio_ya_escrito < strlen(contenido); indice += (espacio_ya_escrito==0?restante_en_pag:block_size)) //llego el fakin operador ternario (si lees esto, perdon)
     {
-        if (!hay_espacio_memoria(contenido))
+        espacio_ya_escrito=indice-dir_base;
+        pagina = calcular_pagina(indice);
+        if (!dl_en_tp(file_tag, pagina))
         {
-            log_info(logger, "Iniciando algoritmo de reemplazo");
-            seleccionar_victima();
+            if (!hay_espacio_memoria(contenido))
+            {
+                log_info(logger, "Iniciando algoritmo de reemplazo");
+                seleccionar_victima(); //selecciona una victima y la borra. Tenes garantizado un frame libre despues de esto
+            }
+
+            // Apartir de acá hay espacio
+            reservar_frame(file_tag, pagina);
+
+            // Trae el contenido del bloque de storage
+            actualizar_pagina(file_tag, pagina);
+
+            // Apartir de acá puede ser una falopeada, no sé si se va a comportar como espero
+            // ejecutar_write(file_tag, dir_base, contenido); @mariano no me mates porfa, pero creo que si dejo esto va a romper todo
+            // return;
         }
+        // Apartir de acá existe la DL en memoria
 
-        //Apartir de acá hay espacio
-        reservar_frame(file_tag, pagina);
-
-        //Trae el contenido del bloque de storage
-        actualizar_pagina(file_tag, pagina);
-
-        // Apartir de acá puede ser una falopeada, no sé si se va a comportar como espero
-        ejecutar_write(file_tag, dir_base, contenido);
-
-        return;
+        realizar_escritura(file_tag, indice, contenido+espacio_ya_escrito); //espacio_ya_escrito funciona como un offset para el contenido
     }
-    //Apartir de acá existe la DL en memoria
-
-
 
     // realizar_escritura(file_tag, dir_base, contenido);
 }
