@@ -13,17 +13,40 @@ void ejecutar_truncate(char *file_y_tag, int tam)
 {
 }
 
+
 /*
     caso 1: tabla de paginas tiene la pagina
     caso 2: tabla de paginas tiene la pagina en memoria virtual
     caso 3: tabla de paginas no tiene la pagina
 */
+/// @brief dado un archivo y una posicion en el mismo, busca la pagina correspondiente (si está cargada) y devuelve el n° de marco
+/// @param archivo 
+/// @param donde_comenzar 
+/// @return el n° de frame o -1 si la pag no esta cargada
 int obtener_frame(char *archivo, int donde_comenzar)
 {
     // 1. Encontrar la tabla de paginas del file:tag
+    t_list* tabla = obtener_tabla_paginas(archivo);
+
     // 2. calcular la pagina en base a la dir_base
+    int pag = calcular_pagina(donde_comenzar);
+    
     // 3. Si la pagina esta presente en memoria retorno el frame
-    return 0;
+    int ret=-1;
+    if(tabla==NULL)
+    {
+        return -1;
+    }
+    for(int i=0;i<list_size(tabla);i++)
+    {
+        entrada_tabla_pags* aux=list_get(tabla, i);
+        if(aux->pag == pag)
+        {
+            ret=aux->marco;
+        }
+    }
+    list_destroy(tabla);
+    return ret;
 }
 
 int obtener_offset(char *archivo, int donde_comenzar)
