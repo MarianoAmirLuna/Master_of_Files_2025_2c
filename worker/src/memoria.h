@@ -34,6 +34,20 @@ bool hay_espacio_memoria(char *contenido)
     return aux;
 }
 
+bool hay_n_bytes_en_memoria(int n)
+{
+    int cant_pags = (n + block_size - 1) / block_size;
+
+    sem_wait(&tabla_pag_en_uso);
+    t_list *frames_libres = list_filter(lista_frames, esta_libre);
+    sem_post(&tabla_pag_en_uso);
+
+    bool aux = list_size(frames_libres) >= cant_pags;
+    list_destroy(frames_libres);
+
+    return aux;
+}
+
 bool comparar_marcos(void* a, void* b) {
     marco* m1 = (marco*)a;
     marco* m2 = (marco*)b;

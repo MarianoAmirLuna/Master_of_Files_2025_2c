@@ -51,7 +51,7 @@ int obtener_frame(char *archivo, int donde_comenzar)
 
 int obtener_offset(char *archivo, int donde_comenzar)
 {
-    return 0;
+    return donde_comenzar%block_size;
 }
 
 /// @brief escribe datos a una direccion logica (como maximo el largo necesario para llenar la pagina)
@@ -77,6 +77,11 @@ int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
     {
         memcpy(base + offset, contenido, strlen(contenido));
     }
+}
+
+int realizar_lectura(void* dest, int dir_logica, int tam)
+{
+
 }
 
 void* actualizar_pagina(char *file_tag, int pagina){
@@ -174,8 +179,35 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
     // realizar_escritura(file_tag, dir_base, contenido);
 }
 
-void ejecutar_read(char *file, char *tag, int dir_base, int tam)
+void ejecutar_read(char *file_tag, int dir_base, int tam)
 {
+    void* leido = malloc(tam);
+    int pagina = calcular_pagina(dir_base);
+    int espacio_ya_leido = 0;
+    int offset=obtener_offset(file_tag, dir_base);
+    int restante_en_pag = block_size-offset;
+
+    for(int indice=dir_base; espacio_ya_leido<tam; indice += (espacio_ya_leido==0?restante_en_pag:block_size))
+    {
+        espacio_ya_leido=indice-dir_base;
+        pagina = calcular_pagina(indice);
+        if (!dl_en_tp(file_tag, pagina))
+        {
+            if (!hay_n_bytes_en_memoria(tam))
+            {
+                log_info(logger, "Iniciando algoritmo de reemplazo");
+                seleccionar_victima(); //selecciona una victima y la borra. Tenes garantizado un frame libre despues de esto
+            }
+
+            // Apartir de acá hay espacio
+            reservar_frame(file_tag, pagina);
+
+            // Trae el contenido del bloque de storage
+            actualizar_pagina(file_tag, pagina);
+        }
+        // Apartir de acá existe la DL en memoria
+        realizar_lectura(leido+espacio_ya_leido, indice, tam-espacio_ya_leido)
+    }
 }
 
 void ejecutar_tag(char *file_old, char *tag_old, char *file_new, char *tag_new)

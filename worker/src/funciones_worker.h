@@ -109,6 +109,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         char* tag = strtok(NULL, "");
         int dir_base = atoi(parametro2);
         int tamanio = atoi(parametro3);
+        ejecutar_read(parametro1, dir_base, tamanio);
     }
     else if(caso == TAG)
     {
