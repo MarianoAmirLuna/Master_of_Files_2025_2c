@@ -9,35 +9,18 @@
 
 query* get_query_available(){
     t_queue* q = get_queue_by_sp(STATE_READY);
-    if(cm.algoritmo_planificacion == FIFO){
-        if(queue_size(q) > 0) //Surprise motherfucker
-            return cast_query(queue_pop(q));
-        /*int sz = list_size(queries);
-        for(int i=0;i<sz;i++){
-            query* q = (query*)list_get(queries, i);
-            if(q->sp == STATE_READY)
-                return q;
-        }*/
+    if(queue_is_empty(q))
         return NULL;
-    }
     if(cm.algoritmo_planificacion == PRIORITIES){
-        list_sort(q->elements, order_query_by); //Podré hacer eso y recibiré bien en T_queue????
-        if(queue_size(q) > 0) //Surprise motherfucker
-            return cast_query(queue_pop(q));
-        return NULL;
-        
         //Obtener el primer query de más alta prioridad
-        log_error(logger, "%s (%s:%d)", "PLANIF PRIORITIES NOT IMPLEMENTED", __func__, __LINE__);
+        list_sort(q->elements, order_query_by); //NOTE: El t_queue pop lo que hace es invocar el list_remove(lista, 0);
     }
-    //Por prioridad planif, blabla debo buscar el query
-    log_warning(logger, "get_query_available NOT IMPLEMENTED");
-    return NULL;
+    return cast_query(queue_pop(q));
 }
 
 int have_query_ready(){
     return queue_size(get_queue_by_sp(STATE_READY)) > 0;
 }
-
 
 void execute_worker(){
     log_light_blue(logger, "%s", "On ExecuteWorker");
