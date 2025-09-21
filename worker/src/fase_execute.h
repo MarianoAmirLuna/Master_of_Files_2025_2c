@@ -206,7 +206,7 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
             actualizar_pagina(file_tag, pagina);
         }
         // Apartir de acá existe la DL en memoria
-        realizar_lectura(leido+espacio_ya_leido, indice, tam-espacio_ya_leido)
+        realizar_lectura(leido+espacio_ya_leido, indice, tam-espacio_ya_leido);
     }
 }
 
