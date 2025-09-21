@@ -74,181 +74,203 @@ void tratar_mensaje(t_list* pack, int sock_client)
                 Espacio_Insuficiente
             */
 
-        
-      // parseo args
-        char* file = args[0];
-        char* tag  = args[1];
-        off_t nuevo_tam = atoll(args[2]);
+            // parseo args
+            char* file = args[0];
+            char* tag  = args[1];
+            off_t nuevo_tam = atoll(args[2]);
 
-        // paths
-        char* file_path     = string_from_format("%s/files/%s", cs.punto_montaje, file);
-        char* tag_path      = string_from_format("%s/%s", file_path, tag);
-        char* metadata_path = NULL;
+            // paths
+            char* file_path     = string_from_format("%s/files/%s", cs.punto_montaje, file);
+            char* tag_path      = string_from_format("%s/%s", file_path, tag);
+            char* metadata_path = NULL;
 
-        t_config* metadata = NULL;
-        t_list*   bloques  = NULL;
+            t_config* metadata = NULL;
+            t_list*   bloques  = NULL;
+            pthread_mutex_t* tag_lock = NULL;
+            bool tag_locked = false;
 
-        // valido existencia
-        if (!control_existencia_file(file_path)) { log_error(logger, "[TRUNCATE] File inexistente: %s", file); goto cleanup_no_lock; }
-        if (!control_existencia_file(tag_path))  { log_error(logger, "[TRUNCATE] Tag inexistente: %s:%s", file, tag); goto cleanup_no_lock; }
+            // valido existencia
+            if (!control_existencia_file(file_path)) {
+                log_error(logger, "[TRUNCATE] File inexistente: %s", file);
+            } else if (!control_existencia_file(tag_path)) {
+                log_error(logger, "[TRUNCATE] Tag inexistente: %s:%s", file, tag);
+            } else {
+                // lock del tag
+                tag_lock = get_file_tag_lock(file, tag);
+                pthread_mutex_lock(tag_lock);
+                tag_locked = true;
 
-        // lock del tag
-        pthread_mutex_t* tag_lock = get_file_tag_lock(file, tag);
-        pthread_mutex_lock(tag_lock);
+                log_info(logger, "[TRUNCATE] %s:%s -> nuevo tamaño %lld", file, tag, (long long)nuevo_tam);
 
-        log_info(logger, "[TRUNCATE] %s:%s -> nuevo tamaño %lld", file, tag, (long long)nuevo_tam);
+                // abro metadata
+                metadata_path = string_from_format("%s/metadata.config", tag_path);
+                metadata = config_create(metadata_path);
+                
+                if (!metadata) {
+                    log_error(logger, "[TRUNCATE] No se pudo abrir metadata: %s", metadata_path);
+                } else {
+                    // verifico estado COMMITED
+                    char* estado = config_get_string_value(metadata, "ESTADO");
+                    if (estado && string_equals_ignore_case(estado, "COMMITED")) {
+                        log_error(logger, "[TRUNCATE] Tag COMMITED, no se puede modificar");
+                    } else {
+                        // leo BLOCKS a lista
+                        bloques = list_create();
+                        const char* KEY_BLOCKS_RD =
+                            config_has_property(metadata, "BLOCKS")  ? "BLOCKS"  :
+                            (config_has_property(metadata, "BLOQUES") ? "BLOQUES" : "BLOCKS");
+                        char** arr = config_get_array_value(metadata, KEY_BLOCKS_RD);
+                        if (arr){
+                            for (int i = 0; arr[i] != NULL; i++){
+                                int* p = malloc(sizeof(int));
+                                *p = atoi(arr[i]);
+                                list_add(bloques, p);
+                                free(arr[i]);
+                            }
+                            free(arr);
+                        }
 
-        // abro metadata
-        metadata_path = string_from_format("%s/metadata.config", tag_path);
-        metadata = config_create(metadata_path);
-        if (!metadata) { log_error(logger, "[TRUNCATE] No se pudo abrir metadata: %s", metadata_path); goto cleanup; }
+                        // controlo bloques
+                        int bloques_actuales = list_size(bloques);
+                        if (g_block_size > 0) {
+                            int bloques_necesarios = (nuevo_tam == 0) ? 0 : (int)ceil((double)nuevo_tam / (double)g_block_size);
+                            bool operation_success = true;
 
-        // verifico estado COMMITED
-        char* estado = config_get_string_value(metadata, "ESTADO");
-        if (estado && string_equals_ignore_case(estado, "COMMITED")) {
-            log_error(logger, "[TRUNCATE] Tag COMMITED, no se puede modificar");
-            goto cleanup_metadata;
-        }
+                            // crecer: linkea lógicos nuevos a físico 0
+                            if (bloques_necesarios > bloques_actuales) {
+                                int desde = bloques_actuales;
+                                int hasta = bloques_necesarios - 1;
 
-        // leo BLOCKS a lista
-        bloques = list_create();
-        const char* KEY_BLOCKS_RD =
-            config_has_property(metadata, "BLOCKS")  ? "BLOCKS"  :
-            (config_has_property(metadata, "BLOQUES") ? "BLOQUES" : "BLOCKS");
-        char** arr = config_get_array_value(metadata, KEY_BLOCKS_RD);
-        if (arr){
-            for (int i = 0; arr[i] != NULL; i++){
-                int* p = malloc(sizeof(int));
-                *p = atoi(arr[i]);
-                list_add(bloques, p);
-                free(arr[i]);
-            }
-            free(arr);
-        }
+                                char* physical0 = string_from_format("%s/physical_blocks/block%04d.dat", cs.punto_montaje, 0);
+                                pthread_mutex_lock(&block_locks[0]);
 
-        // controlo bloques
-        int bloques_actuales = list_size(bloques);
-        if (g_block_size <= 0) { log_error(logger, "[TRUNCATE] g_block_size inválido"); goto cleanup_bloques; }
-        int bloques_necesarios = (nuevo_tam == 0) ? 0 : (int)ceil((double)nuevo_tam / (double)g_block_size);
+                                for (int i = desde; i <= hasta && operation_success; ++i) {
+                                    char* logical = string_from_format("%s/logical_blocks/block%04d.dat", tag_path, i);
+                                    crear_hard_link(physical0, logical);
+                                    int* p = malloc(sizeof(int)); *p = 0;
+                                    list_add(bloques, p);
+                                    log_debug(logger, "[TRUNCATE] lógico #%d -> físico 0", i);
+                                    free(logical);
+                                }
 
-        // crecer: linkea lógicos nuevos a físico 0
-        if (bloques_necesarios > bloques_actuales) {
-            int desde = bloques_actuales;
-            int hasta = bloques_necesarios - 1;
+                                pthread_mutex_unlock(&block_locks[0]);
+                                free(physical0);
+                            }
+                            // achicar: unlink y liberar bitmap si queda sin enlaces
+                            else if (bloques_necesarios < bloques_actuales) {
+                                for (int i = bloques_actuales - 1; i >= bloques_necesarios && operation_success; --i) {
+                                    int* pfis = (int*) list_get(bloques, i);
+                                    if (!pfis) {
+                                        log_error(logger, "[TRUNCATE] Metadata inconsistente (bloque %d sin físico)", i);
+                                        operation_success = false;
+                                        break;
+                                    }
+                                    int bloque_fisico = *pfis;
 
-            char* physical0 = string_from_format("%s/physical_blocks/block%04d.dat", cs.punto_montaje, 0);
-            pthread_mutex_lock(&block_locks[0]);
+                                    char* logical  = string_from_format("%s/logical_blocks/block%04d.dat", tag_path, i);
+                                    char* physical = string_from_format("%s/physical_blocks/block%04d.dat", cs.punto_montaje, bloque_fisico);
 
-            for (int i = desde; i <= hasta; ++i) {
-                char* logical = string_from_format("%s/logical_blocks/block%04d.dat", tag_path, i);
-                crear_hard_link(physical0, logical);
-                int* p = malloc(sizeof(int)); *p = 0;
-                list_add(bloques, p);
-                log_debug(logger, "[TRUNCATE] lógico #%d -> físico 0", i);
-                free(logical);
-            }
+                                    // lock del físico
+                                    pthread_mutex_lock(&block_locks[bloque_fisico]);
 
-            pthread_mutex_unlock(&block_locks[0]);
-            free(physical0);
-        }
-        // achicar: unlink y liberar bitmap si queda sin enlaces
-        else if (bloques_necesarios < bloques_actuales) {
-            for (int i = bloques_actuales - 1; i >= bloques_necesarios; --i) {
-                int* pfis = (int*) list_get(bloques, i);
-                if (!pfis) { log_error(logger, "[TRUNCATE] Metadata inconsistente (bloque %d sin físico)", i); goto cleanup_bloques; }
-                int bloque_fisico = *pfis;
+                                    // unlink del lógico
+                                    if (unlink(logical) != 0) {
+                                        log_error(logger, "[TRUNCATE] unlink falló: %s (errno=%d)", logical, errno);
+                                        pthread_mutex_unlock(&block_locks[bloque_fisico]);
+                                        free(logical); free(physical);
+                                        operation_success = false;
+                                        break;
+                                    }
 
-                char* logical  = string_from_format("%s/logical_blocks/block%04d.dat", tag_path, i);
-                char* physical = string_from_format("%s/physical_blocks/block%04d.dat", cs.punto_montaje, bloque_fisico);
+                                    // consulto enlaces del físico
+                                    struct stat st;
+                                    if (stat(physical, &st) == -1) {
+                                        log_error(logger, "[TRUNCATE] stat físico falló: %s (errno=%d)", physical, errno);
+                                        pthread_mutex_unlock(&block_locks[bloque_fisico]);
+                                        free(logical); free(physical);
+                                        operation_success = false;
+                                        break;
+                                    }
 
-                // lock del físico
-                pthread_mutex_lock(&block_locks[bloque_fisico]);
+                                    // libero bitmap si queda solo el archivo físico
+                                    if (st.st_nlink == 1) {
+                                        liberar_bloque(bloque_fisico);
+                                        log_debug(logger, "[TRUNCATE] físico %d liberado (sin referencias lógicas)", bloque_fisico);
+                                    }
 
-                // unlink del lógico
-                if (unlink(logical) != 0) {
-                    log_error(logger, "[TRUNCATE] unlink falló: %s (errno=%d)", logical, errno);
-                    pthread_mutex_unlock(&block_locks[bloque_fisico]);
-                    free(logical); free(physical);
-                    goto cleanup_bloques;
+                                    // unlock del físico
+                                    pthread_mutex_unlock(&block_locks[bloque_fisico]);
+
+                                    // actualizo lista de bloques
+                                    int* removed = (int*) list_remove(bloques, i);
+                                    if (removed) free(removed);
+
+                                    // libero paths
+                                    free(logical);
+                                    free(physical);
+                                }
+                            }
+
+                            // persistir metadata solo si la operación fue exitosa
+                            if (operation_success) {
+                                const char* KEY_BLOCKS_WR =
+                                    config_has_property(metadata, "BLOCKS")  ? "BLOCKS"  :
+                                    (config_has_property(metadata, "BLOQUES") ? "BLOQUES" : "BLOCKS");
+                                const char* KEY_SIZE_WR =
+                                    config_has_property(metadata, "SIZE")    ? "SIZE"    :
+                                    (config_has_property(metadata, "TAMANIO") ? "TAMANIO" : "SIZE");
+
+                                // serializo bloques a "[a,b,c]"
+                                char* blocks_str = string_new();
+                                string_append(&blocks_str, "[");
+                                int nblocks = list_size(bloques);
+                                for (int i = 0; i < nblocks; ++i){
+                                    int* pf = (int*) list_get(bloques, i);
+                                    char* num = string_from_format("%d", pf ? *pf : 0);
+                                    string_append(&blocks_str, num);
+                                    free(num);
+                                    if (i < nblocks - 1) string_append(&blocks_str, ",");
+                                }
+                                string_append(&blocks_str, "]");
+
+                                char* size_str = string_from_format("%lld", (long long)nuevo_tam);
+
+                                // escribo y guardo metadata
+                                config_set_value(metadata, KEY_BLOCKS_WR, blocks_str);
+                                config_set_value(metadata, KEY_SIZE_WR,   size_str);
+                                config_save(metadata);
+
+                                // libero buffers
+                                free(blocks_str);
+                                free(size_str);
+                            }
+                        } else {
+                            log_error(logger, "[TRUNCATE] g_block_size inválido");
+                        }
+                    }
                 }
+            }
 
-                // consulto enlaces del físico
-                struct stat st;
-                if (stat(physical, &st) == -1) {
-                    log_error(logger, "[TRUNCATE] stat físico falló: %s (errno=%d)", physical, errno);
-                    pthread_mutex_unlock(&block_locks[bloque_fisico]);
-                    free(logical); free(physical);
-                    goto cleanup_bloques;
-                }
-
-                // libero bitmap si queda solo el archivo físico
-                if (st.st_nlink == 1) {
-                    liberar_bloque(bloque_fisico);
-                    log_debug(logger, "[TRUNCATE] físico %d liberado (sin referencias lógicas)", bloque_fisico);
-                }
-
-                // unlock del físico
-                pthread_mutex_unlock(&block_locks[bloque_fisico]);
-
-                // actualizo lista de bloques
-                int* removed = (int*) list_remove(bloques, i);
-                if (removed) free(removed);
-
-                // libero paths
-                free(logical);
-                free(physical);
+            // cleanup - liberar recursos en orden inverso a la asignación
+            if (bloques) {
+                list_destroy_and_destroy_elements(bloques, free);
+            }
+            if (metadata) {
+                config_destroy(metadata);
+            }
+            if (tag_locked && tag_lock) {
+                pthread_mutex_unlock(tag_lock);
+            }
+            if (metadata_path) {
+                free(metadata_path);
+            }
+            if (tag_path) {
+                free(tag_path);
+            }
+            if (file_path) {
+                free(file_path);
             }
         }
-
-        // persistir metadata (SIZE/TAMANIO + BLOCKS/BLOQUES)
-        const char* KEY_BLOCKS_WR =
-            config_has_property(metadata, "BLOCKS")  ? "BLOCKS"  :
-            (config_has_property(metadata, "BLOQUES") ? "BLOQUES" : "BLOCKS");
-        const char* KEY_SIZE_WR =
-            config_has_property(metadata, "SIZE")    ? "SIZE"    :
-            (config_has_property(metadata, "TAMANIO") ? "TAMANIO" : "SIZE");
-
-        // serializo bloques a "[a,b,c]"
-        char* blocks_str = string_new();
-        string_append(&blocks_str, "[");
-        int nblocks = list_size(bloques);
-        for (int i = 0; i < nblocks; ++i){
-            int* pf = (int*) list_get(bloques, i);
-            char* num = string_from_format("%d", pf ? *pf : 0);
-            string_append(&blocks_str, num);
-            free(num);
-            if (i < nblocks - 1) string_append(&blocks_str, ",");
-        }
-        string_append(&blocks_str, "]");
-
-        char* size_str = string_from_format("%lld", (long long)nuevo_tam);
-
-        // escribo y guardo metadata
-        config_set_value(metadata, KEY_BLOCKS_WR, blocks_str);
-        config_set_value(metadata, KEY_SIZE_WR,   size_str);
-        config_save(metadata);
-
-        // libero buffers
-        free(blocks_str);
-        free(size_str);
-
-    // cleanup estructuras
-    cleanup_bloques:
-        if (bloques) { list_destroy_and_destroy_elements(bloques, free); bloques = NULL; }
-
-    cleanup_metadata:
-        if (metadata) config_destroy(metadata);
-
-    // unlock tag
-    cleanup:
-        pthread_mutex_unlock(tag_lock);
-
-    // cleanup paths
-    cleanup_no_lock:
-        if (metadata_path) free(metadata_path);
-        if (tag_path)     free(tag_path);
-        if (file_path)    free(file_path);
-    }
     break;
 
     case TAG_FILE:
