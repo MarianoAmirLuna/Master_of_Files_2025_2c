@@ -72,7 +72,15 @@ void tratar_mensaje(t_list* pack, int sock_client)
                 File_inexistente
                 Tag_inexistente
                 Espacio_Insuficiente
+
             */
+
+            /* Tema importante:
+                - Cuando hay que reducir la cantidad de bloques fisicos (porque hay que achicar el archivo), 
+                  hay que fijarse si el bloque fisico al que apunta el bloque logico eliminado no es referenciado por ningun otro File:Tag,
+                  y en ese caso, liberarlo en el bitmap.
+            */
+
 
             // parseo args
             char* file = args[0];
