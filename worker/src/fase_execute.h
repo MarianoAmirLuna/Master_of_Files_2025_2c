@@ -79,9 +79,34 @@ int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
     }
 }
 
-int realizar_lectura(void* dest, int dir_logica, int tam)
+/// @brief guarda en "dest" una cantidad de bytes a partir de la dir. logica dada
+/// @param dest 
+/// @param file_tag 
+/// @param dir_logica 
+/// @param tam 
+/// @return 0 si se leyó todo el tamaño en una sola pagina, -1 si no alcanzo el espacio para el tamaño a leer
+int realizar_lectura(void* dest, char* file_tag, int dir_logica, int tam)
 {
+    int frame=obtener_frame(file_tag, dir_logica);
+    int offset = obtener_offset(file_tag, dir_logica);
+    marco* el_marco = list_get(lista_frames, frame);
+    void* base = el_marco->inicio;
+    int ret;
 
+    int bytes_a_leer;
+    if(block_size - offset >= tam) //si queda mas tamaño en pagina del que necesito, puedo hacer una leida sola
+    {
+        bytes_a_leer=tam;
+        ret = 0;
+    }
+    else //si el tamaño es mas grande, necesito leer varias paginas
+    {
+        bytes_a_leer = block_size - offset;
+        ret = -1;
+    }
+
+    memcpy(dest, base, bytes_a_leer);
+    return ret;
 }
 
 void* actualizar_pagina(char *file_tag, int pagina){
@@ -149,7 +174,7 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
     int restante_en_pag = block_size-offset;
     int espacio_ya_escrito=0;
 
-    for(int indice=dir_base; espacio_ya_escrito < strlen(contenido); indice += (espacio_ya_escrito==0?restante_en_pag:block_size)) //llego el fakin operador ternario (si lees esto, perdon)
+    for(int indice=dir_base; espacio_ya_escrito < strlen(contenido); indice += (espacio_ya_escrito==0?restante_en_pag:block_size)) //(si lees esto, perdon)
     {
         espacio_ya_escrito=indice-dir_base;
         pagina = calcular_pagina(indice);
@@ -206,7 +231,7 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
             actualizar_pagina(file_tag, pagina);
         }
         // Apartir de acá existe la DL en memoria
-        realizar_lectura(leido+espacio_ya_leido, indice, tam-espacio_ya_leido);
+        realizar_lectura(leido+espacio_ya_leido, file_tag, indice, tam-espacio_ya_leido);
     }
 }
 
