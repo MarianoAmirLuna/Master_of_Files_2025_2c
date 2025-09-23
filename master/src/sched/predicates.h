@@ -104,6 +104,8 @@ int by_query_qid(void* elem, void* by){
 
 worker* get_first_worker_free()
 {
+    if(list_is_empty(workers))
+        return NULL;
     void* w = list_find_by(workers, by_worker_free, (int)1);
     return cast_worker(w);
 }
@@ -122,6 +124,20 @@ worker* get_worker_by_wid(wid id){
 
 query* get_query_by_qid(qid id){
     return cast_query(list_find_by(queries, by_query_qid, (int)id));
+}
+
+void on_changed(void(*cbMeth)(void*), void* argsMeth){
+    if(cbMeth != NULL){
+        cbMeth(argsMeth);
+    }
+}
+
+void on_query_state_changed(void* elem){
+    query* q = cast_query(elem);
+    log_light_blue(logger, "Un query cambió de estado");
+    if(q == NULL){
+        log_error(logger, "%s:%d", __func__, __LINE__);
+    }
 }
 
 /*int by_worker_free(void* elem, void *by){

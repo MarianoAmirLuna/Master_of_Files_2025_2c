@@ -200,6 +200,8 @@ void disconnect_callback(void* params){
                 send_and_free_packet(p, q->fd);
             }
             q->sp = STATE_EXIT;
+            on_changed(on_query_state_changed, q);
+            
             int id_worker = w->id;
             int qid = w->id_query;
             

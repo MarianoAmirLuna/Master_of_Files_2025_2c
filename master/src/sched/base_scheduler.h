@@ -53,6 +53,11 @@ worker* get_worker_by_qid(qid id);
 worker* get_worker_by_wid(wid id);
 query* get_query_by_qid(qid id);
 
+
+void on_query_state_changed(void* elem);
+void on_changed(void(*cbMeth)(void*), void* argsMeth);
+
+
 int increment_priority(query* q){
     //Recordar que cuanto menor es el número mayor es su prioridad. No confundir.
     //Ejemplo, Prioridad =0 es máxima, Prioridad = 4 es baja, etc.
@@ -90,6 +95,7 @@ void query_to(query* q, state_process to){
         add_query_on_state(q, to); //No le importa el t_queue por que t_queue se invocó previamente un pop y ese pop ya lo removió
     }
     q->sp = to;
+    on_changed(on_query_state_changed, q);
 }
 
 void print_query(query* q){
