@@ -243,8 +243,14 @@ void ejecutar_commit(char *file, char *tag)
 {
 }
 
-void ejecutar_flush(char *file, char *tag)
+void ejecutar_flush(char *file_tag)
 {
+    t_list* tabla = obtener_tabla_paginas(file_tag);
+    for(int i=0;i<list_size(tabla);i++)
+    {
+        entrada_tabla_pags* entrada = list_get(tabla, i);
+        actualizar_pagina_en_storage(entrada);
+    }
 }
 
 void ejecutar_delete(char *file, char *tag)

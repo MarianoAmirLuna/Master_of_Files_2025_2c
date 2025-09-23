@@ -142,15 +142,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==FLUSH)
     {
-        char* file = strtok(parametro1, ":");
-        char* tag = strtok(NULL, "");
-
-        //paquete
-        t_packet* paq = create_packet();
-        add_int_to_packet(paq, CREATE_FILE);
-        add_string_to_packet(paq, file);
-        add_string_to_packet(paq, tag);
-        send_and_free_packet(paq, sock_storage);
+        ejecutar_flush(parametro1); //TODO: ver si un flush a un archivo sin paginas cargadas da error
     }
     else if(caso==DELETE)
     {
