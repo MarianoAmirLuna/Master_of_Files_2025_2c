@@ -152,9 +152,11 @@ query* get_query_by_qid(qid id){
 int increment_priority(query* q){
     //Recordar que cuanto menor es el número mayor es su prioridad. No confundir.
     //Ejemplo, Prioridad =0 es máxima, Prioridad = 4 es baja, etc.
+    int old_priority = q->priority;
     q->priority--;
     if(q->priority <= 0)
         q->priority = 0;
+    log_info(logger, "## %d Cambio de prioridad: %d - %d", q->id, old_priority, q->priority);
     return q->priority;
 }
 

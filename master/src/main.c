@@ -176,6 +176,10 @@ void disconnect_callback(void* params){
                 //log_info(logger, "## Se desaloja la Query")
             }
         }
+
+        log_info(logger, "## Se desconecta un Query Control. Se finaliza la Query %d con prioridad %d. Nivel multiprocesamiento %d", 
+            id_query, q->priority, list_size(workers)
+        );
     }
     
     if(ocm == MODULE_WORKER){
