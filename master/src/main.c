@@ -171,7 +171,8 @@ void disconnect_callback(void* params){
                 t_list* recpd = recv_operation_packet(w->fd);
                 response resp = list_get_int(recpd ,0);
                 if(resp == SUCCESS){
-                    query_to(q, STATE_EXIT); //TODO: Revisar... porque pasaría a Ready si se desconectó este Query. Básicamente se rre murió.
+                    //TODO: Revisar... porque pasaría a Ready si se desconectó este Query. Básicamente se rre murió.
+                    query_to(q, STATE_EXIT); 
                     //Ok puedo notificar error al Query
                 }
                 //Me tendra que responder el PC???
@@ -191,7 +192,8 @@ void disconnect_callback(void* params){
         wid id_worker = id;
         //Si se desconectó un worker la query que se encontraba en ejecución en ese Worker se finalizará con error y notificará al Query Control correspondiente.
         int idx = -1;
-        worker* w = get_worker_by_wid(id_worker);
+        //worker* w = get_worker_by_wid(id_worker);
+        worker* w = list_find_by_idx_list(workers, by_worker_wid, (int)id_worker, &idx);
         //worker* w = get_worker_by_fd(sock_client, &idx);
         
         if(idx != -1 && w != NULL){
@@ -210,8 +212,8 @@ void disconnect_callback(void* params){
             int id_worker = w->id;
             int qid = w->id_query;
             
-            //TODO: free pointer worker
-            list_remove(workers, idx);
+            //WARNING: Test this
+            free_element(list_remove(workers, idx));
             degree_multiprocess = list_size(workers);
 
             log_info(logger, "## Se desconecta el Worker %d - Se finaliza la Query %d - Cantidad total de Workers: %d",
@@ -221,7 +223,6 @@ void disconnect_callback(void* params){
             );
             w->is_free=1;
         }
-        
     }
     log_warning(logger, "Se desconecto el cliente de %s fd:%d", ocm_to_string(ocm), sock_client);
 }
