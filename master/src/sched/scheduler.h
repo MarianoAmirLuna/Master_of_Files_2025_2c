@@ -35,6 +35,10 @@ void execute_this_query_on_this_worker(query* q, worker* w){
     w->id_query = q->id;
     log_info(logger, "## Se envía la Query %d al Worker %d", q->id, w->id_query);
     send_and_free_packet(p, w->fd);
+
+    t_packet* pq = create_packet();
+    add_int_to_packet(pq, REQUEST_EXECUTE_QUERY);
+    send_and_free_packet(pq, q->fd);  //Debido al TP imprime en Query Control la solicitud de ejec. Creería que debo notificarlo
     
     t_list* pack = recv_operation_packet(w->fd); //Debería primero recibir después de esto para saber si fue SUCCESS el ejecutar query?? antes de setear como libre el worker.
     if(list_get_int(pack, 0) == SUCCESS){

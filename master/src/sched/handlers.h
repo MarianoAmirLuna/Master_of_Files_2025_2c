@@ -18,6 +18,13 @@ void on_query_state_changed(void* elem){
     if(q == NULL){
         log_error(logger, "%s:%d", __func__, __LINE__);
     }
+    if(q->sp == STATE_EXIT){
+        t_packet* p = create_packet();
+        add_int_to_packet(p, REQUEST_KILL); //Según el diagrama algo que está en EXIT nunca pasa a otro estado. IS GONE
+        //TODO NECESITO EL MOTIVO... HOLY SHIT
+        add_string_to_packet(p, "Motivo... OPA necesito el motivo...");
+        send_and_free_packet(p, q->fd); //Notifico al Query Control que se
+    }
 }
 
 void on_query_priority_changed(void* elem){

@@ -171,6 +171,7 @@ void disconnect_callback(void* params){
                 t_list* recpd = recv_operation_packet(w->fd);
                 response resp = list_get_int(recpd ,0);
                 if(resp == SUCCESS){
+                    query_to(q, STATE_EXIT); //TODO: Revisar... porque pasaría a Ready si se desconectó este Query. Básicamente se rre murió.
                     //Ok puedo notificar error al Query
                 }
                 //Me tendra que responder el PC???
