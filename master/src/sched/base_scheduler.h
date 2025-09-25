@@ -55,6 +55,7 @@ query* get_query_by_qid(qid id);
 
 
 void on_query_state_changed(void* elem);
+void on_query_priority_changed(void* elem);
 void on_changed(void(*cbMeth)(void*), void* argsMeth);
 
 
@@ -66,6 +67,7 @@ int increment_priority(query* q){
     if(q->priority <= 0)
         q->priority = 0;
     log_info(logger, "## %d Cambio de prioridad: %d - %d", q->id, old_priority, q->priority);
+    on_changed(on_query_priority_changed, q);
     return q->priority;
 }
 

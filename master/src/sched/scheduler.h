@@ -21,10 +21,33 @@ query* get_query_available(){
 int have_query_ready(){
     return queue_size(get_queue_by_sp(STATE_READY)) > 0;
 }
+void execute_this_query_on_this_worker(query* q, worker* w){
+    //TODO: Bloquear este subproceso para prevenir condiciones de carrera
+    if(q == NULL || w == NULL){
+        log_error(logger, "THE FUCK (%s:%d)",__func__,__LINE__);
+        return;
+    }
 
+    t_packet* p = create_packet();
+    add_int_to_packet(p, EJECUTAR_QUERY);
+    add_string_to_packet(p, q->archive_query); //enviarle el nombre del query a ejecutar
+    add_int_to_packet(p, q->pc);
+    w->id_query = q->id;
+    log_info(logger, "## Se envía la Query %d al Worker %d", q->id, w->id_query);
+    send_and_free_packet(p, w->fd);
+    
+    t_list* pack = recv_operation_packet(w->fd); //Debería primero recibir después de esto para saber si fue SUCCESS el ejecutar query?? antes de setear como libre el worker.
+    if(list_get_int(pack, 0) == SUCCESS){
+        query_to(q, STATE_EXEC);
+        w->is_free=0;
+    }
+}
 void execute_worker(){
     log_light_blue(logger, "%s", "On ExecuteWorker");
     
+    //TODO: Debo comprobar entre todas las queries tanto EXEC como en READY si existe alguno más prioritario que los que ya se ejecutan en worker para que este la desaloje
+    
+
     //TODO: Tengo que agarrar un worker libre (si lo hay) y si existe algún query a ejecutar en ready tengo que agarrar ese y mandarlo a EXEC
     worker* w = get_first_worker_free();
     if(w == NULL || !have_query_ready()) //De Morgan papá. Viste que es útil la matemática discreta.
@@ -37,20 +60,7 @@ void execute_worker(){
         exit(EXIT_FAILURE);
     }
 
-    
-    t_packet* p = create_packet();
-    add_int_to_packet(p, EJECUTAR_QUERY);
-    add_string_to_packet(p, q->archive_query); //enviarle el nombre del query a ejecutar
-    add_int_to_packet(p, q->pc);
-    w->id_query = q->id;
-    
-    send_and_free_packet(p, w->fd);
-
-    t_list* pack = recv_operation_packet(w->fd); //Debería primero recibir después de esto para saber si fue SUCCESS el ejecutar query?? antes de setear como libre el worker.
-    if(list_get_int(pack, 0) == SUCCESS){
-        query_to(q, STATE_EXEC);
-        w->is_free=0;
-    }
+    execute_this_query_on_this_worker(q, w);
 }
 
 //Se debe instanciar en un nuevo subproceso

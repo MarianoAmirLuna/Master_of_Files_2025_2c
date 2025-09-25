@@ -5,8 +5,12 @@
 #include "sched/scheduler.h"
 #endif
 
-#ifndef SCHED_PREDICATES_H
+/*#ifndef SCHED_PREDICATES_H
 #include "sched/predicates.h"
+#endif*/
+
+#ifndef SCHED_HANDLERS_H
+#include "sched/handlers.h"
 #endif
 
 op_code_module itself_ocm;

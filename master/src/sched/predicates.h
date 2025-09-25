@@ -5,6 +5,7 @@
 #include "base_scheduler.h"
 #endif
 
+
 int is_valid_sp(state_process from, state_process to){
     if(from ==STATE_READY && to != STATE_READY)
         return 1;
@@ -36,8 +37,6 @@ t_queue* get_queue_by_sp(state_process sp){
     return (t_queue*)dictionary_get(dict_state, state_to_string(sp));
     // debido al FIFO
 }
-
-
 
 void add_query_on_state(query* q, state_process sp){
     if(is_queue_sp(sp)){
@@ -71,7 +70,7 @@ query* cast_query(void* elem){
 }
 int cast_int(void* elem){
     return (int)elem;
-    //TODO: check this
+    //WARNING: check this
     /*int res = 0;
     memcpy(&res, elem, sizeof(int));
     return res;*/
@@ -82,24 +81,28 @@ bool order_query_by(void* a, void* b){
 }
 
 int by_worker_free(void* elem, void *by){
-    return ((worker*)elem)->is_free ==cast_int(by);
+    return cast_worker(elem)->is_free ==cast_int(by);
 }
 
 
 int by_worker_fd(void* elem, void *by){
-    return ((worker*)elem)->fd == cast_int(by);
+    return cast_worker(elem)->fd == cast_int(by);
 }
 
 int by_worker_wid(void* elem, void *by){
-    return ((worker*)elem)->id == cast_int(by);
+    return cast_worker(elem)->id == cast_int(by);
 }
 
 int by_worker_qid(void* elem, void *by){
-    return ((worker*)elem)->id_query == cast_int(by);
+    return cast_worker(elem)->id_query == cast_int(by);
 }
 
 int by_query_qid(void* elem, void* by){
-    return ((query*)elem)->id == cast_int(by);
+    return cast_query(elem)->id == cast_int(by);
+}
+
+int by_equal_query_qid_on_worker(void*elem, void* by){
+    return cast_worker(elem)->id_query == cast_int(by);
 }
 
 worker* get_first_worker_free()
@@ -126,20 +129,16 @@ query* get_query_by_qid(qid id){
     return cast_query(list_find_by(queries, by_query_qid, (int)id));
 }
 
-void on_changed(void(*cbMeth)(void*), void* argsMeth){
-    if(cbMeth != NULL){
-        cbMeth(argsMeth);
-    }
+int is_most_priority(void* a, void* b){
+    return cast_query(a)->priority < cast_query(b)->priority;
 }
 
-void on_query_state_changed(void* elem){
-    query* q = cast_query(elem);
-    log_light_blue(logger, "Un query cambió de estado");
-    if(q == NULL){
-        log_error(logger, "%s:%d", __func__, __LINE__);
-    }
+/// @brief Comprueba si existe algún workers que tiene asignado esta qid
+/// @param id id del query
+/// @return bool
+int is_query_assigned(qid id){
+    return list_exists(workers, by_equal_query_qid_on_worker, (void*)id);
 }
-
 /*int by_worker_free(void* elem, void *by){
     worker* wa = (worker*)elem;
     int byval = (int)by;

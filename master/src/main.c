@@ -131,6 +131,7 @@ void* go_loop_net(void* params){
     
     return NULL;
 }
+
 void disconnect_callback(void* params){
 
     int sock_client = 0;
@@ -173,7 +174,10 @@ void disconnect_callback(void* params){
                     //Ok puedo notificar error al Query
                 }
                 //Me tendra que responder el PC???
-                //log_info(logger, "## Se desaloja la Query")
+                log_info(logger, "## Se desaloja la Query %d del Worker %d",
+                    q->id,
+                    w->id
+                );
             }
         }
 
@@ -258,16 +262,34 @@ void packet_callback(void* params){
 }
 
 void work_query_control(t_list* packet, int id, int sock){
-
+    
 }
 
 void work_worker(t_list* pack, int id, int sock){
     int opcode = list_get_int(pack, 0);
-
+    worker* w = get_worker_by_wid(id);
     if(opcode == QUERY_END){
-        worker* w = get_worker_by_wid(id);
+        w->id_query = -1; //Debo especificar que ahora este worker no tiene asignado ningún query.
         log_info(logger, "## Se terminó la Query: %d en el Worker %d",
             w->id_query, id
         );
+    }
+    if(opcode == REQUEST_READ){
+        query* q = get_query_by_qid(w->id_query);
+        
+        char* filetag = list_get_str(pack,1);
+        char* content = list_get_str(pack, 2);
+        t_packet* p = create_packet();
+        add_int_to_packet(p, opcode);
+        add_string_to_packet(p, filetag);
+        add_string_to_packet(p, content);
+        send_and_free_packet(p, q->fd);
+        log_info(logger, "## Se envia un mensaje de lectura de la Query %d en el Worker %d al Query Control", 
+            w->id_query, id
+        );
+
+        //TODO: Should i free these pointers??
+        free(content);
+        free(filetag);
     }
 }
