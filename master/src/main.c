@@ -271,10 +271,11 @@ void work_worker(t_list* pack, int id, int sock){
     int opcode = list_get_int(pack, 0);
     worker* w = get_worker_by_wid(id);
     if(opcode == QUERY_END){
-        w->id_query = -1; //Debo especificar que ahora este worker no tiene asignado ningún query.
         log_info(logger, "## Se terminó la Query: %d en el Worker %d",
             w->id_query, id
         );
+        w->id_query = -1; //Debo especificar que ahora este worker no tiene asignado ningún query.
+        w->is_free=1;
     }
     if(opcode == REQUEST_READ){
         query* q = get_query_by_qid(w->id_query);
