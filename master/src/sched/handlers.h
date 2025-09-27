@@ -46,7 +46,7 @@ void on_query_priority_changed(void* elem){
 
         t_packet* p = create_packet();
         add_int_to_packet(p, REQUEST_DESALOJO);
-        //Debería también pasar el query_id???
+        add_int_to_packet(p, q->id);
         send_and_free_packet(p, w->fd); //Envío y espero su respuesta de success
 
         t_list* re = recv_operation_packet(w->fd);
@@ -54,6 +54,8 @@ void on_query_priority_changed(void* elem){
         {
             log_error(logger, "No se pudo desalojar el worker %d retorno un valor distinto de SUCCESS", w->id);
             continue; //Debería hacer continue???
+        }else{
+            log_pink(logger, "Desalojó satisfactoriamente el worker %d", w->id);
         }
 
         w->is_free = 1; //El worker ahora está libre

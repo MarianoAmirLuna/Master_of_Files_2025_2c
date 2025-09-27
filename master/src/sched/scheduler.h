@@ -30,12 +30,15 @@ void execute_this_query_on_this_worker(query* q, worker* w){
 
     t_packet* p = create_packet();
     add_int_to_packet(p, EJECUTAR_QUERY);
+    add_int_to_packet(p, q->id); //enviar el id_query
     add_string_to_packet(p, q->archive_query); //enviarle el nombre del query a ejecutar
     add_int_to_packet(p, q->pc);
+    
     w->id_query = q->id;
     log_info(logger, "## Se envía la Query %d al Worker %d", q->id, w->id_query);
     send_and_free_packet(p, w->fd);
 
+    //Le hago saber al query que mandé algo a ejecutar
     t_packet* pq = create_packet();
     add_int_to_packet(pq, REQUEST_EXECUTE_QUERY);
     send_and_free_packet(pq, q->fd);  //Debido al TP imprime en Query Control la solicitud de ejec. Creería que debo notificarlo

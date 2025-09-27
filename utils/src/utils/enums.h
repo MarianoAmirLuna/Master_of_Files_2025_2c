@@ -73,6 +73,7 @@ typedef enum{
     REQUEST_CHECK_SPACE_MEMORY,
 	REQUEST_INSTRUCTIONS_MEMORY,
     /// @brief Cuando el Master debe desalojar el Query al Worker
+    /// [id_query]
     REQUEST_DESALOJO,
     REQUEST_KILL,
     REQUEST_WRITE,
@@ -85,6 +86,7 @@ typedef enum{
 // CPU //
 
 typedef enum{
+    /// @brief [id_query, archivo_query, pc]
     EJECUTAR_QUERY=REQUEST_KNOW+1
 }op_code_master;
 

@@ -3,10 +3,9 @@
 
 #include "base.h"
 
-
-
-
-void tratar_mensaje(t_list* pack, int sock_client)
+//NOTE: Added worker* dentro de esa estructura está tnato el id como el id_query, creería que hay que tener en cuenta qué id_worker envía el mensaje
+//NOTESE QUE EXISTE t_list* workers 
+void tratar_mensaje(t_list* pack, worker* w, int sock_client)
 {
     if(pack == NULL) {
         log_error(logger, "Error recibiendo paquete");
@@ -53,7 +52,10 @@ void tratar_mensaje(t_list* pack, int sock_client)
             path = string_from_format("%s/metadata.config", path);
             crear_metadata_config(path, g_block_size, list_create(), WORK_IN_PROGRESS);
             free(path);
+
+            log_info(logger, "## %d - File Creado %s:%s", w->id_query, args[0], args[1]);
         }
+        
         break;
 
     case TRUNCATE_FILE:
@@ -85,7 +87,7 @@ void tratar_mensaje(t_list* pack, int sock_client)
             // parseo args
             char* file = args[0];
             char* tag  = args[1];
-            off_t nuevo_tam = atoll(args[2]);
+            off_t nuevo_tam = atoll(args[2]); //LONG INT??? ENFERMO
 
             // paths
             char* file_path     = string_from_format("%s/files/%s", cs.punto_montaje, file);
@@ -278,6 +280,8 @@ void tratar_mensaje(t_list* pack, int sock_client)
             if (file_path) {
                 free(file_path);
             }
+
+            log_info(logger, "## %d - File Truncado %s:%s Tamaño %d", w->id_query, args[0], args[1], nuevo_tam);
         }
     break;
 
@@ -292,7 +296,8 @@ void tratar_mensaje(t_list* pack, int sock_client)
                 File_inexistente
                 Tag_inexistente
             */ //son los mismos hard links no nuevos bloques, por lo que el espacio no seria un problema 
-            log_info(logger, "Ejecutando la operacion TAG_FILE");
+            log_info(logger, "Ejecutando la operacion TAG_FILE (NOT IMPLEMENTED: %s:%d)", __func__,__LINE__);
+            
         }
         break;
 
@@ -311,7 +316,7 @@ void tratar_mensaje(t_list* pack, int sock_client)
                 File_inexistente
                 Tag_inexistente
             */ // cuidado de no borrar hard links incorrectos
-            log_info(logger, "Ejecutando la operacion COMMIT_TAG");
+            log_info(logger, "Ejecutando la operacion COMMIT_TAG (NOT IMPLEMENTED: %s:%d)", __func__,__LINE__);
         }
         break;
 
@@ -375,6 +380,7 @@ void tratar_mensaje(t_list* pack, int sock_client)
 
             pthread_mutex_unlock(tag_lock);
             log_info(logger, "Ejecutando la operacion WRITE_BLOCK");
+            log_info(logger, "## %d - Bloque Lógico Escrito %s:%s Número de Bloque %d", w->id_query, args[0], args[1], bloque_logico);
         }
         break;
 
@@ -388,7 +394,7 @@ void tratar_mensaje(t_list* pack, int sock_client)
                 Tag_inexistente
                 Lectura_o_escritura_fuera_de_limite
             */
-            log_info(logger, "Ejecutando la operacion READ_BLOCK");
+            log_info(logger, "Ejecutando la operacion READ_BLOCK (NOT IMPLEMENTED: %s:%d)", __func__,__LINE__);
         }
         break;
 
@@ -404,7 +410,7 @@ void tratar_mensaje(t_list* pack, int sock_client)
                 File_inexistente
                 Tag_inexistente
             */
-            log_info(logger, "Ejecutando la operacion DELETE_TAG");
+            log_info(logger, "Ejecutando la operacion DELETE_TAG (NOT IMPLEMENTED: %s:%d)", __func__,__LINE__);
         }
         break;
 
@@ -415,7 +421,7 @@ void tratar_mensaje(t_list* pack, int sock_client)
 
     // esto es una respuesta barata, despues le agrego a cada uno su respuesta personalizada
     t_packet* response = create_packet();
-    int result_code = 999; // ponele que es un ok por ahora
+    int result_code = 999; // ponele que es un ok por ahora //Que tarado.
     add_int_to_packet(response, result_code);
     send_and_free_packet(response, sock_client);
             

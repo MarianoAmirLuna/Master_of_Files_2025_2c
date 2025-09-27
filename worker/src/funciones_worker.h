@@ -47,21 +47,24 @@ void ejecutar_instruccion_v2(instr_code caso, char* instr){
         add_int_to_packet(pack,atoi(middle));
         if(caso == READ){
             add_int_to_packet(pack,atoi(right));
+            log_info(logger, "## Query %d: Acción LEER - Dirección Física: %d - Valor Leído %s", actual_worker->id_query, atoi(right), left);
         }else{
             add_string_to_packet(pack,right);
+            log_info(logger, "## Query %d: Acción ESCRIBIR - Dirección Física: %d - Valor Escrito %s", actual_worker->id_query, atoi(middle), right);
         }
-
+        
         send_and_free_packet(pack, sock_storage);
         free(left);
         free(middle);
         free(right);
+
         return;
     }
     if(caso == END) //este caso no tiene una goma
     {
         send_and_free_packet(pack, sock_storage);
     }
-
+    log_info(logger, "## Query: %d: - Instrucción realizada: %s", actual_worker->id_query, instr);
 }
 
 // FASE EXECUTE //
@@ -102,6 +105,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         int dir_base = atoi(parametro2);
         char* contenido = parametro3;
         ejecutar_write(parametro1, dir_base, contenido);
+        log_info(logger, "## Query %d: Acción ESCRIBIR - Dirección Física: %d - Valor Escrito %s", actual_worker->id_query, dir_base, contenido);
     }
     else if(caso == READ)
     {
@@ -110,6 +114,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         int dir_base = atoi(parametro2);
         int tamanio = atoi(parametro3);
         ejecutar_read(parametro1, dir_base, tamanio);
+        log_info(logger, "## Query %d: Acción Leído - Dirección Física: %d - VALOR NOT IMPLEMENTED", actual_worker->id_query, dir_base);
     }
     else if(caso == TAG)
     {
@@ -142,7 +147,8 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==FLUSH)
     {
-        ejecutar_flush(parametro1); //TODO: ver si un flush a un archivo sin paginas cargadas da error
+        //TODO: ver si un flush a un archivo sin paginas cargadas da error
+        ejecutar_flush(parametro1); 
     }
     else if(caso==DELETE)
     {
@@ -162,6 +168,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         add_int_to_packet(paq, QUERY_END);
         send_and_free_packet(paq, sock_master); 
     }
+    log_info(logger, "## Query: %d: - Instrucción realizada: %s", actual_worker->id_query, instr_to_string(caso));
 }
 
 /*
@@ -194,6 +201,9 @@ void decode_y_execute_v2(char *linea_de_instruccion)
     char* case_str = string_new();
     get_space_instr(linea_de_instruccion, instr, case_str);
     instr_code caso = cast_code(case_str);
+    
+    log_info(logger, "## Query: %d: -FETCH - Program Counter: %d - %s", actual_worker->id_query, pc_actual, instr);
+    
     ejecutar_instruccion_v2(caso, instr);
     free(instr);
     free(case_str);
@@ -227,7 +237,8 @@ void decode_y_execute(char *linea_de_instruccion)
     }
 
     instr_code caso = cast_code(instruccion);
-
+    //NOTE: Se podría crear un campo en actual_worker para el PROGRAM_COUNTER
+    log_info(logger, "## Query: %d: -FETCH - Program Counter: %d - %s", actual_worker->id_query, pc_actual, instruccion);
     ejecutar_instruccion(caso, parametro1, parametro2, parametro3);
 }
 

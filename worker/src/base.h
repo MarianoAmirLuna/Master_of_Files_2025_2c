@@ -15,6 +15,7 @@
 #include "commons/collections/queue.h"
 
 bool esta_libre(void *elem);
+worker* actual_worker;
 op_code_module itself_ocm;
 int sock_master,sock_storage;
 void* memory;

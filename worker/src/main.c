@@ -14,7 +14,9 @@ int main(int argc, char* argv[]) {
         id_worker = 0;
         load_config("worker.config");
     }
-
+    actual_worker = malloc(sizeof(worker));
+    actual_worker->id = id_worker;
+    
     cw = load_config_worker();
 
     inicializar_worker();
@@ -70,19 +72,16 @@ void* connect_to_server(void* params){
         exit(EXIT_FAILURE);
     }
     
+    t_packet* p = create_packet();
+    add_int_to_packet(p,itself_ocm);
+    add_int_to_packet(p, id_worker);
+    send_and_free_packet(p, wcl); //debo enviar john snow e id_worker a sus respectivos módulos conectados
 
     if(ocm == MODULE_STORAGE){
-        send_john_snow_packet(itself_ocm, wcl);
         t_list* l = recv_operation_packet(wcl);
-        block_size = list_get_int(l, 0);
+        block_size = list_get_int(l, 1); //Véase en main.c de Storage en primer índice envían un ENUM BLOCK_SIZE 
         log_orange(logger, "TENGO EL BLOCK SIZE DEL STORAGE: %d", block_size);
         list_destroy_and_destroy_elements(l, free_element);
-    }
-    if(ocm == MODULE_MASTER){
-        t_packet* p = create_packet();
-        add_int_to_packet(p,itself_ocm);
-        add_int_to_packet(p, id_worker); //le envio el id_worker al master
-        send_and_free_packet(p, sock_master);
     }
 
     //add_socket_structure_by_name_ocm_sock_server(ocm_to_string(ocm), ocm, wcl, 0);
@@ -122,9 +121,26 @@ void packet_callback(void* params){
     if(ocm == MODULE_MASTER){
         //ACA RECIBIS UN PAQUETE PROVENIENTE DE MASTER
         if(op_code == EJECUTAR_QUERY){
-            archivo_query_actual =list_get_str(packet, 1);
-            pc_actual = list_get_int(packet, 2);
+            qid id_query =list_get_int(packet, 1);
+            archivo_query_actual =list_get_str(packet, 2);
+            pc_actual = list_get_int(packet, 3);
             is_free=false;
+            actual_worker->id_query = id_query;
+            log_info(logger, "## Query %d: Se recibe la Query. El path de operaciones es: %s", id_query, archivo_query_actual); 
+        }
+        if(op_code == REQUEST_DESALOJO){
+            qid id_query = list_get_int(packet, 1);
+            log_orange(logger, "REQUEST_DESALOJO NOT IMPLEMENTED (%s:%d)", __func__,__LINE__);
+
+            //Implementar su desalojo y responder SUCCESS o FAILURE 
+            //Por ahora respondo success PERO SE DEBE REALIZAR SU IMPLEMENTACION...
+            t_packet* p = create_packet();
+            add_int_to_packet(p, SUCCESS);
+            send_and_free_packet(p, sock);
+            
+            actual_worker->id_query = id_query;
+
+            log_info(logger, "## Query %d: Desalojado por pedido del Master", id_query);
         }
     }
     if(ocm == MODULE_STORAGE){
