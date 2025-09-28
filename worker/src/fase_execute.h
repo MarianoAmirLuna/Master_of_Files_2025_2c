@@ -112,6 +112,7 @@ int realizar_lectura(void* dest, char* file_tag, int dir_logica, int tam)
 }
 
 void* actualizar_pagina(char *file_tag, int pagina){
+    sleep(cw.retardo_memoria);
     t_packet* paq = create_packet();
 
     //TODO: Storage no los necesita juntos?
@@ -130,6 +131,10 @@ void* actualizar_pagina(char *file_tag, int pagina){
     int base = buscar_base_pagina(file_tag, pagina);
     
     memcpy(memory+base, data_bloque, storage_block_size);
+
+    int marco = base/storage_block_size;
+
+    log_info(logger,"Query <%d>: - Memoria Add - File: <%s> - Tag: <%s> - Pagina: <%d> - Marco: <%d>", actual_worker->id_query, file, tag, pagina, marco);
 }
 
 void *reservar_frame(char *file_tag, int pagina)
@@ -148,6 +153,12 @@ void *reservar_frame(char *file_tag, int pagina)
 
     //Si el algoritmo es LRU acá se esta añadiendo una nueva entrada con la referencia más reciente
     queue_push(tabla_pags_global, nueva);
+
+    char* copia_ft = strdup(file_tag);
+    char* file = strtok(copia_ft, ':');
+    char* tag = strtok(NULL, ":");
+    log_info(logger, "Query <%d>: Se asigna el Marco: <%d> a la Página: <%d> perteneciente al - File: <%s> - Tag: <%s>", actual_worker->id_query, indice_frame_table, pagina, file, tag);
+    free(copia_ft);
 
     return frame_libre->inicio;
 }
@@ -182,6 +193,12 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
         pagina = calcular_pagina(indice);
         if (!dl_en_tp(file_tag, pagina))
         {
+            char *copia = strdup(file_tag);
+            char *file = strtok(copia, ":");
+            char *tag = strtok(NULL, ":");
+            log_info(logger, "Query <%d>: - Memoria Miss - File: <%s> - Tag: <%s> - Pagina: <%d>", actual_worker->id_query, file, tag, pagina);
+            free(copia);
+
             if (!hay_espacio_memoria(contenido))
             {
                 log_info(logger, "Iniciando algoritmo de reemplazo");
@@ -202,13 +219,13 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
 
         realizar_escritura(file_tag, indice, contenido+espacio_ya_escrito); //espacio_ya_escrito funciona como un offset para el contenido
     }
-
+    log_info(logger, "Query <%d>: Acción: <ESCRIBIR> - Dirección Física: <%d> - Valor: <%s>", actual_worker->id_query, dir_base, contenido);
     // realizar_escritura(file_tag, dir_base, contenido);
 }
 
 void ejecutar_read(char *file_tag, int dir_base, int tam)
 {
-    void* leido = malloc(tam);
+    void* leido = malloc(tam+1);
     int pagina = calcular_pagina(dir_base);
     int espacio_ya_leido = 0;
     int offset=obtener_offset(file_tag, dir_base);
@@ -235,6 +252,8 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
         // Apartir de acá existe la DL en memoria
         realizar_lectura(leido+espacio_ya_leido, file_tag, indice, tam-espacio_ya_leido);
     }
+    ((char*)leido)[tam]='\0';
+    log_info(logger, "Query <%d>: Acción: <LEER> - Dirección Física: <%d> - Valor: <%s>", actual_worker->id_query, dir_base, leido);
 }
 
 void ejecutar_tag(char *file_old, char *tag_old, char *file_new, char *tag_new)

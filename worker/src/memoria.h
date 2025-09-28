@@ -207,15 +207,23 @@ void liberar_entrada_TPG(entrada_tabla_pags *elemento)
         actualizar_pagina_en_storage(elemento);
     }
 
-    log_info(logger, "Pagina nismeada");
+    char* file = strtok(elemento->file_tag, ":");
+    char* tag = strtok(NULL, ":");
+    log_info(logger, "Query <%d>: Se libera el Marco: <%d> perteneciente al - File: <%s> - Tag: <%s>", actual_worker->id_query, elemento->marco, file, tag);
+
+    free(elemento->file_tag);
+    free(elemento);
+    //log_info(logger, "Pagina nismeada");
     return;
 }
+
 
 void buscar_victima_lru(){
     //Al actualizar las prioridades de la tabla de paginas global siempre
     //que se acceda a la misma provoca que al hacer pop(tabla_pags_global)
     //se saque el de Least Recently Used
-    queue_pop(tabla_pags_global);
+    entrada_tabla_pags* muerta = queue_pop(tabla_pags_global);
+    liberar_entrada_TPG(muerta);
 }
 
 void buscar_victima_clock_modificado(){
