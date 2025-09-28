@@ -61,7 +61,7 @@ int obtener_offset(char *archivo, int donde_comenzar)
 /// @return 0 si entró todo el contenido, 1 si falta contenido por escribir
 int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
 {
-    sleep(cw.retardo_memoria);
+    msleep(cw.retardo_memoria);
     int frame = obtener_frame(file_tag, dir_logica);
     int offset = obtener_offset(file_tag, dir_logica);
     marco *el_marco = list_get(lista_frames, frame);
@@ -88,7 +88,7 @@ int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
 /// @return 0 si se leyó todo el tamaño en una sola pagina, -1 si no alcanzo el espacio para el tamaño a leer
 int realizar_lectura(void* dest, char* file_tag, int dir_logica, int tam)
 {
-    sleep(cw.retardo_memoria);
+    msleep(cw.retardo_memoria);
     int frame=obtener_frame(file_tag, dir_logica);
     int offset = obtener_offset(file_tag, dir_logica);
     marco* el_marco = list_get(lista_frames, frame);
@@ -112,7 +112,7 @@ int realizar_lectura(void* dest, char* file_tag, int dir_logica, int tam)
 }
 
 void* actualizar_pagina(char *file_tag, int pagina){
-    sleep(cw.retardo_memoria);
+    msleep(cw.retardo_memoria);
     t_packet* paq = create_packet();
 
     //TODO: Storage no los necesita juntos?
