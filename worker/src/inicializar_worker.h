@@ -17,7 +17,7 @@ void inicializar_semaforos()
 
 void inicializar_variables()
 {
-    is_free=true;
+    actual_worker->is_free=true;
 }
 
 void inicializar_colecciones(){

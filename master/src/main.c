@@ -170,6 +170,11 @@ void disconnect_callback(void* params){
                 send_and_free_packet(p, w->fd);
                 t_list* recpd = recv_operation_packet(w->fd);
                 response resp = list_get_int(recpd ,0);
+                int pc = list_get_int(recpd, 1);
+                w->pc = pc;
+                log_violet(logger, "PC DEL WORKER %d: PC=%d", w->id, w->pc);
+                /*worker* ww = list_get_worker(recpd, 1);
+                w->pc= ww->pc;*/
                 if(resp == SUCCESS){
                     //TODO: Revisar... porque pasaría a Ready si se desconectó este Query. Básicamente se rre murió.
                     query_to(q, STATE_EXIT); 

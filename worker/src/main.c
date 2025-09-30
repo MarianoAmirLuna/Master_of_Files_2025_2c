@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
     }
     actual_worker = malloc(sizeof(worker));
     actual_worker->id = id_worker;
-    
+    actual_worker->is_free = true;
     cw = load_config_worker();
 
     inicializar_worker();
@@ -123,8 +123,8 @@ void packet_callback(void* params){
         if(op_code == EJECUTAR_QUERY){
             qid id_query =list_get_int(packet, 1);
             archivo_query_actual =list_get_str(packet, 2);
-            pc_actual = list_get_int(packet, 3);
-            is_free=false;
+            actual_worker->pc = list_get_int(packet, 3);
+            actual_worker->is_free=false;
             actual_worker->id_query = id_query;
             log_info(logger, "## Query %d: Se recibe la Query. El path de operaciones es: %s", id_query, archivo_query_actual); 
         }
@@ -136,6 +136,8 @@ void packet_callback(void* params){
             //Por ahora respondo success PERO SE DEBE REALIZAR SU IMPLEMENTACION...
             t_packet* p = create_packet();
             add_int_to_packet(p, SUCCESS);
+            add_int_to_packet(p, actual_worker->pc);
+            //add_worker_to_packet(p, actual_worker);
             send_and_free_packet(p, sock);
             
             actual_worker->id_query = id_query;

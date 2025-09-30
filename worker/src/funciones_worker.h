@@ -201,9 +201,9 @@ void decode_y_execute_v2(char *linea_de_instruccion)
     char* case_str = string_new();
     get_space_instr(linea_de_instruccion, instr, case_str);
     instr_code caso = cast_code(case_str);
-    
-    log_info(logger, "## Query: %d: -FETCH - Program Counter: %d - %s", actual_worker->id_query, pc_actual, instr);
-    
+
+    log_info(logger, "## Query: %d: -FETCH - Program Counter: %d - %s", actual_worker->id_query, actual_worker->pc, instr);
+
     ejecutar_instruccion_v2(caso, instr);
     free(instr);
     free(case_str);
@@ -238,7 +238,7 @@ void decode_y_execute(char *linea_de_instruccion)
 
     instr_code caso = cast_code(instruccion);
     //NOTE: Se podría crear un campo en actual_worker para el PROGRAM_COUNTER
-    log_info(logger, "## Query: %d: -FETCH - Program Counter: %d - %s", actual_worker->id_query, pc_actual, instruccion);
+    log_info(logger, "## Query: %d: -FETCH - Program Counter: %d - %s", actual_worker->id_query, actual_worker->pc, instruccion);
     ejecutar_instruccion(caso, parametro1, parametro2, parametro3);
 }
 
@@ -316,12 +316,18 @@ void loop_atender_queries()
         sem_wait(&sem_query_recibida); //TODO: no se hace post
 
         t_list *instrucciones = obtener_instrucciones(archivo_query_actual);
-        is_free = false;
+        actual_worker->is_free = false;
 
-        while (!is_free) // 1 iteracion por instruccion
+        while (!actual_worker->is_free) // 1 iteracion por instruccion
         {
+            //Incrementá el PC negro y con chequeo de out-bound si tenés 10 instrucciones no te podés ir a la instrucción 11 porque se hace percha.
             // Fase Fetch
-            char *instruccion = list_get(instrucciones, pc_actual);
+            char *instruccion = list_get(instrucciones, actual_worker->pc++);
+
+            if(actual_worker->pc >= list_size(instrucciones))
+            {
+                //QUERY END Termina esto que te rre fuiste
+            }
 
             decode_y_execute(instruccion);
         }
