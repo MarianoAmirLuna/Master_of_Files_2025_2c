@@ -79,6 +79,7 @@ typedef struct{
     qid id_query;
     int fd;
     int is_free;
+    int pc;
 }worker;
 
 /// @brief Estructuras para manejo de memoria principal

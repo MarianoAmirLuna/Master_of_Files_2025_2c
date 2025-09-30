@@ -3,7 +3,9 @@
 
 #include <stdio.h>
 #include "commons/collections/list.h"
-
+#ifndef UTILS_STRUCTS_H
+#include "../utils/structs.h"
+#endif
 int list_get_int(t_list* l, int index){
     if(list_size(l) < index)
         log_error(logger, "INDICE INVALIDO EN LA LISTA %s:%d", __func__, __LINE__);
@@ -16,6 +18,19 @@ char* list_get_str(t_list* l, int index){
     return (char*)list_get(l, index);
     //return buffer_to_string(list_get(l, index));
 }
+
+worker* list_get_worker(t_list* l, int index){
+    void* data = list_get(l, index);
+    worker* w = malloc(sizeof(worker));
+    w->fd=-1; //Recuerden que al recibir un worker por red no se conoce su socket
+    int offset = 0;
+    memcpy(&w->id, data+(offset++), sizeof(int));
+    memcpy(&w->id_query, data+(offset++), sizeof(int));
+    memcpy(&w->is_free, data+(offset++), sizeof(int));
+    memcpy(&w->pc, data+(offset++), sizeof(int));
+    return w;
+}
+
 t_list* list_filter_by(t_list* l, int(*condition)(void*, void*), void* by)
 {
     t_list* res = list_create();

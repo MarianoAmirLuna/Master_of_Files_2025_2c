@@ -116,12 +116,24 @@ void set_opcode_to_packet(t_packet* packet, int opcode){
 
 void add_file_tag_to_packet(t_packet* packet, char* instr){
     char* file=string_new();
-    char* tag= string_new();;
+    char* tag= string_new();
     get_tag_file(instr, file,tag);
     add_string_to_packet(packet, file);
     add_string_to_packet(packet, tag);
     free(file);
     free(tag);
+}
+
+void add_worker_to_packet(t_packet* packet, worker* w){
+
+    int len = sizeof(worker)-1;
+    void* buf = malloc(len); //-1 porque no quiero copiar el campo fd
+    int offset = 0;
+    memcpy(buf+(offset++), &w->id, sizeof(int));
+    memcpy(buf+(offset++), &w->id_query, sizeof(int));
+    memcpy(buf+(offset++), &w->is_free, sizeof(int));
+    memcpy(buf+(offset++), &w->pc, sizeof(int));
+    add_packet(packet, buf, len);
 }
 
 

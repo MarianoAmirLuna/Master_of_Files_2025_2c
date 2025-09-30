@@ -431,6 +431,8 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
         free(args);
     }
 
+    msleep(cs.retardo_operacion); //Según el TP dice que TODAS LAS OPERACIONES se deberá esperar un tiempo de retardo
+
 }
 
 
