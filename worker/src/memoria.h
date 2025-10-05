@@ -218,21 +218,22 @@ void liberar_entrada_TPG(entrada_tabla_pags *elemento)
 }
 
 
-void buscar_victima_lru(){
+entrada_tabla_pags* buscar_victima_lru(){
     //Al actualizar las prioridades de la tabla de paginas global siempre
     //que se acceda a la misma provoca que al hacer pop(tabla_pags_global)
     //se saque el de Least Recently Used
-    entrada_tabla_pags* muerta = queue_pop(tabla_pags_global);
-    liberar_entrada_TPG(muerta);
+    return queue_pop(tabla_pags_global);
+    
+    //liberar_entrada_TPG(muerta);
 }
 
-void buscar_victima_clock_modificado(){
+entrada_tabla_pags* buscar_victima_clock_modificado(){
     //  Primera pasada: Buscar (0,0) 
     for (int i = 0; i < queue_size(tabla_pags_global); i++) {
         entrada_tabla_pags* elemento = queue_pop(tabla_pags_global);
         if (elemento->uso == false && elemento->modificada == false) {
-            liberar_entrada_TPG(elemento);
-            return;
+            //liberar_entrada_TPG(elemento);
+            return elemento;
         }
         queue_push(tabla_pags_global, elemento);
     }
@@ -245,8 +246,8 @@ void buscar_victima_clock_modificado(){
         
         if (elemento->uso == false && elemento->modificada == true) {
             // Encontramos la víctima (0,1). La liberamos y salimos.
-            liberar_entrada_TPG(elemento);
-            return;
+            //liberar_entrada_TPG(elemento);
+            return elemento;
         }
         
         // Si no es la víctima, reseteamos su bit de uso.
@@ -258,16 +259,20 @@ void buscar_victima_clock_modificado(){
     buscar_victima_clock_modificado();
 }
 
-void seleccionar_victima()
+entrada_tabla_pags* seleccionar_victima()
 {
+    entrada_tabla_pags* victima;
+
     if (R_LRU == cw.algoritmo_reemplazo)
     {
-        buscar_victima_lru();
+        victima = buscar_victima_lru();
     }
     else
     {
-        buscar_victima_clock_modificado();
+        victima =buscar_victima_clock_modificado();
     }
+
+    return victima;
 }
 
 #endif

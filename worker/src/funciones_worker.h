@@ -105,7 +105,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         int dir_base = atoi(parametro2);
         char* contenido = parametro3;
         ejecutar_write(parametro1, dir_base, contenido);
-        log_info(logger, "## Query %d: Acción ESCRIBIR - Dirección Física: %d - Valor Escrito %s", actual_worker->id_query, dir_base, contenido);
+        //log_info(logger, "## Query %d: Acción ESCRIBIR - Dirección Física: %d - Valor Escrito %s", actual_worker->id_query, dir_base, contenido);
     }
     else if(caso == READ)
     {
@@ -202,7 +202,6 @@ void decode_y_execute_v2(char *linea_de_instruccion)
     get_space_instr(linea_de_instruccion, instr, case_str);
     instr_code caso = cast_code(case_str);
 
-    log_info(logger, "## Query: %d: -FETCH - Program Counter: %d - %s", actual_worker->id_query, actual_worker->pc, instr);
 
     ejecutar_instruccion_v2(caso, instr);
     free(instr);
@@ -323,6 +322,8 @@ void loop_atender_queries()
             //Incrementá el PC negro y con chequeo de out-bound si tenés 10 instrucciones no te podés ir a la instrucción 11 porque se hace percha.
             // Fase Fetch
             char *instruccion = list_get(instrucciones, actual_worker->pc++);
+
+            log_info(logger, "## Query: %d: -FETCH - Program Counter: %d - %s", actual_worker->id_query, actual_worker->pc, instruccion);
 
             if(actual_worker->pc >= list_size(instrucciones))
             {

@@ -183,13 +183,14 @@ typedef enum{
 typedef enum{
     BLOCK_SIZE = QUERY_END+1,
     GET_BLOCK_DATA,
-    RETURN_BLOCK_DATA
+    INSTRUCTION_ERROR,
+    RETURN_BLOCK_DATA,
 }storage_worker_data;
 
 typedef enum{
     /// @brief Esta operación creará un nuevo File dentro del FS. Para ello recibirá el nombre del File y un Tag inicial para crearlo.
     ///Deberá crear el archivo de metadata en estado WORK_IN_PROGRESS y no asignarle ningún bloque.
-    OK_CREATE_FILE = COMMITED+1,
+    OK_CREATE_FILE = RETURN_BLOCK_DATA+1,
     /// @brief Esta operación se encargará de modificar el tamaño del File:Tag especificados agrandando o achicando el tamaño del mismo para reflejar el nuevo tamaño deseado (actualizando la metadata necesaria).
     /// Al incrementar el tamaño del File, se le asignarán tantos bloques lógicos (hard links) como sea necesario. Inicialmente, todos ellos deberán apuntar el bloque físico nro 0.
     /// Al reducir el tamaño del File, se deberán desasignar tantos bloques lógicos como sea necesario (empezando por el final del archivo). Si el bloque físico al que apunta el bloque lógico eliminado no es referenciado por ningún otro File:Tag, deberá ser marcado como libre en el bitmap.
@@ -207,5 +208,9 @@ typedef enum{
     /// @brief Esta operación eliminará el directorio correspondiente al File:Tag indicado. Al realizar esta operación, si el bloque físico al que apunta cada bloque lógico eliminado no es referenciado por ningún otro File:Tag, deberá ser marcado como libre en el bitmap.
     OK_DELETE_TAG
 }ok_storage_operation;
+
+typedef enum{
+    QUERY_DESALOJADA = OK_DELETE_TAG+1
+}master_worker_data;
 
 #endif

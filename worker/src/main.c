@@ -130,7 +130,7 @@ void packet_callback(void* params){
         }
         if(op_code == REQUEST_DESALOJO){
             qid id_query = list_get_int(packet, 1);
-            log_orange(logger, "REQUEST_DESALOJO NOT IMPLEMENTED (%s:%d)", __func__,__LINE__);
+            //log_orange(logger, "REQUEST_DESALOJO NOT IMPLEMENTED (%s:%d)", __func__,__LINE__);
 
             //Implementar su desalojo y responder SUCCESS o FAILURE 
             //Por ahora respondo success PERO SE DEBE REALIZAR SU IMPLEMENTACION...
@@ -156,6 +156,11 @@ void packet_callback(void* params){
             char* data = list_get_int(packet, 1);
             memcpy(data_bloque, data, storage_block_size);
             sem_post(&sem_bloque_recibido);
+        }
+        if(op_code==INSTRUCTION_ERROR)
+        {
+            t_packet* paq=create_packet_opcode(INSTRUCTION_ERROR);
+            send_and_free_packet(paq, sock_master);
         }
     }
     
