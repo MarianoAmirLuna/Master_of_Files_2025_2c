@@ -36,6 +36,7 @@ void on_query_priority_changed(void* elem){
     //Desalojar un worker que tenga un query de menor prioridad (número mayor)
     for(int i=0;i<list_size(workers);i++){
         worker* w = cast_worker(list_get(workers, i));
+        log_orange(logger, "Existe worker y su id_query es %d", w->id_query);
         query* q_worker = get_query_by_qid(w->id_query);
         if(w == NULL || q_worker == NULL){
             //Holy shit
@@ -43,7 +44,7 @@ void on_query_priority_changed(void* elem){
         }
         if(q_worker->priority <= q->priority)
             continue;
-
+        log_debug(logger, "Voy a desalojarlo");
         t_packet* p = create_packet();
         add_int_to_packet(p, REQUEST_DESALOJO);
         add_int_to_packet(p, q->id);

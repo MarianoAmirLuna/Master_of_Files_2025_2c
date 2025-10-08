@@ -1,16 +1,18 @@
 #include "main.h"
+#include "readline/readline.h"
 int main(int argc, char* argv[]) {
     itself_ocm = MODULE_MASTER;
     load_config("master.config");
     cm =load_config_master();
     create_log("master", cm.log_level);
     log_violet(logger, "%s", "Hola soy MASTER");
-    
+    pthread_mutex_init(&mutex_sched, NULL);
+
     queries = list_create();
     workers = list_create();
     dict_state = dictionary_create();
     for(int i=STATE_READY;i<=STATE_EXIT;i++){
-        dictionary_put(dict_state, state_to_string(i), list_create());
+        dictionary_put(dict_state, state_to_string(i), i==STATE_READY ? queue_create() : list_create());
     }
     sem_init(&sem_idx, 0,1);
     
@@ -24,11 +26,44 @@ int main(int argc, char* argv[]) {
     pthread_create(pth, NULL, scheduler, NULL);
     pthread_detach(*pth);
 
+    /*pthread_t* pth_console = malloc(sizeof(pthread_t));
+    pthread_create(pth_console, NULL, console, NULL);
+    pthread_detach(*pth_console);*/
+    
     attend_multiple_clients(param);
     
     //TODO: Instance handler key down for kill ALL SOCKETS
 
     return 0;
+}
+
+void* console(){
+    log_light_blue(logger, "%s", "Console instance");
+    //Solo para solicitar boludeces por consola
+    for(;;){
+        char* rd = readline(">");
+        if(string_is_empty(rd))
+        {
+            log_warning(logger, "No ingresaste ningún comando");
+            free(rd);
+            break;
+        }
+        char** spl = string_split(rd, ":");
+        int spl_size = string_array_size(spl);
+        log_pink(logger, "Comando recibido: %s - Cantidad de argumentos: %d", rd, spl_size);
+        for(int n=0;n<list_size(workers);n++){
+            worker* w = list_get(workers, n);
+            t_packet* p = create_packet();
+            for(int i=0;i<spl_size;i++){
+                add_int_to_packet(p, atoi(spl[i]));
+            }
+            send_and_free_packet(p, w->fd);
+            log_light_green(logger, "Envié a Worker %d el comando %s", w->id, rd);
+            sleep(1);
+        }
+        free(rd);
+    }
+    return NULL;
 }
 
 void* attend_multiple_clients(void* params)
@@ -83,14 +118,18 @@ void* attend_multiple_clients(void* params)
             //Deberia hacer una planificación ahora mismo para saber si puede asignar un 
         }
         if(ocm == MODULE_WORKER){
+            pthread_mutex_lock(&mutex_sched);
             int id_worker = list_get_int(l,1);
             worker* w = malloc(sizeof(worker));
             w->id = id_worker;
             w->id_query = -1; //No se asignó ningún query a este worker
             w->fd = sock_client;
+            w->is_free = 1; //Al conectarse el worker está libre
             id = id_worker;
 
             list_add(workers, w);
+
+            pthread_mutex_unlock(&mutex_sched);
             degree_multiprocess = list_size(workers);
             //Acaso cuando recibo el id_worker en seguida le tengo que asignar un query?? de ahí para pasar el path de la query al worker???????
             log_orange(logger, "Recibi el id_worker de Worker: ID_WORKER = %d", id_worker);
@@ -168,6 +207,7 @@ void disconnect_callback(void* params){
                 add_int_to_packet(p, REQUEST_DESALOJO);
                 add_int_to_packet(p, q->id);
                 send_and_free_packet(p, w->fd);
+                
                 t_list* recpd = recv_operation_packet(w->fd);
                 response resp = list_get_int(recpd ,0);
                 int pc = list_get_int(recpd, 1);
@@ -179,6 +219,8 @@ void disconnect_callback(void* params){
                     //TODO: Revisar... porque pasaría a Ready si se desconectó este Query. Básicamente se rre murió.
                     query_to(q, STATE_EXIT); 
                     //Ok puedo notificar error al Query
+                }else{
+                    log_warning(logger, "No se pudo desalojar el worker %d que ejecutaba la query %d", w->id, q->id);
                 }
                 //Me tendra que responder el PC???
                 log_info(logger, "## Se desaloja la Query %d del Worker %d",
@@ -200,8 +242,11 @@ void disconnect_callback(void* params){
         //worker* w = get_worker_by_wid(id_worker);
         worker* w = list_find_by_idx_list(workers, by_worker_wid, (int)id_worker, &idx);
         //worker* w = get_worker_by_fd(sock_client, &idx);
-        
+        pthread_mutex_lock(&mutex_sched);
         if(idx != -1 && w != NULL){
+
+            int qid = w->id_query;
+            int id_worker = w->id;
 
             query* q = get_query_by_qid(w->id_query);
             if(q != NULL){
@@ -210,14 +255,16 @@ void disconnect_callback(void* params){
                 add_int_to_packet(p, ERROR);
                 
                 send_and_free_packet(p, q->fd);
+
+                q->sp = STATE_EXIT;
+                on_changed(on_query_state_changed, q);
+                
+            }else{
+                log_warning(logger, "No se encontró la query que estaba ejecutando el worker %d", w->id);
             }
-            q->sp = STATE_EXIT;
-            on_changed(on_query_state_changed, q);
-            
-            int id_worker = w->id;
-            int qid = w->id_query;
             
             //WARNING: Test this
+            log_light_blue(logger, "Removiendo el elemento en el indice %d tengo en total: %d", idx, list_size(workers));
             free_element(list_remove(workers, idx));
             degree_multiprocess = list_size(workers);
 
@@ -226,8 +273,8 @@ void disconnect_callback(void* params){
                 qid,
                 degree_multiprocess
             );
-            w->is_free=1;
         }
+        pthread_mutex_unlock(&mutex_sched);
     }
     log_warning(logger, "Se desconecto el cliente de %s fd:%d", ocm_to_string(ocm), sock_client);
 }
@@ -299,5 +346,14 @@ void work_worker(t_list* pack, int id, int sock){
         //TODO: Should i free these pointers??
         free(content);
         free(filetag);
+    }
+    if(opcode == ACTUAL_STATUS){
+        int is_free = list_get_int(pack, 1);
+        int id_query = list_get_int(pack, 2);
+        int pc = list_get_int(pack, 3);
+
+        log_orange(logger, "Estado actual: Worker %d, Query %d, PC %d, Esta libre: %d",
+            id, id_query, pc, is_free
+        );
     }
 }

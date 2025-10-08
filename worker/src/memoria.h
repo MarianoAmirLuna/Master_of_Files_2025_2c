@@ -3,6 +3,10 @@
 
 void inicializar_memoria()
 {
+    if(block_size == 0){
+        log_error(logger, "No podés dividir por 0 gil pero lo voy a ignorar seteando como 4096");
+        block_size = 4096;
+    }
     int cant_frames = cw.tam_memoria / block_size;
     lista_frames = list_create();
 
@@ -12,10 +16,13 @@ void inicializar_memoria()
 
         entrada_frame_table->libre = true;
         entrada_frame_table->inicio = (char*)memory + i * block_size; //Se castea a char* para aritmetica de punteros
-
-        sem_wait(&tabla_frame_en_uso);
+        
         list_add(lista_frames, entrada_frame_table);
-        sem_post(&tabla_frame_en_uso);
+        
+        //Sos un tarado, cómo vas a hacer eso? se bloquea cuando inicias Worker
+        /*sem_wait(&tabla_frame_en_uso);
+        list_add(lista_frames, entrada_frame_table);
+        sem_post(&tabla_frame_en_uso);*/
     }
 }
 
@@ -243,7 +250,7 @@ entrada_tabla_pags* buscar_victima_clock_modificado(){
     for (int i = 0; i < queue_size(tabla_pags_global); i++) {
         
         entrada_tabla_pags* elemento = queue_pop(tabla_pags_global);
-        
+        //DIMA: Recuerden que si la lista del queue tabla_pags_global es vacía posiblemente les retorne NULL y explote
         if (elemento->uso == false && elemento->modificada == true) {
             // Encontramos la víctima (0,1). La liberamos y salimos.
             //liberar_entrada_TPG(elemento);

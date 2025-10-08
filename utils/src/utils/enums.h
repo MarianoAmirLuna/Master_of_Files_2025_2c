@@ -54,6 +54,7 @@ typedef enum{
     INTERRUPT,
     SEGMENTATION_FAULT,
     PROCESS_CANT_INITIALIZED,
+    ACTUAL_STATUS,
     /// @brief No existe
     NOTEXISTS,
     /// @brief Replanificación

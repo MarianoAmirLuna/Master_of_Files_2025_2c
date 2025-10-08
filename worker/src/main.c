@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     
     pthread_mutex_t locker;
     pthread_mutex_init(&locker, NULL);
-
+    
     int arr[] = {MODULE_MASTER, MODULE_STORAGE};
     for(int i=0;i<2;i++){
         //Como el ciclo va tan rápido necesito bloquear el subproceso principal
@@ -123,13 +123,21 @@ void packet_callback(void* params){
         if(op_code == EJECUTAR_QUERY){
             qid id_query =list_get_int(packet, 1);
             archivo_query_actual =list_get_str(packet, 2);
+            
             actual_worker->pc = list_get_int(packet, 3);
             actual_worker->is_free=false;
             actual_worker->id_query = id_query;
+
+            actual_query = create_basic_query(id_query, archivo_query_actual, actual_worker->pc);
+
             log_info(logger, "## Query %d: Se recibe la Query. El path de operaciones es: %s", id_query, archivo_query_actual); 
+            sem_post(&sem_query_recibida); //Aviso que ya tengo una query para ejecutar
         }
         if(op_code == REQUEST_DESALOJO){
             qid id_query = list_get_int(packet, 1);
+            need_stop=1;
+            sem_wait(&sem_need_stop);
+            
             //log_orange(logger, "REQUEST_DESALOJO NOT IMPLEMENTED (%s:%d)", __func__,__LINE__);
 
             //Implementar su desalojo y responder SUCCESS o FAILURE 
@@ -137,12 +145,28 @@ void packet_callback(void* params){
             t_packet* p = create_packet();
             add_int_to_packet(p, SUCCESS);
             add_int_to_packet(p, actual_worker->pc);
+            
             //add_worker_to_packet(p, actual_worker);
             send_and_free_packet(p, sock);
             
             actual_worker->id_query = id_query;
 
             log_info(logger, "## Query %d: Desalojado por pedido del Master", id_query);
+            
+            need_stop=0;
+        }
+        if(op_code == REQUEST_KNOW)
+        {
+            int v = list_get_int(packet, 1);
+            if(v == ACTUAL_STATUS)
+            {
+                t_packet* p = create_packet();
+                add_int_to_packet(p, ACTUAL_STATUS);
+                add_int_to_packet(p, actual_worker->is_free);
+                add_int_to_packet(p, actual_worker->id_query);
+                add_int_to_packet(p, actual_worker->pc);
+                send_and_free_packet(p, sock);
+            }
         }
     }
     if(ocm == MODULE_STORAGE){
@@ -152,18 +176,17 @@ void packet_callback(void* params){
             storage_block_size = list_get_int(packet, 1);
             data_bloque = malloc(storage_block_size);
         }
-        if(op_code == RETURN_BLOCK_DATA){
+        /*if(op_code == RETURN_BLOCK_DATA){
             char* data = list_get_int(packet, 1);
             memcpy(data_bloque, data, storage_block_size);
             sem_post(&sem_bloque_recibido);
-        }
+        }*/
         if(op_code==INSTRUCTION_ERROR)
         {
-            t_packet* paq=create_packet_opcode(INSTRUCTION_ERROR);
+            t_packet* paq=create_packet();
+            add_int_to_packet(paq, op_code);
             send_and_free_packet(paq, sock_master);
         }
-    }
-    
-
+    }    
     list_destroy_and_destroy_elements(packet, free_element);
 }

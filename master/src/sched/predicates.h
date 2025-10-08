@@ -80,8 +80,10 @@ bool order_query_by(void* a, void* b){
     return cast_query(a)->priority < cast_query(b)->priority;
 }
 
-int by_worker_free(void* elem, void *by){
-    return cast_worker(elem)->is_free ==cast_int(by);
+bool by_worker_free(void* elem){
+    if(elem == NULL)
+        return 0;
+    return cast_worker(elem)->is_free;
 }
 
 
@@ -109,7 +111,12 @@ worker* get_first_worker_free()
 {
     if(list_is_empty(workers))
         return NULL;
-    void* w = list_find_by(workers, by_worker_free, (int)1);
+        
+    void* w = list_find(workers, by_worker_free);
+    if(w == NULL){
+
+        log_error(logger, "Ohhh es nulo el elemento wtf");
+    }
     return cast_worker(w);
 }
 

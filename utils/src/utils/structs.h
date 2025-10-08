@@ -66,12 +66,14 @@ typedef struct{
     int fd;
     qid id;
     state_process sp;
+    /// @brief Program Counter en el que se encuentra esta query
     int pc;
     char* archive_query;
     int priority;
     long start_tick;
     t_temporal* temp;
     long end_tick;
+    t_list* instructions;
 }query;
 
 typedef struct{
@@ -79,6 +81,7 @@ typedef struct{
     qid id_query;
     int fd;
     int is_free;
+    /// @brief Se puede usar como campo interno en Worker, si Master pide desalojo el Worker le puede pasarle este valor.
     int pc;
 }worker;
 

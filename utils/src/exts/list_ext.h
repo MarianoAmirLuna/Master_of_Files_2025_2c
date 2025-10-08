@@ -80,7 +80,7 @@ void* list_find_by_idx_list(t_list* l, int(*condition)(void*, void*), void* by, 
     for(int i=0;i<sz;i++){
         void* elem = list_get(l, i);
         if(condition(elem, by)){
-            *idx = 1;
+            *idx = i;
             return elem;
         }
     }

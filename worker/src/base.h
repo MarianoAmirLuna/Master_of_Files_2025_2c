@@ -13,16 +13,18 @@
 #include "exts/array_ext.h"
 #include "exts/list_ext.h"
 #include "commons/collections/queue.h"
+#include "libs/instances_struct.h"
 
 bool esta_libre(void *elem);
 worker* actual_worker;
+query* actual_query;
 op_code_module itself_ocm;
 int sock_master,sock_storage;
 void* memory;
 int id_worker;
 config_worker cw;
 int block_size;
-
+int need_stop;
 int storage_block_size;
 
 //mutex por ser globales en los get y add
@@ -30,6 +32,7 @@ t_list* lista_frames; //Se conoce el inicio de un frame, no el fin y si esta lib
 t_list* archivos_cargados;
 t_queue* tabla_pags_global;
 
+sem_t sem_need_stop;
 sem_t sem_query_recibida;
 sem_t tabla_pag_en_uso;
 sem_t tabla_frame_en_uso;

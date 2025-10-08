@@ -133,7 +133,17 @@ void *actualizar_pagina(char *file_tag, int pagina)
 
     send_and_free_packet(paq, sock_storage);
 
-    sem_wait(&sem_bloque_recibido);
+    //Podés no usar semáforo de la siguiente forma
+    t_list* recv_pack = recv_operation_packet(sock_storage); 
+    if(list_get_int(recv_pack, 0) != RETURN_BLOCK_DATA)
+    {
+        log_error(logger, "Ehh que pasó acá esto no es RETURN_BLOCK_DATA");
+    }
+    else{
+        char* data = list_get_int(recv_pack, 1);
+        memcpy(data_bloque, data, storage_block_size);
+    }
+    //sem_wait(&sem_bloque_recibido);
 
     int base = buscar_base_pagina(file_tag, pagina);
 

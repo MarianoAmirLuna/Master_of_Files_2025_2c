@@ -12,6 +12,7 @@
 #include "commons/collections/queue.h"
 #include "exts/temporal_ext.h"
 
+pthread_mutex_t mutex_sched;
 
 config_master cm;
 //TODO: t_queue* of this queries
@@ -42,7 +43,7 @@ worker* cast_worker(void* elem);
 query* cast_query(void* elem);
 int cast_int(void* elem);
 bool order_query_by(void* a, void* b);
-int by_worker_free(void* elem, void *by);
+bool by_worker_free(void* elem);
 int by_worker_fd(void* elem, void *by);
 int by_worker_wid(void* elem, void *by);
 int by_worker_qid(void* elem, void *by);
