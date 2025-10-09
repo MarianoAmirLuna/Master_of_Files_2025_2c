@@ -297,6 +297,8 @@ t_list* obtener_instrucciones_v2(char* fullpath){
         if(string_is_empty(line))
             break;
         char* cop = malloc(strlen(line)+1);
+        if(cop[strlen(cop)] == "\n")
+            cop[strlen(cop)]="\0";  
         strcpy(cop, line);
         list_add(res, cop);
         if(feof(f))
