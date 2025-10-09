@@ -13,11 +13,15 @@
 #include "exts/array_ext.h"
 #include "exts/list_ext.h"
 #include "math.h"
+
+#include "communications_ops/inc_comms_ops.h"
+
+
 /*#ifndef EXTS_FILE_EXT_H
 #include "exts/file_ext.h"
 #endif */
 
-int g_block_size;
+/*int g_block_size;
 int g_fs_size;
 t_config* g_archivo_hash;
 
@@ -30,7 +34,7 @@ size_t g_bitmap_size;
 
 
 config_storage cs;
-op_code_module itself_ocm;
+op_code_module itself_ocm;*/
 
 
 #endif

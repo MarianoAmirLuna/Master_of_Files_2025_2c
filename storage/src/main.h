@@ -1,6 +1,6 @@
 #include "base.h"
 #include "signal.h"
-#include "funciones_generales.h"
+//#include "funciones_generales.h"
 #include "inicializacion_storage.h"
 #include "control_accesos.h"
 #include "comunicacion_worker.h"

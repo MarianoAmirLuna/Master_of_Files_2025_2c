@@ -1,6 +1,12 @@
+#ifndef CONTROL_ACCESOS_H
+#define CONTROL_ACCESOS_H
+
+#ifndef STORAGE_BASE_H
 #include "base.h"
+#endif 
 t_dictionary* file_tag_locks;
 pthread_mutex_t file_tag_locks_lock;
+pthread_mutex_t* block_locks;
 
 void creo_semaforos_fs()
 {
@@ -42,8 +48,6 @@ void destruir_file_tag_locks() {
 
 
 
-pthread_mutex_t* block_locks;
-
 void init_block_locks() {
     int cantidad_bloques = g_fs_size / g_block_size;
     block_locks = malloc(sizeof(pthread_mutex_t) * cantidad_bloques);
@@ -53,3 +57,4 @@ void init_block_locks() {
 }
 
 
+#endif

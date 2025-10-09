@@ -1,4 +1,6 @@
+#ifndef STORAGE_BASE_H
 #include "base.h"
+#endif 
 
 /*
 Inicialización
@@ -14,8 +16,6 @@ cuyo contenido será un (1) bloque lógico con el bloque físico nro 0 (cero) as
 por ejemplo: "00000…". Dicho File/Tag no se podrá borrar.
 */
 
-//Se debe tomar como si fuera un encabezado o tendrás warning implicit-declaration y puede ser un problema al ejecutarlo
-void eliminar_contenido(const char* path);
 
 
 void limpiar_fs() 
@@ -216,7 +216,7 @@ void valido_bloques_fisicos(char* path)
             {
                 int bloques_restantes = cantidad_bloques - cant_elementos_directorio(p_path);
                 log_orange(logger, "[valido_bloques_fisicos] La cantidad de bloques fisicos es INFERIOR, faltan %d bloques", bloques_restantes); //to_do: borrar este
-                crear_bloques_fisicos (bloques_restantes, p_path, cant_elementos_directorio(p_path));
+                crear_bloques_fisicos (bloques_restantes, p_path, cant_elementos_directorio(p_path), g_block_size);
             }
             while(cant_elementos_directorio(p_path) < cantidad_bloques);
 
@@ -238,7 +238,7 @@ void valido_bloques_fisicos(char* path)
         int cantidad_bloques = g_fs_size / g_block_size;
         crear_directorio("physical_blocks", path);
         p_path = string_from_format("%s/%s", path, "physical_blocks");
-        crear_bloques_fisicos (cantidad_bloques, p_path, 0);
+        crear_bloques_fisicos(cantidad_bloques, p_path, 0, g_block_size);
         free(p_path);
     }
 

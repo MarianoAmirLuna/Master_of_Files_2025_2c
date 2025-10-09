@@ -1,42 +1,31 @@
-#include "base.h"
+#ifndef IO_EXT_H
+#define IO_EXT_H
 
+
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include "commons/string.h"
+
+#ifndef INC_LIBS_H
+#include "inc/libs.h"
+#endif 
+
+//#include "file_ext.h"
+#include "bitmap_ext.h"
+
+#define MAX_PATH 255
 
 void crear_directorio(char* nombre, char* path)
 {
-    char dir[1024];
-
-    snprintf(dir, sizeof(dir), "%s/%s", path, nombre);
-
-    if(mkdir(dir, 0777) == 0) 
-    {
+    char* dir = string_from_format("%s/%s", path, nombre);    
+    if(mkdir(dir, 0777) == 0) {
         log_pink(logger, "Se creo el directorio %s, en el path %s", nombre, path); //to_do: borrar este
     }
-
+    free(dir);
 }
 
 
-bool control_existencia(const char* path)
-{
-    //Controlo que no se me envie un path vacio
-    if (path==NULL)
-    {
-        return false;
-    }
-    struct stat statbuf;
-    if (stat(path, &statbuf)==0)
-    {
-        //Path encontrado
-        return true;
-    }
-    else 
-    {
-        //Path no encontrado
-        return false;
-    }
-}
-
-
-bool control_existencia_file(const char* path)
+bool control_existencia_file_old(const char* path)
 {
     //Controlo que no se me envie un path vacio
     if (path==NULL)
@@ -60,33 +49,70 @@ bool control_existencia_file(const char* path)
     }
 }
 
-int cant_elementos_directorio (const char *path)
-{
-    int cant_elementos = 0;
-    DIR * dir = opendir(path);
+int control_existencia(char* path){
+    //Controlo que no se me envie un path vacio
+    if (path==NULL)
+    {
+        return false;
+    }
+    struct stat statbuf;
+    if (stat(path, &statbuf)==0)
+    {
+        //Path encontrado
+        return true;
+    }
+    else 
+    {
+        //Path no encontrado
+        return false;
+    }
+}
 
-    if (!dir)
+int control_existencia_file(char* path)
+{
+    //Controlo que no se me envie un path vacio
+    if (path==NULL){
+        return 0;
+    }
+    log_warning(logger, "path: %s", path);
+    FILE * archivo = fopen(path, "r");
+    if (archivo != NULL)
+    {
+        //Path encontrado
+        log_info(logger, "existe el archivo");
+        fclose(archivo);
+        return 1;
+    }
+    else 
+    {
+        log_error(logger, "archivo no encontrado");
+        //Path no encontrado
+        return 0;
+    }
+}
+
+
+int cant_elementos_directorio(char* path){
+    int cnt = 0;
+    DIR* dir = opendir(path);
+    if(!dir)
     {
         log_error(logger, "No se pudo abrir el directorio %s", path);
         return -1;
     }
-
-    struct dirent * entry;
-
-    while ((entry = readdir(dir)) != NULL)
-    {
-        if (!string_equals_ignore_case(entry->d_name, ".") && !string_equals_ignore_case(entry->d_name, ".."))
-        {
-            cant_elementos++;
+    struct dirent* entry;
+    
+    while ((entry = readdir(dir)) != NULL){
+        if (!string_equals_ignore_case(entry->d_name, ".") && !string_equals_ignore_case(entry->d_name, "..")){
+            cnt++;
         }
     }
 
     closedir(dir);
-    return cant_elementos;
+    return cnt;
 }
 
-void crear_archivo (const char* path, const char* nombre, const char* extension)
-{
+int crear_archivo(char* path, char* nombre, char *extension){
     char* p_path = string_from_format("%s/%s.%s", path, nombre, extension);
     if (!control_existencia(p_path))
     {
@@ -99,27 +125,12 @@ void crear_archivo (const char* path, const char* nombre, const char* extension)
     }
     free(p_path);
 }
-/*
-void eliminar_archivo (const char* path, const char* nombre)
-{
-    char* p_path = string_from_format("%s/%s", path, nombre);
-    if (control_existencia(p_path))
-    {
-        FILE * archivo = fopen(p_path, "r");
-        remove(archivo);
-    }
-    else
-    {
-        log_error(logger, "El archivo %s no existe en el path %s", nombre, path);
-    }
-    free(p_path);
-}
-*/
-void eliminar_archivo (const char* path, const char* nombre)
+
+void eliminar_archivo (char* path, char* nombre)
 {
     char* p_path = string_from_format("%s/%s", path, nombre);
     if (control_existencia(p_path)) {
-        remove(p_path);   // ✅ recibe const char*
+        remove(p_path);   // ✅ recibe const char* //El ✅ es 0 es elemento nulo
     } else {
         log_error(logger, "El archivo %s no existe en el path %s", nombre, path);
     }
@@ -148,12 +159,13 @@ void crear_config_path(char* p_path, char* name)
     free(path);
 }
 
+
 t_config* crear_metadata_config(char* path, int tamanio, t_list* bloques, state_metadata estado) {
     // path debe terminar en /metadata.config
     t_config* metadata = config_create(path);
     if (metadata == NULL) {
         metadata = malloc(sizeof(t_config));
-        metadata->path = strdup(path);
+        metadata->path = string_duplicate(path);
         metadata->properties = dictionary_create();
     }
 
@@ -188,7 +200,7 @@ t_config* crear_metadata_config(char* path, int tamanio, t_list* bloques, state_
     return metadata;
 }
 
-void llenar_archivo_con_ceros(char* path_archivo) 
+void llenar_archivo_con_ceros(char* path_archivo, int g_block_size) 
 {
     FILE* archivo = fopen(path_archivo, "wb");
     if (!archivo) {
@@ -211,36 +223,18 @@ void llenar_archivo_con_ceros(char* path_archivo)
     fclose(archivo);
 }
 
-
-
-
 void eliminar_bloques_fisicos (int cantidad_bloques_de_mas, char* path, int bloques_actuales)
 {
     // Elimino los bloques fisicos que sobren
-    char* p_path;
     for (int i = 0; i < cantidad_bloques_de_mas; i++)
     {
-        p_path = string_from_format("block%04d.dat", bloques_actuales-i);
+        char* p_path = string_from_format("block%04d.dat", bloques_actuales-i);
         eliminar_archivo(path, p_path);
         free(p_path);
     }
 }
 
-
-
-
-/*
-void crear_bloques_fisicos (int cantidad_bloques_faltantes, char* path, int bloques_actuales)
-{
-    // Creo los bloques fisicos que falten
-    for (int i = 0; i < cantidad_bloques_faltantes; i++)
-    {
-        crear_archivo(path, string_from_format("block%04d", bloques_actuales+i), "dat");
-        llenar_archivo_con_ceros(string_from_format("%s/%s.%s", path, "block%04d", bloques_actuales+i, "dat"));
-    }
-}
-*/
-void crear_bloques_fisicos (int cantidad_bloques_faltantes, char* path, int bloques_actuales)
+void crear_bloques_fisicos (int cantidad_bloques_faltantes, char* path, int bloques_actuales, int g_block_size)
 {
     for (int i = 0; i < cantidad_bloques_faltantes; i++)
     {
@@ -249,50 +243,12 @@ void crear_bloques_fisicos (int cantidad_bloques_faltantes, char* path, int bloq
         crear_archivo(path, nombre, "dat");
 
         char* full_path = string_from_format("%s/%s.dat", path, nombre);
-        llenar_archivo_con_ceros(full_path);
+        llenar_archivo_con_ceros(full_path, g_block_size);
 
         free(nombre);
         free(full_path);
     }
 }
-
-
-
-
-
-
-// cosas del bitmap
-
-void ocupar_bloque(int nro_bloque) {
-    bitarray_set_bit(g_bitmap, nro_bloque);
-    msync(g_bitmap->bitarray, g_bitmap_size, MS_SYNC);
-    log_debug(logger, "Bloque %d marcado como OCUPADO", nro_bloque);
-}
-
-void liberar_bloque(int nro_bloque) {
-    bitarray_clean_bit(g_bitmap, nro_bloque);
-    msync(g_bitmap->bitarray, g_bitmap_size, MS_SYNC);
-    log_debug(logger, "Bloque %d marcado como LIBRE", nro_bloque);
-}
-
-bool bloque_ocupado(int nro_bloque) {
-    return bitarray_test_bit(g_bitmap, nro_bloque);
-}
-
-void destruir_bitmap() {
-    bitarray_destroy(g_bitmap);
-    close(g_bitmap_fd);
-}
-
-
-// fin cosas bitmap
-
-
-
-
-
-// escritura bloque
-
 
 void escribir_bloque_fisico(int bloque_fisico, char* contenido)
 {
@@ -309,6 +265,4 @@ void escribir_bloque_fisico(int bloque_fisico, char* contenido)
 }
 
 
-
-
-// fin escritura bloque
+#endif
