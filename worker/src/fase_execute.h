@@ -141,7 +141,6 @@ void *actualizar_pagina(char *file_tag, int pagina)
         char* data = list_get_int(recv_pack, 1);
         memcpy(data_bloque, data, storage_block_size);
     }
-    //sem_wait(&sem_bloque_recibido);
 
     int base = buscar_base_pagina(file_tag, pagina);
 
@@ -227,11 +226,9 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
             reservar_frame(file_tag, pagina);
 
             // Trae el contenido del bloque de storage
-            actualizar_pagina(file_tag, pagina);
+            //TODO: descomentar para que funcione storage
+            //actualizar_pagina(file_tag, pagina);
 
-            // Apartir de acá puede ser una falopeada, no sé si se va a comportar como espero
-            // ejecutar_write(file_tag, dir_base, contenido); @mariano no me mates porfa, pero creo que si dejo esto va a romper todo
-            // return;
         }
         // Apartir de acá existe la DL en memoria
 
@@ -266,7 +263,8 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
             reservar_frame(file_tag, pagina);
 
             // Trae el contenido del bloque de storage
-            actualizar_pagina(file_tag, pagina);
+            //TODO: descomentar para que funcione storage
+            //actualizar_pagina(file_tag, pagina);
         }
         // Apartir de acá existe la DL en memoria
         realizar_lectura(leido + espacio_ya_leido, file_tag, indice, tam - espacio_ya_leido);

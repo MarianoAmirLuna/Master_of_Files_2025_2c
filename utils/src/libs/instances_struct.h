@@ -44,8 +44,8 @@ void free_query(query* q){
     if(q != NULL){
         if(q->archive_query != NULL) 
             free(q->archive_query);
-        if(q->temp != NULL) 
-            free(q->temp);
+        //if(q->temp != NULL) 
+        //    free(q->temp);
         if(q->instructions != NULL) 
             list_destroy_and_destroy_elements(q->instructions, free);
         free(q);
