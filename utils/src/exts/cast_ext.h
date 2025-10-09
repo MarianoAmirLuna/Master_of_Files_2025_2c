@@ -41,6 +41,9 @@ instr_code cast_code(char* code){
     if(string_equals_ignore_case(code,"DELETE")){
         return DELETE;
     }
+    if(string_equals_ignore_case(code,"NOOP")){
+        return NOOP;
+    }
     if(string_equals_ignore_case(code,"END")){
         return END;
     }

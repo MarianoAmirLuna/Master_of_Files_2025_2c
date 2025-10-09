@@ -122,6 +122,7 @@ typedef enum{
     ///La instrucción DELETE solicitará al módulo Storage la eliminación del File:Tag correspondiente.
     DELETE,
     INVALID_INSTRUCTION,
+    NOOP,    
     ///Formato: END
     ///Esta instrucción da por finalizada la Query y le informa al módulo Master el fin de la misma.
     END

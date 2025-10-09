@@ -21,7 +21,6 @@ int main(int argc, char* argv[]) {
 
     inicializar_worker();
     
-    //TODO: El worker tiene 2 argumentos: archivo_config y el ID_Worker
        
     memory = malloc(cw.tam_memoria);
     inicializar_memoria();

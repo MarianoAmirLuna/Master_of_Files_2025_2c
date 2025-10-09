@@ -147,7 +147,6 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==FLUSH)
     {
-        //TODO: ver si un flush a un archivo sin paginas cargadas da error
         ejecutar_flush(parametro1); 
     }
     else if(caso==DELETE)
@@ -161,6 +160,9 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         add_string_to_packet(paq, file);
         add_string_to_packet(paq, tag);
         send_and_free_packet(paq, sock_storage);
+    }
+    else if(caso==NOOP){
+        ejecutar_noop();
     }
     else if(caso == END)
     {
@@ -313,7 +315,6 @@ void loop_atender_queries()
     for (;;) // 1 iteracionn por query atendida
     {
         log_pink(logger, "Esperando una nueva Query...");
-        //TODO: no se hace post
         sem_wait(&sem_query_recibida); 
         //log_pink(logger, "Esperando una nueva Query...");
         actual_query->instructions = obtener_instrucciones(archivo_query_actual);

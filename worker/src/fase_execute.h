@@ -121,8 +121,6 @@ void *actualizar_pagina(char *file_tag, int pagina)
 {
     msleep(cw.retardo_memoria);
     t_packet *paq = create_packet();
-
-    // TODO: Storage no los necesita juntos?
     char *file = strtok(file_tag, ":");
     char *tag = strtok(NULL, "");
 
@@ -283,6 +281,16 @@ void ejecutar_tag(char *file_old, char *tag_old, char *file_new, char *tag_new)
 
 void ejecutar_commit(char *file, char *tag)
 {
+    t_packet* paq = create_packet();
+    add_int_to_packet(paq, COMMIT_TAG);
+    add_string_to_packet(paq, file);
+    add_string_to_packet(paq, tag);
+    send_and_free_packet(paq, sock_storage);
+}
+
+void ejecutar_noop()
+{
+    return;
 }
 
 void ejecutar_flush(char *file_tag)
