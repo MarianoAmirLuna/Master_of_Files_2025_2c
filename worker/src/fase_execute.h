@@ -7,10 +7,20 @@
 
 void ejecutar_create(char *file, char *tag)
 {
+    t_packet* paq = create_packet();
+    add_int_to_packet(paq, CREATE_FILE);
+    add_string_to_packet(paq, file);
+    add_string_to_packet(paq, tag);
+    send_and_free_packet(paq, sock_storage);
 }
 
 void ejecutar_truncate(char *file_y_tag, int tam)
 {
+    t_packet* paq = create_packet();
+    add_int_to_packet(paq, TRUNCATE_FILE);
+    add_string_to_packet(paq, file_y_tag);
+    add_int_to_packet(paq, tam);
+    send_and_free_packet(paq, sock_storage);
 }
 
 /*
@@ -303,6 +313,11 @@ void ejecutar_flush(char *file_tag)
 
 void ejecutar_delete(char *file, char *tag)
 {
+    t_packet* paq = create_packet();
+    add_int_to_packet(paq, DELETE);
+    add_string_to_packet(paq, file);
+    add_string_to_packet(paq, tag);
+    send_and_free_packet(paq, sock_storage);
 }
 
 void ejecutar_end()
