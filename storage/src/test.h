@@ -23,7 +23,7 @@ static inline void add_string(t_list* list, const char* value) {
 // wrapper para ejecutar un test
 static inline void run_test(const char* name, t_list* pack) {
     log_info(logger, ">>> Ejecutando test: %s", name);
-    tratar_mensaje(pack, 1);  // sock_client fake
+    //tratar_mensaje(pack,NULL, 1);  // sock_client fake
     list_destroy_and_destroy_elements(pack, free);
 }
 

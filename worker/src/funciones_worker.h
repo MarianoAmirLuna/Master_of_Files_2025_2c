@@ -247,39 +247,12 @@ void decode_y_execute(char *linea_de_instruccion)
 
 // FASE FETCH //
 
-t_list* obtener_instrucciones_v2(char* archivo){
-    char* fullpath = string_from_format("%s/%s", cw.path_queries, archivo);
-    if(!file_exists(fullpath)){
-        log_error(logger, "El archivo \"%s\" no existe", fullpath);
-        return NULL;
-    }
-    FILE* f = fopen(fullpath, "r");
-    if(f == NULL){
-        log_error(logger, "No se pudo abrir el archivo en %s:%d", __func__, __LINE__);
-        return NULL;
-    }    
-    t_list* instrs = list_create();
-    char* line = NULL;
-    size_t len=0;
-    ssize_t read;
-    
-    while((read = getline(&line, &len, f)) != -1){
-        if(string_is_empty(line))
-            break;
-        list_add(instrs, string_to_buffer(line));
-        if(feof(f))
-            break;
-    }
-    fclose(f);
-    if(line)
-        free(line);
-    return instrs;
-}
-
 t_list *obtener_instrucciones(char *archivo)
 {
+    log_orange(logger,"Path Queries: %s, Archivo: %s", cw.path_queries, archivo);
     // la carpeta esta el cw.path_scripts
     char *path_archivo = strcat(cw.path_queries, archivo);
+    log_orange(logger,"CONCAT: %s", path_archivo);
     FILE *lector_de_archivo; // Declarar un puntero a FILE
     char *linea;             // linea leida del archivo
 
@@ -307,6 +280,36 @@ t_list *obtener_instrucciones(char *archivo)
     return instrucciones_por_pc;
 }
 
+
+
+t_list* obtener_instrucciones_v2(char* fullpath){
+    
+    FILE* f = fopen(fullpath, "r");
+    if(f == NULL){
+        log_error(logger, "No se pudo abrir el archivo en %s:%d", __func__, __LINE__);
+        return NULL;
+    }    
+    char* line = NULL;
+    size_t len=0;
+    ssize_t read;
+    t_list* res = list_create();
+    while((read = getline(&line, &len, f)) != -1){
+        if(string_is_empty(line))
+            break;
+        char* cop = malloc(strlen(line)+1);
+        strcpy(cop, line);
+        list_add(res, cop);
+        if(feof(f))
+            break;
+    }
+    fclose(f);
+    if(line)
+        free(line);
+
+    return res;
+}
+
+
 // FASE FETCH //
 
 void loop_atender_queries()
@@ -316,8 +319,10 @@ void loop_atender_queries()
     {
         log_pink(logger, "Esperando una nueva Query...");
         sem_wait(&sem_query_recibida); 
+        log_pink(logger, "Recibi una QUERYYYYYYYYYYYYYYYYYYYYYY");
         //log_pink(logger, "Esperando una nueva Query...");
-        actual_query->instructions = obtener_instrucciones(archivo_query_actual);
+        //actual_query->instructions = obtener_instrucciones(archivo_query_actual);
+        actual_query->instructions = obtener_instrucciones_v2(string_from_format("%s%s", cw.path_queries, archivo_query_actual));
         //t_list *instrucciones = obtener_instrucciones(archivo_query_actual);
         actual_worker->is_free = false;
         
@@ -337,7 +342,7 @@ void loop_atender_queries()
                 add_int_to_packet(p, actual_worker->pc);
                 send_and_free_packet(p, actual_worker->fd);
                 
-                free_query(actual_query);
+                //free_query(actual_query);
                 
                 break;
             }

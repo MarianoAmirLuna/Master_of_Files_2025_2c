@@ -49,6 +49,7 @@ void execute_this_query_on_this_worker(query* q, worker* w){
         w->is_free=0;
     }
 }
+
 void execute_worker(){
     //log_light_blue(logger, "%s", "On ExecuteWorker");
     
@@ -60,7 +61,10 @@ void execute_worker(){
     pthread_mutex_unlock(&mutex_sched);
     
     if(w == NULL || !have_query_ready()) //De Morgan papá. Viste que es útil la matemática discreta.
+    {
+        log_pink(logger, "Estoy en execute_worker y la cosa se puso fea (%s:%d) worker es NULL??? %d", __func__,__LINE__, w==NULL ? 1 : 0);
         return;
+    }
     //Necesito comprobar si hay worker libre antes de hacer pop al queue ready sino se  pone fea la cosa.
     query* q= get_query_available();
     if(q == NULL){
@@ -85,7 +89,7 @@ void* scheduler(void* params){
     for(;;){
         execute_worker();
         
-        //log_pink(logger, "%s", "ON AGING sleep");
+        log_pink(logger, "%s", "ON AGING sleep");
 
         int ts = cm.tiempo_aging <= 0 ? 250 : cm.tiempo_aging/4;
         msleep(ts); //Divido por 4 para prevenir posible margen de error en temporal_gettime tiempo agging

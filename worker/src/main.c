@@ -121,8 +121,10 @@ void packet_callback(void* params){
         //ACA RECIBIS UN PAQUETE PROVENIENTE DE MASTER
         if(op_code == EJECUTAR_QUERY){
             qid id_query =list_get_int(packet, 1);
-            archivo_query_actual =list_get_str(packet, 2);
-            
+            char* str =list_get_str(packet, 2);
+            archivo_query_actual = malloc(strlen(str)+1);
+            strcpy(archivo_query_actual, str);
+
             actual_worker->pc = list_get_int(packet, 3);
             actual_worker->is_free=false;
             actual_worker->id_query = id_query;
@@ -131,6 +133,7 @@ void packet_callback(void* params){
 
             log_info(logger, "## Query %d: Se recibe la Query. El path de operaciones es: %s", id_query, archivo_query_actual); 
             sem_post(&sem_query_recibida); //Aviso que ya tengo una query para ejecutar
+            free(str);
         }
         if(op_code == REQUEST_DESALOJO){
             qid id_query = list_get_int(packet, 1);

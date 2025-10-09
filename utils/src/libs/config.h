@@ -152,7 +152,7 @@ config_worker load_config_worker(){
     cw.tam_memoria=config_get_int_value(config, "TAM_MEMORIA");
     cw.retardo_memoria=config_get_int_value(config, "RETARDO_MEMORIA");
     cw.algoritmo_reemplazo = get_replace_algorithm();
-    cw.path_queries=config_get_string_value(config, "PATH_QUERIES");
+    cw.path_queries=config_get_string_value(config, "PATH_SCRIPTS");
     cw.log_level = get_log_level();
     return cw;
 }

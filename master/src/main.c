@@ -97,7 +97,7 @@ void* attend_multiple_clients(void* params)
 
         int id = -1;
         if(ocm == MODULE_QUERY_CONTROL){
-            char* archive_query= (char*)list_get(l, 1);
+            char* archive_query= list_get_str(l,1);
             int prioridad = list_get_int(l,2);
             log_orange(logger, "Recibi el dato de Query Control: Query:%s, Prioridad: %d", archive_query, prioridad);
             query* q = malloc(sizeof(query));
@@ -107,7 +107,10 @@ void* attend_multiple_clients(void* params)
             q->fd = sock_client;
             q->id = increment_idx();
             q->sp = STATE_READY;
+            q->temp = temporal_create();
             id = q->id;
+            add_query_on_state(q, q->sp);
+            //query_to(q, STATE_READY);
             list_add(queries, q);
             log_info(logger, "## Se conecta un Query Control para ejecutar la Query %s con prioridad %d - Id asignado: %d. Nivel multiprocesamiento: %d",
                 q->archive_query,
