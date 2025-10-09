@@ -1,8 +1,14 @@
 #ifndef FASE_EXECUTE_H
 #define FASE_EXECUTE_H
 
+
+
 #ifndef MEMORIA_H
 #include "memoria.h"
+#endif
+
+#ifndef WORKER_BASE_H
+#include "base.h"
 #endif
 
 void ejecutar_create(char *file, char *tag)
@@ -41,10 +47,10 @@ entrada_tabla_pags *obtener_frame(char *archivo, int donde_comenzar)
     int pag = calcular_pagina(donde_comenzar);
 
     // 3. Si la pagina esta presente en memoria retorno el frame
-    int ret = -1;
+    entrada_tabla_pags* ret = NULL;
     if (tabla == NULL)
     {
-        return -1;
+        return NULL;
     }
     for (int i = 0; i < list_size(tabla); i++)
     {
@@ -205,12 +211,15 @@ int calcular_pagina(int dir_base)
 
 void ejecutar_write(char *file_tag, int dir_base, char *contenido)
 {
-
+    log_orange(logger, "FILETAG ES NULL? %d, DIR=%d, CONTENIDO ES NULL?: %d", file_tag == NULL ? 1 : 0, dir_base, contenido == NULL ? 1 : 0);
     int pagina = calcular_pagina(dir_base);
     int offset = obtener_offset(file_tag, dir_base);
     int restante_en_pag = block_size - offset;
     int espacio_ya_escrito = 0;
     entrada_tabla_pags *entrada_con_frame = obtener_frame(file_tag, dir_base);
+    if(entrada_con_frame == NULL){
+        log_error(logger, "ENTRADA CON FRAME ES NULL");
+    }
     int frame = entrada_con_frame->marco;
 
     for (int indice = dir_base; espacio_ya_escrito <= strlen(contenido); indice += (espacio_ya_escrito == 0 ? restante_en_pag : block_size)) //(si lees esto, perdon)

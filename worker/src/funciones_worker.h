@@ -296,9 +296,12 @@ t_list* obtener_instrucciones_v2(char* fullpath){
     while((read = getline(&line, &len, f)) != -1){
         if(string_is_empty(line))
             break;
+        
+        size_t len = strlen(line);
+        if (len > 0 && line[len - 1] == '\n') {
+            line[len - 1] = '\0';
+        }
         char* cop = malloc(strlen(line)+1);
-        if(cop[strlen(cop)] == "\n")
-            cop[strlen(cop)]="\0";  
         strcpy(cop, line);
         list_add(res, cop);
         if(feof(f))
@@ -332,10 +335,10 @@ void loop_atender_queries()
         {
             //Incrementá el PC negro y con chequeo de out-bound si tenés 10 instrucciones no te podés ir a la instrucción 11 porque se hace percha.
             // Fase Fetch
-            int temppc = actual_worker->pc;
+            
             if(actual_worker->pc >= list_size(actual_query->instructions) || need_stop)
             {
-                log_debug(logger, "Voy a mandar un QUERY_END porque el pc actual: %d supero a la instrs size: %d o porque need_stop es true: %d", temppc, list_size(actual_query->instructions), need_stop);
+                log_debug(logger, "Voy a mandar un QUERY_END porque el pc actual: %d supero a la instrs size: %d o porque need_stop es true: %d", actual_worker->pc, list_size(actual_query->instructions), need_stop);
                 //QUERY END Termina esto que te rre fuiste
                 actual_worker->is_free = true;
                 t_packet* p = create_packet();
@@ -348,11 +351,15 @@ void loop_atender_queries()
                 
                 break;
             }
-            
-            char *instruccion = list_get(actual_query->instructions, actual_worker->pc++); //Nótese que incrementa el pc
-            log_debug(logger, "Instrucción que va a ejecutar: %s", instruccion);
-            log_info(logger, "## Query: %d: -FETCH - Program Counter: %d - %s", actual_worker->id_query, temppc, instruccion);
+            char *instruccion = list_get(actual_query->instructions, actual_worker->pc); //Nótese que incrementa el pc
+            log_debug(logger, "QID=%d, PC=%d, Instrucción que va a ejecutar: %s", 
+                actual_worker->id_query, 
+                actual_worker->pc,
+                instruccion
+            );
+            //log_info(logger, "## Query: %d: -FETCH - Program Counter: %d - %s", actual_worker->id_query, actual_worker->pc, instruccion);
             decode_y_execute(instruccion);
+            actual_worker->pc++;
         }
 
         actual_worker->is_free=true;

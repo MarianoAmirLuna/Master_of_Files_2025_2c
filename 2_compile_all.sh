@@ -69,3 +69,6 @@ done
 for item in "${errors_compilations[@]}"; do
   echo "Error compilation: $item"
 done
+
+current_date_time="`date "+%d-%m-%Y %H:%M:%S"`";
+echo $current_date_time;
