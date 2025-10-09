@@ -13,6 +13,9 @@ void on_changed(void(*cbMeth)(void*), void* argsMeth){
 }
 
 void on_query_state_changed(void* elem){
+    log_orange(logger, "On query statechanged wait");
+    sem_wait(&sem_locker);
+    log_orange(logger, "On query statechanged nowwat");
     query* q = cast_query(elem);
     log_light_blue(logger, "Un query cambió de estado valor: %s", state_to_string(q->sp));
     if(q == NULL){
@@ -22,17 +25,22 @@ void on_query_state_changed(void* elem){
         t_packet* p = create_packet();
         add_int_to_packet(p, REQUEST_KILL); //Según el diagrama algo que está en EXIT nunca pasa a otro estado. IS GONE
         //TODO NECESITO EL MOTIVO... HOLY SHIT
-        add_string_to_packet(p, "Motivo... OPA necesito el motivo...");
+        char* opa = "Motivo... OPA necesito el motivo...";
+        add_string_to_packet(p, opa);
         send_and_free_packet(p, q->fd); //Notifico al Query Control que se
+        //free(opa);
     }
+    sem_post(&sem_locker);
 }
 
 void on_query_priority_changed(void* elem){
+    
     query* q = cast_query(elem);
     log_light_blue(logger, "Un query cambió de prioridad");
     //Comprueba si existe algún query que tenga menor prioridad (número mayor) que este.
     if(!list_exists(queries, is_most_priority, q))
         return;
+    sem_wait(&sem_locker);
     //Desalojar un worker que tenga un query de menor prioridad (número mayor)
     for(int i=0;i<list_size(workers);i++){
         worker* w = cast_worker(list_get(workers, i));
@@ -76,6 +84,7 @@ void on_query_priority_changed(void* elem){
     if(q == NULL){
         log_error(logger, "%s:%d", __func__, __LINE__);
     }
+    sem_post(&sem_locker);
 }
 
 

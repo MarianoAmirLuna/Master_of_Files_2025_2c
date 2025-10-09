@@ -13,15 +13,12 @@ int main(int argc, char* argv[]) {
 
         log_pink(logger,"%s, cant: %d", "Cantidad de argumentos inválida", argc);
     }
-    
-    //El primer argumento es el path del programa en sí o el nombre del program.
-    if(argc == 4){
+    else if(argc == 4){
+        //El primer argumento (es decir el argv[0]) es el path del programa en sí o el nombre del program.
         char* path_config=argv[1];
         load_config(path_config);
         
-        archive_query = string_new();
-        strcpy(archive_query, argv[2]);
-        
+        archive_query = string_duplicate(argv[2]);
         priority = atoi(argv[3]);
         log_orange(logger, "Config: %s, Path Queries: %s, Prioridad: %d", path_config, archive_query, priority);
     }
@@ -33,7 +30,6 @@ int main(int argc, char* argv[]) {
     cqc = load_config_query_control();
 
     //Al conectarse al Master se debe enviar el path del archivo_query y la prioridad
-    //Por ahora pongo boludeces a enviar
 
     int fd_master = client_connection(cqc.ip_master, cqc.puerto_master);
     if(handshake(fd_master, 0) != 0)
@@ -52,17 +48,24 @@ int main(int argc, char* argv[]) {
     for(;;){
         t_list* l = recv_operation_packet(fd_master);
         log_info(logger, "Recibi: %d cantidad de elementos", list_size(l));
-        
+        /*//Por ahora asumo que si recibe cantidad vacía rompo este programa y listo.
+        if(list_size(l) == 0)
+            break;*/
         int v = list_get_int(l, 0);
         if(v == REQUEST_READ){
             char* archivo = list_get_str(l,1);
             char* contenido = list_get_str(l,2);
             log_info(logger, "## Lectura realizada: %s, contenido: %s", archivo, contenido);
+            free(archivo);
+            free(contenido);
             //Es la lectura del log obligatorio: "## Lectura realizada: Archivo <File:Tag>, contenido: <CONTENIDO>"
         }
         if(v == REQUEST_EXECUTE_QUERY){
             //Sera que el Master solicita el query y este modulo le responde? eso es lo que entendí.
             log_info(logger, "## Solicitud de ejecución de Query: %s, prioridad: %d", archive_query, priority);
+            /*t_packet* p = create_packet();
+            add_int_to_packet(p, SUCCESS);
+            send_and_free_packet(p, fd_master);*/
         }
         if(v == REQUEST_KILL){
 
@@ -70,13 +73,10 @@ int main(int argc, char* argv[]) {
             //Debe ser un char* el motivo???
             char* motivo = list_get_str(l, 1);
             log_info(logger, "## Query Finalizada - %s", motivo);
+            free(motivo);
             break;
         }
-
-
-        //Por ahora asumo que si recibe cantidad vacía rompo este programa y listo.
-        if(list_size(l) == 0)
-            break;
+        list_destroy(l);
     }
     return 0;
 };

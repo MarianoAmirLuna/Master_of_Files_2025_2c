@@ -156,7 +156,7 @@ void packet_callback(void* params){
 
     tratar_mensaje(pack, w, sock_client); // manejo de operaciones del worker
 
-    list_destroy_and_destroy_elements(pack, free_element);
+    list_destroy(pack);
 }
 
 void disconnect_callback(void* params){

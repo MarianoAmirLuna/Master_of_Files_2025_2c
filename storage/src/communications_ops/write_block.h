@@ -63,7 +63,8 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
     pthread_mutex_unlock(tag_lock);
     log_info(logger, "Ejecutando la operacion WRITE_BLOCK");
     log_info(logger, "## %d - Bloque Lógico Escrito %s:%s Número de Bloque %d", w->id_query, file, tag, bloque_logico);
-
+    //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
+    //Ejemplo: send_and_free_packet(p, w->fd);
 }
 
 

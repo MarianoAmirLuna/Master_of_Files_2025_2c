@@ -28,8 +28,10 @@ void execute_this_query_on_this_worker(query* q, worker* w){
         return;
     }
 
+    //sem_wait(&sem_locker);
+
     t_packet* p = create_packet();
-    add_int_to_packet(p, EJECUTAR_QUERY);
+    add_int_to_packet(p, REQUEST_EXECUTE_QUERY);
     add_int_to_packet(p, q->id); //enviar el id_query
     add_string_to_packet(p, q->archive_query); //enviarle el nombre del query a ejecutar
     add_int_to_packet(p, q->pc);
@@ -43,11 +45,26 @@ void execute_this_query_on_this_worker(query* q, worker* w){
     add_int_to_packet(pq, REQUEST_EXECUTE_QUERY);
     send_and_free_packet(pq, q->fd);  //Debido al TP imprime en Query Control la solicitud de ejec. Creería que debo notificarlo
     
-    t_list* pack = recv_operation_packet(w->fd); //Debería primero recibir después de esto para saber si fue SUCCESS el ejecutar query?? antes de setear como libre el worker.
-    if(list_get_int(pack, 0) == SUCCESS){
-        query_to(q, STATE_EXEC);
-        w->is_free=0;
-    }
+    query_to(q, STATE_EXEC);
+    w->is_free=0;
+    
+    /*t_list* pack = recv_operation_packet_control(w->fd); //Debería primero recibir después de esto para saber si fue SUCCESS el ejecutar query?? antes de setear como libre el worker.
+    if(pack == NULL){
+        log_error(logger, "Parece que algo se desconectó por lo que voy a decir que este worker está libre");
+        for(int i=0;i<list_size(workers);i++){
+            if(cast_worker(list_get(workers, i))->id == w->id){
+                list_remove(workers, i);
+                break;
+            }
+        }
+        query_to(q, STATE_READY);
+    }else{
+        if(list_get_int(pack, 0) == SUCCESS){
+            query_to(q, STATE_EXEC);
+            w->is_free=0;
+        }
+    }*/
+    //sem_post(&sem_locker);
 }
 
 void execute_worker(){
@@ -55,6 +72,7 @@ void execute_worker(){
     
     //TODO: Debo comprobar entre todas las queries tanto EXEC como en READY si existe alguno más prioritario que los que ya se ejecutan en worker para que este la desaloje
     
+    sem_wait(&sem_locker);
     pthread_mutex_lock(&mutex_sched);
     //TODO: Tengo que agarrar un worker libre (si lo hay) y si existe algún query a ejecutar en ready tengo que agarrar ese y mandarlo a EXEC
     worker* w = get_first_worker_free();
@@ -63,6 +81,7 @@ void execute_worker(){
     if(w == NULL || !have_query_ready()) //De Morgan papá. Viste que es útil la matemática discreta.
     {
         log_pink(logger, "Estoy en execute_worker y la cosa se puso fea (%s:%d) worker es NULL??? %d", __func__,__LINE__, w==NULL ? 1 : 0);
+        sem_post(&sem_locker);
         return;
     }
     //Necesito comprobar si hay worker libre antes de hacer pop al queue ready sino se  pone fea la cosa.
@@ -73,6 +92,8 @@ void execute_worker(){
     }
 
     execute_this_query_on_this_worker(q, w);
+
+    sem_post(&sem_locker);
 }
 
 //Se debe instanciar en un nuevo subproceso

@@ -27,6 +27,7 @@ t_dictionary* dict_state;
 qid query_idx=0;
 int degree_multiprocess;
 sem_t sem_idx;
+sem_t sem_locker;
 void execute_worker();
 
 //On predicates
@@ -84,8 +85,12 @@ int increment_idx(){
 void query_to(query* q, state_process to){
     
     if(!is_valid_sp(q->sp, to)){
-        log_error(logger, "is nota valid from to state process exit(1) is INVOKED");
-        exit(EXIT_FAILURE);
+        log_error(logger, "is not valid from %s to %s state process returned is invoked", 
+            state_to_string(q->sp),
+            state_to_string(to)
+        );
+        return;
+        //exit(EXIT_FAILURE);
     }
     if(to == STATE_EXEC){
         q->temp = temporal_create();

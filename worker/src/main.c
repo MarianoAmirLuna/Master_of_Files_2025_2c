@@ -119,7 +119,7 @@ void packet_callback(void* params){
     
     if(ocm == MODULE_MASTER){
         //ACA RECIBIS UN PAQUETE PROVENIENTE DE MASTER
-        if(op_code == EJECUTAR_QUERY){
+        if(op_code == REQUEST_EXECUTE_QUERY){
             qid id_query =list_get_int(packet, 1);
             char* str =list_get_str(packet, 2);
             archivo_query_actual = malloc(strlen(str)+1);
@@ -134,6 +134,8 @@ void packet_callback(void* params){
             log_info(logger, "## Query %d: Se recibe la Query. El path de operaciones es: %s", id_query, archivo_query_actual); 
             sem_post(&sem_query_recibida); //Aviso que ya tengo una query para ejecutar
             free(str);
+
+
         }
         if(op_code == REQUEST_DESALOJO){
             qid id_query = list_get_int(packet, 1);
@@ -190,5 +192,7 @@ void packet_callback(void* params){
             send_and_free_packet(paq, sock_master);
         }
     }    
-    list_destroy_and_destroy_elements(packet, free_element);
+    list_destroy(packet); //véase como en por ejemplo EJECUTAR_QUERY al recibir el list_get_str luego lo libero, como el resto son enteros, los enteros no sep ueden liberar porque lo hace el compilador
+    //Por lo tanto sólo debo destruir/liberar la lista
+    //list_destroy_and_destroy_elements(packet, free_element);
 }

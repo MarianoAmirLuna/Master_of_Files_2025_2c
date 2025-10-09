@@ -19,8 +19,9 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     char* params = NULL;
     if(list_size(pack) > 1)
     {
-        params = (char*) list_get(pack,1);
+        params = list_get_str(pack ,1);
     }
+    log_debug(logger, "PARAMS: %s", params);
 
     char** args = NULL;
     if(params != NULL)
@@ -31,9 +32,16 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     //Descomentar esto sólo si desde worker usan el ejecutar_instruccion_v2
     //opcode = convert_instr_code_to_storage_operation(opcode);
     if(opcode == CREATE_FILE){
+        if(string_array_size(args) < 2){
+            log_error(logger, "Cantidad inválida de argumentos");
+        }
+        //Falta tag, no estoy recibiendo el tag
         create_file_ops(args[0], args[1], w);
     }
     if(opcode == TRUNCATE_FILE){
+        if(string_array_size(args) < 3){
+            log_error(logger, "Cantidad inválida de argumentos");
+        }
         truncate_file_ops(args[0],args[1], atoi(args[2]), w);
     }
     if(opcode == TAG_FILE){
@@ -57,13 +65,10 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     int result_code = 999; // ponele que es un ok por ahora //Que tarado.
     add_int_to_packet(response, result_code);
     send_and_free_packet(response, sock_client);
-            
-    if (args != NULL)
-    {
-        string_iterate_lines(args, (void*) free);
-        free(args);
-    }
-
+    
+    if(args)
+        string_array_destroy(args);
+    free(params);
     msleep(cs.retardo_operacion); //Según el TP dice que TODAS LAS OPERACIONES se deberá esperar un tiempo de retardo
 
 }

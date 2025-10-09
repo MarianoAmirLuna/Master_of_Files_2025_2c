@@ -36,14 +36,6 @@ t_packet* create_packet(){
     return packet;
 }
 
-/// @brief Crea el t_packet con opcode específico
-/// @return t_packet*
-t_packet* create_packet_opcode(op_code opcode){
-    t_packet* packet = malloc(sizeof(t_packet));
-    packet->opcode = opcode;
-    create_buffer(packet);
-    return packet;
-}
 /// @brief [PRIVATE]
 /// Serializa el paquete
 /// @param packet Paquete

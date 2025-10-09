@@ -185,6 +185,15 @@ t_list* recv_operation_packet(int sock_client){
 	return recv_packet(sock_client);
 }
 
+t_list* recv_operation_packet_control(int sock_client){
+	int op = recv_operation(sock_client);
+	if(op != PACKET){
+		return NULL;
+	}
+	return recv_packet(sock_client);
+}
+
+
 /// @brief [BLOQUEANTE en lado servidor] Hace un Handshake con un socket
 /// @param sock Socket a hacer handshake
 /// @param is_server_side Es lado Servidor o cliente? 1: Servidor, 0: Cliente

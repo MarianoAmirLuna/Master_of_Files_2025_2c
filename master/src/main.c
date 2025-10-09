@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
         dictionary_put(dict_state, state_to_string(i), i==STATE_READY ? queue_create() : list_create());
     }
     sem_init(&sem_idx, 0,1);
-    
+    sem_init(&sem_locker, 0,1);
     int sock_server = server_connection(cm.puerto_escucha);
     
     void* param = malloc(sizeof(int)*2);
@@ -118,6 +118,7 @@ void* attend_multiple_clients(void* params)
                 q->id,
                 list_size(workers)
             );
+            free(archive_query);
             //Deberia hacer una planificación ahora mismo para saber si puede asignar un 
         }
         if(ocm == MODULE_WORKER){
@@ -139,7 +140,7 @@ void* attend_multiple_clients(void* params)
             log_info(logger, "## Se conecta el Worker %d - Cantidad total de Workers: %d", id_worker, list_size(workers));
         }
 
-        list_destroy_and_destroy_elements(l, free_element);
+        list_destroy(l);
 
         void* parameter = malloc(sizeof(int)*4);
         int offset = 0;
@@ -188,7 +189,7 @@ void disconnect_callback(void* params){
     memcpy(&sock_server, params+offset, sizeof(int));
     offset+=sizeof(int);
     memcpy(&id, params+offset, sizeof(int));
-    
+    log_warning(logger, "HANDLIND DISCONNECTION CALLBACK OCM: %s", ocm_to_string(ocm));
     if(ocm == MODULE_QUERY_CONTROL){
         //TODO: Si se desconectó y la query se encuentra en Ready se debe mandar exit directamente
         //TODO: ahora si estaba en Exec se debe notificar al Worker que la está ejecutando justo ese query y debe desalojar la query.
@@ -242,25 +243,26 @@ void disconnect_callback(void* params){
         wid id_worker = id;
         //Si se desconectó un worker la query que se encontraba en ejecución en ese Worker se finalizará con error y notificará al Query Control correspondiente.
         int idx = -1;
+        log_light_blue(logger, "HERE 1");
         //worker* w = get_worker_by_wid(id_worker);
         worker* w = list_find_by_idx_list(workers, by_worker_wid, (int)id_worker, &idx);
         //worker* w = get_worker_by_fd(sock_client, &idx);
         pthread_mutex_lock(&mutex_sched);
         if(idx != -1 && w != NULL){
-
+            log_light_blue(logger, "HERE 2: idx=%d", idx);
             int qid = w->id_query;
             int id_worker = w->id;
 
             query* q = get_query_by_qid(w->id_query);
+            log_light_blue(logger, "HERE 3: Q is NULL? %d", q == NULL);
             if(q != NULL){
                 //Notificar al query
                 t_packet* p = create_packet();
                 add_int_to_packet(p, ERROR);
-                
                 send_and_free_packet(p, q->fd);
-
+                log_light_blue(logger, "HERE 4: sending to %d", q->fd);
                 q->sp = STATE_EXIT;
-                on_changed(on_query_state_changed, q);
+                on_changed(on_query_state_changed,   q);
                 
             }else{
                 log_warning(logger, "No se encontró la query que estaba ejecutando el worker %d", w->id);
@@ -277,6 +279,7 @@ void disconnect_callback(void* params){
                 degree_multiprocess
             );
         }
+        log_light_blue(logger, "HERE 5: idx=%d", idx);
         pthread_mutex_unlock(&mutex_sched);
     }
     log_warning(logger, "Se desconecto el cliente de %s fd:%d", ocm_to_string(ocm), sock_client);
@@ -315,7 +318,7 @@ void packet_callback(void* params){
         work_worker(pack, id, sock_client);
     }
 
-    list_destroy_and_destroy_elements(pack, free_element);
+    list_destroy(pack);
 }
 
 void work_query_control(t_list* packet, int id, int sock){
@@ -343,10 +346,10 @@ void work_worker(t_list* pack, int id, int sock){
         add_string_to_packet(p, content);
         send_and_free_packet(p, q->fd);
         log_info(logger, "## Se envia un mensaje de lectura de la Query %d en el Worker %d al Query Control", 
-            w->id_query, id
+            w->id_query, 
+            id
         );
 
-        //TODO: Should i free these pointers??
         free(content);
         free(filetag);
     }
