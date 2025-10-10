@@ -44,7 +44,40 @@ void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
     off_t nuevo_tam = atoll(args[2]); //LONG INT??? ENFERMO*/
 
     // paths
-    char* file_path     = string_from_format("%s/files/%s", cs.punto_montaje, file);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //OLD CODE - Se comenta el codigo por errores en la forma que se gestionan los bloques fisicos y logicos.
+
+    /*
+        char* file_path     = string_from_format("%s/files/%s", cs.punto_montaje, file);
     char* tag_path      = string_from_format("%s/%s", file_path, tag);
     char* metadata_path = NULL;
 
@@ -238,6 +271,8 @@ void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
     log_info(logger, "## %d - File Truncado %s:%s Tamaño %d", w->id_query, file, tag, nuevo_tam);
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
+    */
+
 }
 
 #endif
