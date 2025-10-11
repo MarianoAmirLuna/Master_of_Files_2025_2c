@@ -24,6 +24,7 @@ void inicializar_memoria()
         list_add(lista_frames, entrada_frame_table);
         sem_post(&tabla_frame_en_uso);*/
     }
+    log_pink(logger, "tamaño de la lista: %d", list_size(lista_frames));
 }
 
 bool hay_espacio_memoria(char *contenido)
@@ -37,6 +38,8 @@ bool hay_espacio_memoria(char *contenido)
 
     bool aux = list_size(frames_libres) >= cant_pags;
     list_destroy(frames_libres);
+
+    log_light_blue(logger, "hay espacio en memoria?????? capaz %d", aux);
 
     return aux;
 }
@@ -98,11 +101,17 @@ bool coincide_tag_y_pagina(void* element){
  * @brief Te dice si un archivo:tag esta en la T.P.
  */
 bool existe_fileTag_y_pag_en_tp(char* file_tag, int pagina, t_list* tabla_de_paginas){
-    dto_buscado.pag = pagina;
-    dto_buscado.file_tag = file_tag;
-    bool aux = list_any_satisfy (tabla_de_paginas, coincide_tag_y_pagina);
+    //dto_buscado.pag = pagina;
+    //dto_buscado.file_tag = file_tag;
+    //bool aux = list_any_satisfy (tabla_de_paginas, coincide_tag_y_pagina);
 
-    return aux;
+    for (int i=0;i<list_size(tabla_de_paginas); i++)
+    {
+        entrada_tabla_pags* aux = list_get(tabla_de_paginas, i);
+        if(aux->pag==pagina && string_equals_ignore_case(aux->file_tag, file_tag)) return true;
+    }
+
+    return false;
 }
 
 /***
