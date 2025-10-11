@@ -9,6 +9,8 @@
 //NOTESE QUE EXISTE t_list* workers 
 void tratar_mensaje(t_list* pack, worker* w, int sock_client)
 {
+    msleep(cs.retardo_operacion); //Según el TP dice que TODAS LAS OPERACIONES se deberá esperar un tiempo de retardo, claro pa, pero esto va arriba
+
     if(pack == NULL) {
         log_error(logger, "Error recibiendo paquete");
         return;
@@ -26,9 +28,9 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     char** args = NULL;
     if(params != NULL)
     {
-        args = string_split(params, " ");
-    }
-    
+        args = string_split(params, " "); // te voy a extrañar split
+    }   // todo separar diferente
+
     //Descomentar esto sólo si desde worker usan el ejecutar_instruccion_v2
     //opcode = convert_instr_code_to_storage_operation(opcode);
     if(opcode == CREATE_FILE){
@@ -69,7 +71,6 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     if(args)
         string_array_destroy(args);
     free(params);
-    msleep(cs.retardo_operacion); //Según el TP dice que TODAS LAS OPERACIONES se deberá esperar un tiempo de retardo
 
 }
 
@@ -88,3 +89,5 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
 */
 
 #endif
+
+

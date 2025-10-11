@@ -3,12 +3,39 @@
 
 #ifndef BASE_COMMUNICATION_OPS_H
 #include "base_communication_ops.h"
-#include "create_file.h"
 
 #endif
 
 void tag_file_ops(char* file, char* tag, worker* w){
     
+    //Control de que no se reciban cosas nulas
+    if(file == NULL || tag == NULL){
+        log_error(logger, "FILE o TAG son nulos");
+        return;
+    }
+
+    //Controlo que exista el archivo y el tag
+    if (!control_existencia(string_from_format("%s/%s", "files/", file))){
+        log_error(logger, "El archivo %s no existe", file);
+        return;
+    }
+    else{
+        if (!control_existencia(string_from_format("%s/%s/%s", "files/", file, tag))){
+            log_error(logger, "El tag %s no existe", tag);
+            return;
+        }
+    }
+
+    //Control de que no se intente comitear un archivo que ya estaba comiteado.
+    if (tag_comiteado(file, tag)){
+        log(logger, "El archivo %s tag %s se comitio correctamente", file, tag);
+        return;
+    }
+    else{
+
+    }
+
+    //
     
     /*
     1. Verifico que no exista ya dicho archivo con el tag indicado.
@@ -25,5 +52,7 @@ void tag_file_ops(char* file, char* tag, worker* w){
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
 }
+
+
 
 #endif

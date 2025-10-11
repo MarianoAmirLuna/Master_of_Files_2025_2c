@@ -14,9 +14,9 @@ int main(int argc, char* argv[]) {
     cs =load_config_storage();
     create_log("storage", cs.log_level);
     log_violet(logger, "%s", "Hola soy STORAGE");
-    
+
     workers= list_create();
-    
+
     inicializar_file_system();
     creo_semaforos_fs();
 
@@ -81,7 +81,7 @@ void* attend_multiple_clients(void* params)
         char* superblockpath = string_from_format("%s/%s", cs.punto_montaje, "superblock.config");
         t_config* c_superblock = config_create(superblockpath);
         int block_size = config_get_int_value(c_superblock,"BLOCK_SIZE");
-        
+
         t_packet* pack = create_packet();
         add_int_to_packet(pack, BLOCK_SIZE);
         add_int_to_packet(pack, block_size);
@@ -119,7 +119,7 @@ void* go_loop_net(void* params){
         disconnect_callback
     );
     free(data);
-    
+
     return NULL;
 }
 
@@ -140,18 +140,18 @@ void packet_callback(void* params){
     offset+=sizeof(int);
     memcpy(&id_worker, params+offset, sizeof(int));
 
-    
+
     log_info(logger, "En el packet callback sock_client: %d, ocm: %d, sock_server:%d id_worker: %d", sock_client, ocm, sock_server, id_worker);
     t_list* pack = recv_packet(sock_client); // aca estarian las operaciones
 
     //En base a lo que entendí del TP el QUERY_ID sería la primera cosa que tendría cuando worker le manda una solicitud al Storage (este)
     //SI es el caso entonces se invoca el list_get_int(pack, 0) para obtener el id_query
     //Véase que qid o wid son typedef de int, por lo tanto SON INT
-    
+
     qid id_query = list_get_int(pack, 0);
     worker* w = get_worker_by_id(id_worker)->id_query = id_query;
     //Necesitaría el id_query???????? Porque en los logs figura el uso de ID_QUERY
-    
+
     log_pink(logger, "RECIBI DATOS DEL %s", ocm_to_string(ocm));
 
     tratar_mensaje(pack, w, sock_client); // manejo de operaciones del worker

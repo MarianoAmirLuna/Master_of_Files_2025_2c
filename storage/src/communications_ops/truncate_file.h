@@ -10,12 +10,21 @@
 #endif
 
 void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
+    //Control de que no se reciban cosas nulas
     if(file == NULL || tag == NULL){
         log_error(logger, "FILE o TAG son nulos");
         return;
     }
 
-    /*Esta operación se encargará de modificar el tamaño del File:Tag especificados agrandando o achicando el tamaño del mismo 
+
+
+}
+
+#endif
+
+
+
+  /*Esta operación se encargará de modificar el tamaño del File:Tag especificados agrandando o achicando el tamaño del mismo 
     para reflejar el nuevo tamaño deseado (actualizando la metadata necesaria).
     Al incrementar el tamaño del File, se le asignarán tantos bloques lógicos (hard links) como sea necesario. 
     Inicialmente, todos ellos deberán apuntar el bloque físico nro 0.
@@ -272,7 +281,3 @@ void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
     */
-
-}
-
-#endif

@@ -8,6 +8,12 @@
 
 void commit_tag_ops(char* file, char* tag, worker* w){
 
+    //Control de que no se reciban cosas nulas
+    if(file == NULL || tag == NULL){
+        log_error(logger, "FILE o TAG son nulos");
+        return;
+    }
+
     /*
         1. Primero verifico si el archivo ya estaba comitieado o no.
         2. Si no esta comiteado, cambio el estado a commited, al hacer esto antes de ponerme analizar los bloques fisicos evito
@@ -20,7 +26,8 @@ void commit_tag_ops(char* file, char* tag, worker* w){
      Detalles:
      1. Segun la documetacion, la funcion no debe hacer nada cuando un worker le envia el commit y el archivo esta comiteado.
      Debo avisar al worker que el archivo ya estaba comiteado? O directamente hago como si se completara el commit normalmente?
-     2. Como impacta el commit de un archivo cuando se solicita una copia nueva del mismo? - Resolucion temporal: Se copian los datos los bloques logicos
+     2. Como impacta el commit de un archivo cuando se solicita una copia nueva del mismo? - Resolucion temporal:
+      Se copian los datos los bloques logicos
      y luego cuando se cierre la copia ahi se calculan los bloques fisicos.
     */
     log_error(logger, "%s NOT IMPLEMENTED (%s:%d)",__func__, __func__,__LINE__);

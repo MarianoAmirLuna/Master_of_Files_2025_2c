@@ -91,6 +91,11 @@ int control_existencia_file(char* path)
     }
 }
 
+bool tag_comiteado(char* file, char* tag){
+    load_config(string_to_format("files/%s/%s/metadata.config", file, tag));
+    
+}
+
 
 int cant_elementos_directorio(char* path){
     int cnt = 0;
