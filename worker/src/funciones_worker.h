@@ -104,9 +104,9 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     {
         /*char* file = strtok(parametro1, ":");
         char* tag = strtok(NULL, "");*/
-        /*int dir_base = atoi(parametro2);
-        int tamanio = atoi(parametro3);*/
-        ejecutar_read(parametro1,atoi(parametro2), atoi(parametro3));
+        int dir_base = atoi(parametro2);
+        //int tamanio = atoi(parametro3);*/
+        ejecutar_read(parametro1, dir_base, atoi(parametro3));
         log_info(logger, "## Query %d: Acción Leído - Dirección Física: %d - VALOR NOT IMPLEMENTED", actual_worker->id_query, dir_base);
     }
     else if(caso == TAG)
