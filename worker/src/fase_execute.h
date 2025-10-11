@@ -23,8 +23,9 @@ void ejecutar_create(char *file, char *tag)
 void ejecutar_truncate(char *file_y_tag, int tam)
 {
     t_packet* paq = create_packet();
+
     add_int_to_packet(paq, TRUNCATE_FILE);
-    add_string_to_packet(paq, file_y_tag);
+    add_file_tag_to_packet(paq, file_y_tag);
     add_int_to_packet(paq, tam);
     send_and_free_packet(paq, sock_storage);
 }
