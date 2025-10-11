@@ -4,11 +4,12 @@
 
 #include <sys/stat.h>
 #include <sys/mman.h>
-#include "commons/string.h"
+
 
 #ifndef INC_LIBS_H
 #include "inc/libs.h"
 #endif 
+#include "commons/string.h"
 
 //#include "file_ext.h"
 #include "bitmap_ext.h"
@@ -92,8 +93,10 @@ int control_existencia_file(char* path)
 }
 
 bool tag_comiteado(char* file, char* tag){
-    load_config(string_to_format("files/%s/%s/metadata.config", file, tag));
-    
+    char* path = string_from_format("files/%s/%s/metadata.config", file, tag);
+    load_config(path);
+    free(path);
+    return 1;
 }
 
 

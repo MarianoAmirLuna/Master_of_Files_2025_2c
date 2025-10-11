@@ -28,7 +28,7 @@ void tag_file_ops(char* file, char* tag, worker* w){
 
     //Control de que no se intente comitear un archivo que ya estaba comiteado.
     if (tag_comiteado(file, tag)){
-        log(logger, "El archivo %s tag %s se comitio correctamente", file, tag);
+        log_debug(logger, "El archivo %s tag %s se comitio correctamente", file, tag);
         return;
     }
     else{

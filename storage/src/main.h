@@ -1,5 +1,9 @@
 #include "base.h"
 #include "signal.h"
+
+/*#ifndef IO_EXT_H
+#include "exts/io_ext.h"
+#endif */
 //#include "funciones_generales.h"
 #include "inicializacion_storage.h"
 #include "control_accesos.h"

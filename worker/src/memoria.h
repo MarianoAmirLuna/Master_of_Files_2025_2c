@@ -125,9 +125,10 @@ int buscar_base_marco(int n)
 /// @return el t_list* como filtro de la cola global
 t_list* obtener_tabla_paginas(char *file_y_tag)
 {
+    log_debug(logger, "FILEYTAG: %s (%s:%d)", file_y_tag, __func__,__LINE__);
     file_tag_buscado=file_y_tag;
     t_list* ret = list_filter(tabla_pags_global->elements, coincide_tag);
-
+    log_debug(logger, "LISTA ES NULL???: %d (%s:%d)", ret == NULL, __func__,__LINE__);
     return ret;
 }
 

@@ -75,19 +75,8 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     free(tag);
     // esto es una respuesta barata, despues le agrego a cada uno su respuesta personalizada
     t_packet* response = create_packet();
-    int result_code = 999; // ponele que es un ok por ahora //Que tarado.
-    add_int_to_packet(response, result_code);
+    add_int_to_packet(response, SUCCESS);
     send_and_free_packet(response, sock_client);
-    
-    /*if(args)
-        string_array_destroy(args);
-<<<<<<< HEAD
-    free(params);
-=======
-    free(params);*/
-    msleep(cs.retardo_operacion); //Según el TP dice que TODAS LAS OPERACIONES se deberá esperar un tiempo de retardo
->>>>>>> 30dcfc9 (big poppa fixa)
-
 }
 
 
