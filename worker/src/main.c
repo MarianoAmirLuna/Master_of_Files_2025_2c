@@ -134,8 +134,6 @@ void packet_callback(void* params){
             log_info(logger, "## Query %d: Se recibe la Query. El path de operaciones es: %s", id_query, archivo_query_actual); 
             sem_post(&sem_query_recibida); //Aviso que ya tengo una query para ejecutar
             free(str);
-
-
         }
         if(op_code == REQUEST_DESALOJO){
             qid id_query = list_get_int(packet, 1);

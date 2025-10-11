@@ -85,18 +85,14 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==TRUNCATE)
     {
-        char* file = strtok(parametro1, ":");
-        char* tag = strtok(NULL, "");
-        int tam = atoi(parametro2);
+        ejecutar_truncate(parametro1, atoi(parametro2));
 
-        ejecutar_truncate(strcat(file, tag), tam);
-
-        t_packet* paq = create_packet();
+        /*t_packet* paq = create_packet();
         add_int_to_packet(paq, CREATE_FILE);
         add_string_to_packet(paq, file);
         add_string_to_packet(paq, tag);
         add_int_to_packet(paq, tam);
-        send_and_free_packet(paq, sock_storage);
+        send_and_free_packet(paq, sock_storage);*/
     }
     else if(caso == WRITE)
     {

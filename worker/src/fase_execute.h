@@ -23,9 +23,8 @@ void ejecutar_create(char *file, char *tag)
 void ejecutar_truncate(char *file_y_tag, int tam)
 {
     t_packet* paq = create_packet();
-
     add_int_to_packet(paq, TRUNCATE_FILE);
-    add_file_tag_to_packet(paq, file_y_tag);
+    add_string_to_packet(paq, file_y_tag);
     add_int_to_packet(paq, tam);
     send_and_free_packet(paq, sock_storage);
 }
@@ -221,6 +220,8 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
     if(entrada_con_frame == NULL){
         log_error(logger, "ENTRADA CON FRAME ES NULL");
     }
+
+    //ESTA TRATANDO DE ACCEDER A UNA VARIABLE NULA SORETE
     int frame = entrada_con_frame->marco;
 
     for (int indice = dir_base; espacio_ya_escrito <= strlen(contenido); indice += (espacio_ya_escrito == 0 ? restante_en_pag : block_size)) //(si lees esto, perdon)

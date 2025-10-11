@@ -149,7 +149,12 @@ void packet_callback(void* params){
     //Véase que qid o wid son typedef de int, por lo tanto SON INT
 
     qid id_query = list_get_int(pack, 0);
-    worker* w = get_worker_by_id(id_worker)->id_query = id_query;
+    worker* w = get_worker_by_id(id_worker);
+    log_light_blue(logger, "WORKERS: %d", list_size(workers));
+    if(w == NULL){
+        log_error(logger, "EL WORKER ES NULO EN (%s:%d)", __func__,__LINE__);
+    }
+    w->id_query = id_query;
     //Necesitaría el id_query???????? Porque en los logs figura el uso de ID_QUERY
 
     log_pink(logger, "RECIBI DATOS DEL %s", ocm_to_string(ocm));

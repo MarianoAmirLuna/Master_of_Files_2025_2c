@@ -17,60 +17,76 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     }
 
     int opcode = list_get_int(pack, 0);
-
-    char* params = NULL;
+    int real_sz = list_size(pack)-1;
+    /*char* params = NULL;
     if(list_size(pack) > 1)
     {
         params = list_get_str(pack ,1);
     }
-    log_debug(logger, "PARAMS: %s", params);
-
+    
+    log_debug(logger, "OPCODE ES: %d, PARAMS: %s", opcode, params);
+    if(opcode == CREATE_FILE){
+        log_debug(logger, "Segudno argumento es: %s", list_get_str(pack, 2));
+    }
     char** args = NULL;
     if(params != NULL)
     {
-        args = string_split(params, " "); // te voy a extrañar split
-    }   // todo separar diferente
-
+        args = string_split(params, " ");
+    }*/
+    
     //Descomentar esto sólo si desde worker usan el ejecutar_instruccion_v2
     //opcode = convert_instr_code_to_storage_operation(opcode);
+    char* file = list_get_str(pack,1);
+    char* tag = list_get_str(pack, 2);
     if(opcode == CREATE_FILE){
-        if(string_array_size(args) < 2){
+        if(real_sz < 2){
             log_error(logger, "Cantidad inválida de argumentos");
         }
-        //Falta tag, no estoy recibiendo el tag
-        create_file_ops(args[0], args[1], w);
+        create_file_ops(file, tag, w);
     }
     if(opcode == TRUNCATE_FILE){
-        if(string_array_size(args) < 3){
+        if(real_sz < 3){
             log_error(logger, "Cantidad inválida de argumentos");
         }
-        truncate_file_ops(args[0],args[1], atoi(args[2]), w);
+        int sz = list_get_int(pack, 3);
+        truncate_file_ops(file,tag,sz, w);
     }
     if(opcode == TAG_FILE){
         //Tiene 3 argumentos el TAG_FILE??? Con el args[3]??? Investigar.
-        tag_file_ops(args[0], args[1], w);
+        tag_file_ops(file, tag, w);
     }
     if(opcode == COMMIT_TAG){
-        commit_tag_ops(args[0], args[1], w);
+        commit_tag_ops(file, tag, w);
     }
     if(opcode == WRITE_BLOCK){
-        write_block_ops(args[0], args[1], atoi(args[2]), args[3], w);
+        int sz = list_get_int(pack, 3);
+        char* contenido = list_get_str(pack ,4);
+        write_block_ops(file, tag, sz, contenido, w);
+        free(contenido);
     }
     if(opcode == READ_BLOCK){
-        read_block_ops(args[0], args[1], atoi(args[2]), w);
+        int sz = list_get_int(pack, 3);
+        read_block_ops(file, tag, sz, w);
     }
     if(opcode == DELETE_TAG){
-        delete_tag_ops(args[0], args[1], w);
+        delete_tag_ops(file, tag, w);
     }
+    free(file);
+    free(tag);
     // esto es una respuesta barata, despues le agrego a cada uno su respuesta personalizada
     t_packet* response = create_packet();
     int result_code = 999; // ponele que es un ok por ahora //Que tarado.
     add_int_to_packet(response, result_code);
     send_and_free_packet(response, sock_client);
     
-    if(args)
+    /*if(args)
         string_array_destroy(args);
+<<<<<<< HEAD
     free(params);
+=======
+    free(params);*/
+    msleep(cs.retardo_operacion); //Según el TP dice que TODAS LAS OPERACIONES se deberá esperar un tiempo de retardo
+>>>>>>> 30dcfc9 (big poppa fixa)
 
 }
 

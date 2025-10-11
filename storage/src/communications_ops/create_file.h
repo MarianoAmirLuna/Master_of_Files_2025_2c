@@ -30,7 +30,13 @@ void create_file_ops(char* file, char* tag, worker* w){
 
     crear_metadata_config(path, g_block_size, list_create(), WORK_IN_PROGRESS);
     free(path);
-
+    log_orange(logger, "FILE: %s, TAG: %s", file, tag);
+    if(w == NULL){
+        log_error(logger, "EL WORKER ES NULO WTF");
+    }
+    else{
+        log_debug(logger, "El qid es: %d", w->id_query);
+    }
     log_info(logger, "## %d - File Creado %s:%s", w->id_query, file, tag);
 
 
