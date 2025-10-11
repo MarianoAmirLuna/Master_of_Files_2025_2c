@@ -74,13 +74,14 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     if (caso == CREATE)
     {
         //El tamaño del archivo debe ser 0
-        char *file = strtok(parametro1, ":");
-        char *tag  = strtok(NULL, "");
+        /*char *file = strtok(parametro1, ":");
+        char *tag  = strtok(NULL, "");*/
 
         t_packet* paq = create_packet();
         add_int_to_packet(paq, CREATE_FILE);
-        add_string_to_packet(paq, file);
-        add_string_to_packet(paq, tag);
+        add_file_tag_to_packet(paq, parametro1);
+        /*add_string_to_packet(paq, file);
+        add_string_to_packet(paq, tag);*/
         send_and_free_packet(paq, sock_storage);
     }
     else if(caso==TRUNCATE)
@@ -101,40 +102,43 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso == READ)
     {
-        char* file = strtok(parametro1, ":");
-        char* tag = strtok(NULL, "");
-        int dir_base = atoi(parametro2);
-        int tamanio = atoi(parametro3);
-        ejecutar_read(parametro1, dir_base, tamanio);
+        /*char* file = strtok(parametro1, ":");
+        char* tag = strtok(NULL, "");*/
+        /*int dir_base = atoi(parametro2);
+        int tamanio = atoi(parametro3);*/
+        ejecutar_read(parametro1,atoi(parametro2), atoi(parametro3));
         log_info(logger, "## Query %d: Acción Leído - Dirección Física: %d - VALOR NOT IMPLEMENTED", actual_worker->id_query, dir_base);
     }
     else if(caso == TAG)
     {
-        char* file_old = strtok(parametro1, ":");
+        /*char* file_old = strtok(parametro1, ":");
         char* tag_old = strtok(NULL, "");
 
         char* file_new = strtok(parametro2, ":");
-        char* tag_new = strtok(NULL, "");
+        char* tag_new = strtok(NULL, "");*/
 
         t_packet* paq = create_packet();
         add_int_to_packet(paq, TAG_FILE);
-        add_string_to_packet(paq, file_old);
+        add_file_tag_to_packet(paq, parametro1);
+        add_file_tag_to_packet(paq, parametro2);
+        /*add_string_to_packet(paq, file_old);
         add_string_to_packet(paq, tag_old);
         add_string_to_packet(paq, file_new);
-        add_string_to_packet(paq, tag_new);
+        add_string_to_packet(paq, tag_new);*/
         send_and_free_packet(paq, sock_storage);
         
     }
     else if(caso==COMMIT)
     {
-        char* file = strtok(parametro1, ":");
-        char* tag = strtok(NULL, "");
+        /*char* file = strtok(parametro1, ":");
+        char* tag = strtok(NULL, "");*/
 
         //paquete
         t_packet* paq = create_packet();
         add_int_to_packet(paq, CREATE_FILE);
-        add_string_to_packet(paq, file);
-        add_string_to_packet(paq, tag);
+        add_file_tag_to_packet(paq, parametro1);
+        /*add_string_to_packet(paq, file);
+        add_string_to_packet(paq, tag);*/
         send_and_free_packet(paq, sock_storage);
     }
     else if(caso==FLUSH)
@@ -143,14 +147,15 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==DELETE)
     {
-        char* file = strtok(parametro1, ":");
-        char* tag = strtok(NULL, "");
+        /*char* file = strtok(parametro1, ":");
+        char* tag = strtok(NULL, "");*/
 
         //paquete
         t_packet* paq = create_packet();
         add_int_to_packet(paq, DELETE_TAG);
-        add_string_to_packet(paq, file);
-        add_string_to_packet(paq, tag);
+        add_file_tag_to_packet(paq, parametro1);
+        /*add_string_to_packet(paq, file);
+        add_string_to_packet(paq, tag);*/
         send_and_free_packet(paq, sock_storage);
     }
     else if(caso==NOOP){
