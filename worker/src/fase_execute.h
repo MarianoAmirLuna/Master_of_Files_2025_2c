@@ -174,7 +174,7 @@ void *reservar_frame(char *file_tag, int pagina)
     frame_libre->libre = false;
     frame_buscado->inicio = frame_libre->inicio;
 
-    int indice_frame_table = list_index_of(lista_frames, &frame_buscado, comparar_marcos);
+    int indice_frame_table = list_index_of(lista_frames, frame_buscado, comparar_marcos);
     if (indice_frame_table < 0)
     {
         log_error(logger, "El indice del frame no se encontro");
