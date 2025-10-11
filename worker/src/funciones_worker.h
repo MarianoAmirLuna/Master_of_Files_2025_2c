@@ -96,11 +96,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso == WRITE)
     {
-        char* file = strtok(parametro1, ":");
-        char* tag = strtok(NULL, "");
-        int dir_base = atoi(parametro2);
-        char* contenido = parametro3;
-        ejecutar_write(parametro1, dir_base, contenido);
+        ejecutar_write(parametro1, atoi(parametro2), parametro3);
         //log_info(logger, "## Query %d: Acción ESCRIBIR - Dirección Física: %d - Valor Escrito %s", actual_worker->id_query, dir_base, contenido);
     }
     else if(caso == READ)

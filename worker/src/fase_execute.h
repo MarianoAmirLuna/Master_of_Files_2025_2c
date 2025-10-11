@@ -222,19 +222,32 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
     }
 
     //ESTA TRATANDO DE ACCEDER A UNA VARIABLE NULA SORETE
-    int frame = entrada_con_frame->marco;
-
+    int frame = 0; //POR AHORA VOY A ASUMIR QUE EL FRAME ES NULO PARA PROBAR ESTA PORONGA
+    if(entrada_con_frame != NULL){
+        frame = entrada_con_frame->marco;
+    }
+    log_debug(logger, "EL FRAME ES: %d", frame);
     for (int indice = dir_base; espacio_ya_escrito <= strlen(contenido); indice += (espacio_ya_escrito == 0 ? restante_en_pag : block_size)) //(si lees esto, perdon)
     {
         espacio_ya_escrito = indice - dir_base;
         pagina = calcular_pagina(indice);
         if (!dl_en_tp(file_tag, pagina))
         {
-            char *copia = strdup(file_tag);
-            char *file = strtok(copia, ":");
-            char *tag = strtok(NULL, ":");
+            //Metete el strtok en el orto
+            char *copia = string_duplicate(file_tag);
+            char** spl = string_split(copia, ":");
+            char *file = spl[0];
+            char *tag = spl[1];
+            log_debug(logger, "PAGINA= %d", pagina);
+            log_debug(logger, "ACTUAL WORKER ES NULL? %d", actual_worker == NULL);
+            log_debug(logger, "FILE_TAG ES NULL? %d", file_tag == NULL);
+            log_debug(logger, "FILE_TAG=%s", file_tag);
+            log_debug(logger, "FILE ES NULL? %d, TAG ES NULL? %d", file == NULL, tag == NULL);
+            log_debug(logger, "FILE=%s", file);
+            log_debug(logger, "TAG=%s", tag);
+            log_debug(logger, "IDQUERY=%d", actual_worker->id_query);
             log_info(logger, "Query <%d>: - Memoria Miss - File: <%s> - Tag: <%s> - Pagina: <%d>", actual_worker->id_query, file, tag, pagina);
-            free(copia);
+            
 
             if (!hay_espacio_memoria(contenido))
             {
@@ -245,7 +258,11 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
 
             // Apartir de acá hay espacio
             reservar_frame(file_tag, pagina);
-
+            
+            free(file);
+            free(tag);
+            string_array_destroy(spl);
+            free(copia);
             // Trae el contenido del bloque de storage
             //TODO: descomentar para que funcione storage
             //actualizar_pagina(file_tag, pagina);
