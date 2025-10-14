@@ -254,8 +254,6 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
             // Apartir de acá hay espacio
             reservar_frame(file_tag, pagina);
             
-            free(file);
-            free(tag);
             string_array_destroy(spl);
             free(copia);
             // Trae el contenido del bloque de storage
