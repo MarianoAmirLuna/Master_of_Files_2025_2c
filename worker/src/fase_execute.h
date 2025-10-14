@@ -11,12 +11,11 @@
 #include "base.h"
 #endif
 
-void ejecutar_create(char *file, char *tag)
+void ejecutar_create(char *parametro)
 {
     t_packet* paq = create_packet();
     add_int_to_packet(paq, CREATE_FILE);
-    add_string_to_packet(paq, file);
-    add_string_to_packet(paq, tag);
+    add_file_tag_to_packet(paq, parametro);
     send_and_free_packet(paq, sock_storage);
 }
 
@@ -48,8 +47,7 @@ entrada_tabla_pags *obtener_frame(char *archivo, int donde_comenzar)
 
     // 3. Si la pagina esta presente en memoria retorno el frame
     entrada_tabla_pags* ret = NULL;
-    if (tabla == NULL)
-    {
+    if (tabla == NULL){
         return NULL;
     }
     for (int i = 0; i < list_size(tabla); i++)
@@ -57,7 +55,10 @@ entrada_tabla_pags *obtener_frame(char *archivo, int donde_comenzar)
         entrada_tabla_pags *aux = list_get(tabla, i);
         if (aux->pag == pag)
         {
+            //Si se supone que las páginas son únicas a esta instrucción luego se debería invocar un break.
+            //Sino el big O es de N
             ret = aux;
+            break;
         }
     }
     list_destroy(tabla);
@@ -175,13 +176,13 @@ void *reservar_frame(char *file_tag, int pagina)
     frame_libre->libre = false;
 
     //TODO: hacer free 
-    if(frame_buscado==NULL) frame_buscado = malloc(sizeof(marco));
-    
+    if(frame_buscado==NULL){
+        frame_buscado = malloc(sizeof(marco));
+    }
     frame_buscado->inicio = frame_libre->inicio;
 
     int indice_frame_table = list_index_of(lista_frames, frame_buscado, comparar_marcos);
-    if (indice_frame_table < 0)
-    {
+    if (indice_frame_table < 0){
         log_error(logger, "El indice del frame no se encontro");
     }
 
@@ -206,7 +207,6 @@ bool dl_en_tp(char *file_tag, int pagina)
 
     bool aux = existe_fileTag_y_pag_en_tp(file_tag, pagina, tabla_de_paginas);
     list_destroy(tabla_de_paginas);
-
     return aux;
 }
 
@@ -314,10 +314,6 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
     }
     ((char *)leido)[tam] = '\0';
     log_info(logger, "Query <%d>: Acción: <LEER> - Dirección Física: <%d> - Valor: <%s>", actual_worker->id_query, dir_base, leido);
-}
-
-void ejecutar_tag(char *file_old, char *tag_old, char *file_new, char *tag_new)
-{
 }
 
 void ejecutar_commit(char *file, char *tag)

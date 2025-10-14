@@ -107,7 +107,7 @@ void get_both_num_instr(char* instr, int* a, int* b)
 }
 
 void remove_new_line(char* line){
-    int len = strlen(line);
+    size_t len = strlen(line);
     if(len <= 0 || line[len-1] != '\n')
         return;
     line[len-1] = '\0';

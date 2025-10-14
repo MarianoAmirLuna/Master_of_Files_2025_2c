@@ -80,6 +80,10 @@ int convert_instr_code_to_storage_operation(instr_code code){
     {
         return DELETE_TAG;
     }
+    if(code == END)
+    {
+        return QUERY_END;
+    }
     return code;
 }
 

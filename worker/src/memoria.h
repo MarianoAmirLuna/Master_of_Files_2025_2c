@@ -83,17 +83,17 @@ int list_index_of(t_list *self, void *data, bool (*comp)(void *, void *))
 bool coincide_tag(void *elem)
 {
     entrada_tabla_pags *entry = (entrada_tabla_pags *)elem;
-    return strcmp(entry->file_tag, file_tag_buscado) == 0;
+    return string_equals_ignore_case(entry->file_tag, file_tag_buscado);
 }
 
 bool esta_libre(void* element){
-    marco * marco_element = (marco *) element;
+    marco* marco_element = (marco*)element;
     return marco_element->libre;
 }
 
 dto_file_tag_pag dto_buscado;
 bool coincide_tag_y_pagina(void* element){
-    entrada_tabla_pags * entrada_pag_element = (entrada_tabla_pags *) element;
+    entrada_tabla_pags* entrada_pag_element = (entrada_tabla_pags*) element;
     return (entrada_pag_element->pag == dto_buscado.pag) && (entrada_pag_element->file_tag == dto_buscado.file_tag);
 }
 
@@ -108,9 +108,13 @@ bool existe_fileTag_y_pag_en_tp(char* file_tag, int pagina, t_list* tabla_de_pag
     for (int i=0;i<list_size(tabla_de_paginas); i++)
     {
         entrada_tabla_pags* aux = list_get(tabla_de_paginas, i);
-        if(aux->pag==pagina && string_equals_ignore_case(aux->file_tag, file_tag)) return true;
+        if(aux == NULL){
+            log_error(logger, "Eee que paso aca esto es nulo en (%s:%d)", __func__,__LINE__);
+        }
+        if(aux->pag==pagina && string_equals_ignore_case(aux->file_tag, file_tag)){
+            return true;
+        }
     }
-
     return false;
 }
 
@@ -154,9 +158,7 @@ int buscar_marco_en_tabla(char *file_y_tag, int n_pag)
         if (entrada->pag == n_pag)
         {
             list_destroy(tabla);
-
             // creo que acá iría if(R_LRU == cw.algoritmo_reemplazo){actualizarPrioridadLRU(entrada)}
-
             return entrada->marco;
         }
     }
@@ -168,9 +170,7 @@ int buscar_marco_en_tabla(char *file_y_tag, int n_pag)
 int buscar_base_pagina(char *file_y_tag, int pag)
 {
     int n_marco = buscar_marco_en_tabla(file_y_tag, pag);
-
     int df = buscar_base_marco(n_marco);
-
     return df;
 }
 
@@ -186,7 +186,6 @@ entrada_tabla_pags* nueva_entrada(char* file_tag, int pagina, int marco)
     return ret;
 }
 
-
 /*
     ALGORITMOS DE REEMPLAZO
 */
@@ -201,8 +200,7 @@ void actualizarPrioridadLRU(entrada_tabla_pags *entrada)
 {
     int index = list_index_of(tabla_pags_global->elements, entrada, comparar_entrada_tabla_pags); // Obtengo el índice del que quiero actualizar
 
-    if (index != -1)
-    {                                                                         // Verifica que el elemento esté en la lista
+    if (index != -1){                                                                         // Verifica que el elemento esté en la lista
         entrada_tabla_pags* entradaRemovida = list_remove(tabla_pags_global->elements, index); // Lo borro
         queue_push(tabla_pags_global, entradaRemovida);                                  // Lo vuelvo a agregar al final
     }

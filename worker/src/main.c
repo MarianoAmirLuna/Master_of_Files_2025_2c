@@ -4,7 +4,7 @@ int main(int argc, char* argv[]) {
     itself_ocm = MODULE_WORKER;
     create_log("worker", cw.log_level);
     log_violet(logger, "%s", "Hola soy WORKER");
-
+    instance_signal_handler();
     if(argc == 3){
         char* config_path = argv[1];
         id_worker = atoi(argv[2]);
@@ -21,7 +21,6 @@ int main(int argc, char* argv[]) {
 
     inicializar_worker();
     
-       
     memory = malloc(cw.tam_memoria);
     inicializar_memoria();
     
@@ -193,4 +192,16 @@ void packet_callback(void* params){
     list_destroy(packet); //véase como en por ejemplo EJECUTAR_QUERY al recibir el list_get_str luego lo libero, como el resto son enteros, los enteros no sep ueden liberar porque lo hace el compilador
     //Por lo tanto sólo debo destruir/liberar la lista
     //list_destroy_and_destroy_elements(packet, free_element);
+}
+
+void instance_signal_handler(){
+    if(signal(SIGINT, catch_handler_termination) == SIG_ERR){
+        log_error(logger, "Problema seteando un handler para señales");
+    }
+    if(signal(SIGTERM, catch_handler_termination) == SIG_ERR){
+        log_error(logger, "Problema seteando un handler para señales");
+    }
+    if(signal(SIGABRT, catch_handler_termination) == SIG_ERR){
+        log_error(logger, "Problema seteando un handler para señales");
+    }
 }

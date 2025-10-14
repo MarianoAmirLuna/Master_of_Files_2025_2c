@@ -7,7 +7,7 @@ int main(int argc, char* argv[]) {
     create_log("master", cm.log_level);
     log_violet(logger, "%s", "Hola soy MASTER");
     pthread_mutex_init(&mutex_sched, NULL);
-
+    instance_signal_handler();
     queries = list_create();
     workers = list_create();
     dict_state = dictionary_create();
@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
     }
     sem_init(&sem_idx, 0,1);
     sem_init(&sem_locker, 0,1);
+    sem_init(&sem_worker, 0,1);
     int sock_server = server_connection(cm.puerto_escucha);
     
     void* param = malloc(sizeof(int)*2);
@@ -32,8 +33,7 @@ int main(int argc, char* argv[]) {
     
     attend_multiple_clients(param);
     
-    //TODO: Instance handler key down for kill ALL SOCKETS
-
+    
     return 0;
 }
 
@@ -332,8 +332,17 @@ void work_worker(t_list* pack, int id, int sock){
         log_info(logger, "## Se terminó la Query: %d en el Worker %d",
             w->id_query, id
         );
+        query* q = get_query_by_qid(w->id_query);
+        if(q == NULL){
+            log_error(logger, "La query es NULL (%s:%d)", __func__,__LINE__);
+        }
+        t_packet* p = create_packet();
+        add_int_to_packet(p, REQUEST_KILL);
+        add_string_to_packet(p, "Por fin de query");
+        send_and_free_packet(p, q->fd);
         w->id_query = -1; //Debo especificar que ahora este worker no tiene asignado ningún query.
         w->is_free=1;
+
     }
     if(opcode == REQUEST_READ){
         query* q = get_query_by_qid(w->id_query);
@@ -361,5 +370,17 @@ void work_worker(t_list* pack, int id, int sock){
         log_orange(logger, "Estado actual: Worker %d, Query %d, PC %d, Esta libre: %d",
             id, id_query, pc, is_free
         );
+    }
+}
+
+void instance_signal_handler(){
+    if(signal(SIGINT, catch_handler_termination) == SIG_ERR){
+        log_error(logger, "Problema seteando un handler para señales");
+    }
+    if(signal(SIGTERM, catch_handler_termination) == SIG_ERR){
+        log_error(logger, "Problema seteando un handler para señales");
+    }
+    if(signal(SIGABRT, catch_handler_termination) == SIG_ERR){
+        log_error(logger, "Problema seteando un handler para señales");
     }
 }

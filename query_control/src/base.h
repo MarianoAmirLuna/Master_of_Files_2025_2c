@@ -7,11 +7,15 @@
 #include "inc/libs.h"
 #include "exts/array_ext.h"
 #include "exts/list_ext.h"
+#include "signal.h"
+
+
 
 config_query_control cqc;
 op_code_module itself_ocm;
 int priority=0;
 char* archive_query;
+int fd_master;
 
 
 #endif

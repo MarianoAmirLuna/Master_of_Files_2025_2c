@@ -4,6 +4,7 @@ int main(int argc, char* argv[]) {
     itself_ocm = MODULE_QUERY_CONTROL;
     
     create_log("query_control", cqc.log_level);
+    instance_signal_handler();
     log_violet(logger, "%s", "Hola soy QUERY CONTROL");
 
     if(argc <= 3)
@@ -31,7 +32,7 @@ int main(int argc, char* argv[]) {
 
     //Al conectarse al Master se debe enviar el path del archivo_query y la prioridad
 
-    int fd_master = client_connection(cqc.ip_master, cqc.puerto_master);
+    fd_master = client_connection(cqc.ip_master, cqc.puerto_master);
     if(handshake(fd_master, 0) != 0)
     {
         log_error(logger, "No pudo hacer handshake con el socket %d del modulo %s exit(1) is invoked", fd_master, ocm_to_string(MODULE_MASTER));
@@ -74,9 +75,22 @@ int main(int argc, char* argv[]) {
             char* motivo = list_get_str(l, 1);
             log_info(logger, "## Query Finalizada - %s", motivo);
             free(motivo);
+            close(fd_master);
             break;
         }
         list_destroy(l);
     }
     return 0;
-};
+}
+
+void instance_signal_handler(){
+    if(signal(SIGINT, catch_handler_termination) == SIG_ERR){
+        log_error(logger, "Problema seteando un handler para señales");
+    }
+    if(signal(SIGTERM, catch_handler_termination) == SIG_ERR){
+        log_error(logger, "Problema seteando un handler para señales");
+    }
+    if(signal(SIGABRT, catch_handler_termination) == SIG_ERR){
+        log_error(logger, "Problema seteando un handler para señales");
+    }
+}

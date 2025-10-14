@@ -79,6 +79,7 @@ typedef struct{
 typedef struct{
     wid id;
     qid id_query;
+    /// @brief Esto me sirve dede Master al Worker para enviar específicamente a ese Worker y no a otros
     int fd;
     int is_free;
     /// @brief Se puede usar como campo interno en Worker, si Master pide desalojo el Worker le puede pasarle este valor.

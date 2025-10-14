@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     cs =load_config_storage();
     create_log("storage", cs.log_level);
     log_violet(logger, "%s", "Hola soy STORAGE");
-
+    instance_signal_handler();
     workers= list_create();
 
     inicializar_file_system();
@@ -182,6 +182,18 @@ void disconnect_callback(void* params){
     log_warning(logger, "Se desconectó el cliente %s fd:%d", ocm_to_string(ocm), sock_client);
 }
 
+void instance_signal_handler(){
+    if(signal(SIGINT, catch_handler_termination) == SIG_ERR){
+        log_error(logger, "Problema seteando un handler para señales");
+    }
+    if(signal(SIGTERM, catch_handler_termination) == SIG_ERR){
+        log_error(logger, "Problema seteando un handler para señales");
+    }
+    if(signal(SIGABRT, catch_handler_termination) == SIG_ERR){
+        log_error(logger, "Problema seteando un handler para señales");
+    }
+}
+
 /*
 +----------------------------------------------------------------------------------------------+
 |                              Fin de Conexion con Otros Modulos                               |
@@ -190,12 +202,3 @@ void disconnect_callback(void* params){
 
 ************************************************************************************************
 */
-
-
-
-
-
-
-
-
-

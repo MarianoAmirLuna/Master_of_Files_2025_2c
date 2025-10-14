@@ -27,10 +27,11 @@ void execute_this_query_on_this_worker(query* q, worker* w){
         log_error(logger, "THE FUCK (%s:%d)",__func__,__LINE__);
         return;
     }
-
+    pthread_mutex_lock(&mutex_sched);
     //sem_wait(&sem_locker);
 
     t_packet* p = create_packet();
+    log_debug(logger, "Estoy por enviar query id:%d, Archivo: %s, PC: %d", q->id, q->archive_query, q->pc);
     add_int_to_packet(p, REQUEST_EXECUTE_QUERY);
     add_int_to_packet(p, q->id); //enviar el id_query
     add_string_to_packet(p, q->archive_query); //enviarle el nombre del query a ejecutar
@@ -47,7 +48,7 @@ void execute_this_query_on_this_worker(query* q, worker* w){
     
     query_to(q, STATE_EXEC);
     w->is_free=0;
-    
+    pthread_mutex_unlock(&mutex_sched);
     /*t_list* pack = recv_operation_packet_control(w->fd); //Debería primero recibir después de esto para saber si fue SUCCESS el ejecutar query?? antes de setear como libre el worker.
     if(pack == NULL){
         log_error(logger, "Parece que algo se desconectó por lo que voy a decir que este worker está libre");
@@ -68,11 +69,12 @@ void execute_this_query_on_this_worker(query* q, worker* w){
 }
 
 void execute_worker(){
-    //log_light_blue(logger, "%s", "On ExecuteWorker");
+    log_light_blue(logger, "%s", "On ExecuteWorker");
     
     //TODO: Debo comprobar entre todas las queries tanto EXEC como en READY si existe alguno más prioritario que los que ya se ejecutan en worker para que este la desaloje
-    
-    sem_wait(&sem_locker);
+    sem_wait(&sem_worker);
+    log_light_blue(logger, "%s", "Finish waiting ExecuteWorker");
+
     pthread_mutex_lock(&mutex_sched);
     //TODO: Tengo que agarrar un worker libre (si lo hay) y si existe algún query a ejecutar en ready tengo que agarrar ese y mandarlo a EXEC
     worker* w = get_first_worker_free();
@@ -81,7 +83,7 @@ void execute_worker(){
     if(w == NULL || !have_query_ready()) //De Morgan papá. Viste que es útil la matemática discreta.
     {
         log_pink(logger, "Estoy en execute_worker y la cosa se puso fea (%s:%d) worker es NULL??? %d", __func__,__LINE__, w==NULL ? 1 : 0);
-        sem_post(&sem_locker);
+        sem_post(&sem_worker);
         return;
     }
     //Necesito comprobar si hay worker libre antes de hacer pop al queue ready sino se  pone fea la cosa.
@@ -93,7 +95,7 @@ void execute_worker(){
 
     execute_this_query_on_this_worker(q, w);
 
-    sem_post(&sem_locker);
+    sem_post(&sem_worker);
 }
 
 //Se debe instanciar en un nuevo subproceso

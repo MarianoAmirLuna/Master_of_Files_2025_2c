@@ -11,6 +11,17 @@
 
 volatile sig_atomic_t status=0;
 void instance_signal_handler(void);
+static void catch_handler_termination(int sign){
+    log_warning(logger, "Handle termination");
+    for(int i=0;i<list_size(workers);i++)
+    {
+        worker* w = (worker*)list_get(workers, i);
+        if(w != NULL){
+            close(w->fd);
+        }
+    }
+    exit(EXIT_SUCCESS);
+}
 void* attend_multiple_clients(void* params);
 void* go_loop_net(void* params);
 void packet_callback(void* params);

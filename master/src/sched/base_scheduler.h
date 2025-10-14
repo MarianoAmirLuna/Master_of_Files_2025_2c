@@ -28,6 +28,7 @@ qid query_idx=0;
 int degree_multiprocess;
 sem_t sem_idx;
 sem_t sem_locker;
+sem_t sem_worker;
 void execute_worker();
 
 //On predicates
