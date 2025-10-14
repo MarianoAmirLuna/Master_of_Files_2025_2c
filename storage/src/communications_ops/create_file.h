@@ -28,8 +28,8 @@ void create_file_ops(char* file, char* tag, worker* w){
     // metadata
     path = string_from_format("%s/metadata.config", path);
 
-    crear_metadata_config(path, g_block_size, list_create(), WORK_IN_PROGRESS);
-    free(path);
+    crear_metadata_config(path, g_block_size, NULL, WORK_IN_PROGRESS);
+    
     log_orange(logger, "FILE: %s, TAG: %s", file, tag);
     if(w == NULL){
         log_error(logger, "EL WORKER ES NULO WTF");
@@ -38,8 +38,8 @@ void create_file_ops(char* file, char* tag, worker* w){
         log_debug(logger, "El qid es: %d", w->id_query);
     }
     log_info(logger, "## %d - File Creado %s:%s", w->id_query, file, tag);
-
-
+    
+    free(path);
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
 }

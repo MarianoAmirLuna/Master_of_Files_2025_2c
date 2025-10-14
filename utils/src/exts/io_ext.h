@@ -182,7 +182,7 @@ t_config* crear_metadata_config(char* path, int tamanio, t_list* bloques, state_
 
     // BLOCKS → construir string "[0,1,2,...]"
     char* bloques_str;
-    if (list_is_empty(bloques)) {
+    if (bloques == NULL) {
         bloques_str = strdup("[]");
     } else {
         char* tmp = string_new();

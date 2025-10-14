@@ -28,22 +28,21 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
 
     // valido existencia file
     char* path = string_from_format("%s/%s", cs.punto_montaje, file);
-    if (control_existencia_file(path))
-    {
+    if (control_existencia_file(path)){
         log_error(logger, "No se encontro el file deseado");
     }
-
+    free(path);
     // valido existencia tag
     path = string_from_format("%s/%s/", cs.punto_montaje, file, tag);
-    if (control_existencia_file(path))
-    {
+    if (control_existencia_file(path)){
         log_error(logger, "No se encontro el tag deseado");
     }
+    free(path);
     // lock del file tag (bloqueo logico para que no toquen el mismo tag al mismo tiempo)
     pthread_mutex_t* tag_lock = get_file_tag_lock(file, tag);
     pthread_mutex_lock(tag_lock);
 
-        log_orange(logger, "estoy bloqueando al otro bobo :)");
+        log_orange(logger, "estoy bloqueando al otro bobo :) ESTAS DURMIENDO 30 SEGUNDOS");
         sleep(30);
         //DANGER: OJO ACA ESTAS DURMIENDO 30 SEGUNDOS
 
