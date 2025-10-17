@@ -49,4 +49,6 @@ char *file_tag_buscado;
 
 marco* frame_buscado;
 
+sem_t* sem_block_size_recibido;
+
 #endif

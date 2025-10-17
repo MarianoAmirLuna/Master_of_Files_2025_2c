@@ -19,10 +19,9 @@ int main(int argc, char* argv[]) {
     actual_worker->is_free = true;
     cw = load_config_worker();
 
+
+
     inicializar_worker();
-    
-    memory = malloc(cw.tam_memoria);
-    inicializar_memoria();
     
     pthread_mutex_t locker;
     pthread_mutex_init(&locker, NULL);

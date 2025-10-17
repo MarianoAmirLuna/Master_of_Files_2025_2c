@@ -40,6 +40,7 @@ void ejecutar_truncate(char *file_y_tag, int tam)
 entrada_tabla_pags *obtener_frame(char *archivo, int donde_comenzar)
 {
     // 1. Encontrar la tabla de paginas del file:tag
+    log_debug(logger, "entre a obtener_frame()");
     t_list *tabla = obtener_tabla_paginas(archivo);
 
     // 2. calcular la pagina en base a la dir_base
@@ -175,14 +176,9 @@ void *reservar_frame(char *file_tag, int pagina)
     
     frame_libre->libre = false;
 
-    //TODO: hacer free 
-    if(frame_buscado==NULL){
-        frame_buscado = malloc(sizeof(marco));
-    }
-    frame_buscado->inicio = frame_libre->inicio;
-
-    int indice_frame_table = list_index_of(lista_frames, frame_buscado, comparar_marcos);
-    if (indice_frame_table < 0){
+    int indice_frame_table = list_index_of(lista_frames, frame_libre, comparar_marcos);
+    if (indice_frame_table < 0)
+    {
         log_error(logger, "El indice del frame no se encontro");
     }
 
@@ -196,13 +192,13 @@ void *reservar_frame(char *file_tag, int pagina)
     char *tag = strtok(NULL, ":");
     log_info(logger, "Query <%d>: Se asigna el Marco: <%d> a la Página: <%d> perteneciente al - File: <%s> - Tag: <%s>", actual_worker->id_query, indice_frame_table, pagina, file, tag);
     free(copia_ft);
-    free(frame_buscado);
 
     return frame_libre->inicio;
 }
 
 bool dl_en_tp(char *file_tag, int pagina)
 {
+    log_debug(logger, "entre a dl_en_tp()");
     t_list *tabla_de_paginas = obtener_tabla_paginas(file_tag);
 
     bool aux = existe_fileTag_y_pag_en_tp(file_tag, pagina, tabla_de_paginas);
@@ -228,11 +224,10 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
         pagina = calcular_pagina(indice);
         if (!dl_en_tp(file_tag, pagina))
         {
-            //Metete el strtok en el orto
-            char *copia = string_duplicate(file_tag);
-            char** spl = string_split(copia, ":");
-            char *file = spl[0];
-            char *tag = spl[1];
+            char *copia = strdup(file_tag);
+            char *file = strtok(copia, ":");
+            char *tag = strtok(NULL, ":");
+
             log_debug(logger, "PAGINA= %d", pagina);
             log_debug(logger, "ACTUAL WORKER ES NULL? %d", actual_worker == NULL);
             log_debug(logger, "FILE_TAG ES NULL? %d", file_tag == NULL);
@@ -242,7 +237,6 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
             log_debug(logger, "TAG=%s", tag);
             log_debug(logger, "IDQUERY=%d", actual_worker->id_query);
             log_info(logger, "Query <%d>: - Memoria Miss - File: <%s> - Tag: <%s> - Pagina: <%d>", actual_worker->id_query, file, tag, pagina);
-            
 
             if (!hay_espacio_memoria(contenido))
             {
@@ -254,8 +248,9 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
             // Apartir de acá hay espacio
             reservar_frame(file_tag, pagina);
             
-            string_array_destroy(spl);
+            //string_array_destroy(spl); // libera el array de punteros
             free(copia);
+
             // Trae el contenido del bloque de storage
             //TODO: descomentar para que funcione storage
             //actualizar_pagina(file_tag, pagina);
@@ -266,9 +261,9 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
         realizar_escritura(file_tag, indice, contenido + espacio_ya_escrito); // espacio_ya_escrito funciona como un offset para el contenido
 
         indice += (espacio_ya_escrito == 0 ? restante_en_pag : block_size);
-        espacio_ya_escrito = indice - dir_base;
+        espacio_ya_escrito = espacio_ya_escrito>=strlen(contenido) ? strlen(contenido) : (indice - dir_base);
     }
-    entrada_tabla_pags *entrada_con_frame = obtener_frame(file_tag, dir_base);
+    entrada_tabla_pags *entrada_con_frame = obtener_frame(file_tag, dir_base + espacio_ya_escrito);
     if(entrada_con_frame == NULL){
         log_error(logger, "ENTRADA CON FRAME ES NULL");
     }
@@ -330,6 +325,7 @@ void ejecutar_noop()
 
 void ejecutar_flush(char *file_tag)
 {
+    log_debug(logger, "entre a ejecutar_flush()");
     t_list *tabla = obtener_tabla_paginas(file_tag);
     for (int i = 0; i < list_size(tabla); i++)
     {

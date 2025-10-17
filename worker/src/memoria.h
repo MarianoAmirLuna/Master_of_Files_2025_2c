@@ -3,11 +3,15 @@
 
 void inicializar_memoria()
 {
+    memory = malloc(cw.tam_memoria);
     if(block_size == 0){
         log_error(logger, "No podés dividir por 0 gil pero lo voy a ignorar seteando como 4096");
-        block_size = 4096;
+        block_size = 32;
     }
     int cant_frames = cw.tam_memoria / block_size;
+    log_info(logger, "la cantidad de frames es: %d", cant_frames);
+    log_info(logger, "cant_frames * tam_block: %d | tamaño de memoria: %d", cant_frames*block_size, cw.tam_memoria);    
+
     lista_frames = list_create();
 
     for (int i = 0; i < cant_frames; i++)
@@ -27,10 +31,21 @@ void inicializar_memoria()
     log_pink(logger, "tamaño de la lista: %d", list_size(lista_frames));
 }
 
+bool esta_libre(void* element){
+    marco * marco_element = (marco *) element;
+    return marco_element->libre;
+}
+
 bool hay_espacio_memoria(char *contenido)
 {
     int length = string_length(contenido);
     int cant_pags = (length + block_size - 1) / block_size;
+
+    for(int i = 0; i < list_size(lista_frames); i++){
+        marco* aux = (list_get(lista_frames, i));
+        log_info(logger, "frame: %d", aux->inicio);
+
+    }
 
     sem_wait(&tabla_pag_en_uso);
     t_list *frames_libres = list_filter(lista_frames, esta_libre);
@@ -83,13 +98,11 @@ int list_index_of(t_list *self, void *data, bool (*comp)(void *, void *))
 bool coincide_tag(void *elem)
 {
     entrada_tabla_pags *entry = (entrada_tabla_pags *)elem;
-    return string_equals_ignore_case(entry->file_tag, file_tag_buscado);
+    log_orange(logger, "filetag: %s, pag: %d", entry->file_tag, entry->pag);
+    return strcmp(entry->file_tag, file_tag_buscado) == 0;
 }
 
-bool esta_libre(void* element){
-    marco* marco_element = (marco*)element;
-    return marco_element->libre;
-}
+
 
 dto_file_tag_pag dto_buscado;
 bool coincide_tag_y_pagina(void* element){
@@ -122,7 +135,7 @@ bool existe_fileTag_y_pag_en_tp(char* file_tag, int pagina, t_list* tabla_de_pag
  * @brief retorna el primer marco que este libre o NULL
  */
 marco* buscar_frame_libre(){
-    return list_find (lista_frames, esta_libre);
+    return list_find(lista_frames, esta_libre);
 }
 
 /// @brief dado un numero de frame, devuelve el indice de la base del mismo en la memoria
@@ -139,8 +152,10 @@ int buscar_base_marco(int n)
 t_list* obtener_tabla_paginas(char *file_y_tag)
 {
     log_debug(logger, "FILEYTAG: %s (%s:%d)", file_y_tag, __func__,__LINE__);
-    file_tag_buscado=file_y_tag;
+    //file_tag_buscado=file_y_tag;
+    file_tag_buscado=strdup(file_y_tag);
     t_list* ret = list_filter(tabla_pags_global->elements, coincide_tag);
+    free(file_tag_buscado);
     log_debug(logger, "LISTA ES NULL???: %d (%s:%d)", ret == NULL, __func__,__LINE__);
     return ret;
 }
