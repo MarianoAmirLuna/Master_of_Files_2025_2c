@@ -5,8 +5,8 @@ void inicializar_memoria()
 {
     memory = malloc(cw.tam_memoria);
     if(block_size == 0){
-        log_error(logger, "No podés dividir por 0 gil pero lo voy a ignorar seteando como 4096");
-        block_size = 32;
+        log_error(logger, "No podés dividir por 0 gil pero lo voy a ignorar seteando como 16");
+        block_size = 16;
     }
     int cant_frames = cw.tam_memoria / block_size;
     log_info(logger, "la cantidad de frames es: %d", cant_frames);
@@ -236,6 +236,9 @@ void liberar_entrada_TPG(entrada_tabla_pags *elemento)
     {
         actualizar_pagina_en_storage(elemento);
     }
+
+    marco* el_frame = list_get(lista_frames, elemento->marco);
+    el_frame->libre=true;
 
     char* file = strtok(elemento->file_tag, ":");
     char* tag = strtok(NULL, ":");

@@ -75,7 +75,7 @@ int obtener_offset(char *archivo, int donde_comenzar)
 /// @param file_tag
 /// @param dir_logica
 /// @param contenido
-/// @return 0 si entró todo el contenido, 1 si falta contenido por escribir
+/// @return cantidad de bytes escritos
 int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
 {
     msleep(cw.retardo_memoria);
@@ -93,11 +93,15 @@ int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
     if (strlen(contenido) > espacio_restante_en_marco) // si no me alcanza con lo que queda de marco, solo copio lo que pueda
     {
         memcpy(base + offset, contenido, espacio_restante_en_marco);
+        log_pink(logger, "escritura devolvio %d", espacio_restante_en_marco);
+        return espacio_restante_en_marco;
         // realizar_escritura(file_tag, dir_logica + espacio_restante_en_marco, contenido + espacio_restante_en_marco); // feo con ganas eh
     }
     else
     {
         memcpy(base + offset, contenido, strlen(contenido));
+        log_pink(logger, "escritura devolvio %d", strlen(contenido));
+        return strlen(contenido);
     }
 }
 
@@ -106,7 +110,7 @@ int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
 /// @param file_tag
 /// @param dir_logica
 /// @param tam
-/// @return 0 si se leyó todo el tamaño en una sola pagina, -1 si no alcanzo el espacio para el tamaño a leer
+/// @return cantidad de bytes leidos de la pagina
 int realizar_lectura(void *dest, char *file_tag, int dir_logica, int tam)
 {
     msleep(cw.retardo_memoria);
@@ -132,7 +136,8 @@ int realizar_lectura(void *dest, char *file_tag, int dir_logica, int tam)
     }
 
     memcpy(dest, base, bytes_a_leer);
-    return ret;
+    log_pink(logger, "lectura devolvio %d", bytes_a_leer);
+    return bytes_a_leer;
 }
 
 void *actualizar_pagina(char *file_tag, int pagina)
@@ -218,9 +223,11 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
     int offset = obtener_offset(file_tag, dir_base);
     int restante_en_pag = block_size - offset;
     int espacio_ya_escrito = 0;
+    int n_frame;
 
-    for (int indice = dir_base; espacio_ya_escrito <= strlen(contenido);) //(si lees esto, perdon)
+    for (int indice = dir_base; espacio_ya_escrito < strlen(contenido);) //(si lees esto, perdon)
     {
+        log_light_blue(logger, "escribi: %d, tengo que escribir: %d", espacio_ya_escrito, strlen(contenido));
         pagina = calcular_pagina(indice);
         if (!dl_en_tp(file_tag, pagina))
         {
@@ -247,7 +254,17 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
 
             // Apartir de acá hay espacio
             reservar_frame(file_tag, pagina);
-            
+
+            if(espacio_ya_escrito == 0) //pura y exclusivamente para el log hago esto
+            {
+                entrada_tabla_pags *entrada_con_frame = obtener_frame(file_tag, dir_base);
+                if (entrada_con_frame == NULL)
+                {
+                    log_error(logger, "ENTRADA CON FRAME ES NULL");
+                }
+                n_frame = entrada_con_frame->marco;
+            }
+
             //string_array_destroy(spl); // libera el array de punteros
             free(copia);
 
@@ -258,18 +275,13 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
         }
         // Apartir de acá existe la DL en memoria
 
-        realizar_escritura(file_tag, indice, contenido + espacio_ya_escrito); // espacio_ya_escrito funciona como un offset para el contenido
+        int bytes_escritos = realizar_escritura(file_tag, indice, contenido + espacio_ya_escrito); // espacio_ya_escrito funciona como un offset para el contenido
 
-        indice += (espacio_ya_escrito == 0 ? restante_en_pag : block_size);
-        espacio_ya_escrito = espacio_ya_escrito>=strlen(contenido) ? strlen(contenido) : (indice - dir_base);
+        indice += bytes_escritos;
+        espacio_ya_escrito += bytes_escritos;
     }
-    entrada_tabla_pags *entrada_con_frame = obtener_frame(file_tag, dir_base + espacio_ya_escrito);
-    if(entrada_con_frame == NULL){
-        log_error(logger, "ENTRADA CON FRAME ES NULL");
-    }
-    int frame = entrada_con_frame->marco;
-    log_info(logger, "Query <%d>: Acción: <ESCRIBIR> - Dirección Física: <%d> - Valor: <%s>", actual_worker->id_query, frame * storage_block_size + offset, contenido);
-    // realizar_escritura(file_tag, dir_base, contenido);
+    
+    log_info(logger, "Query <%d>: Acción: <ESCRIBIR> - Dirección Física: <%d> - Valor: <%s>", actual_worker->id_query, n_frame * storage_block_size + offset, contenido);
 }
 
 void ejecutar_read(char *file_tag, int dir_base, int tam)
@@ -278,7 +290,7 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
     int pagina = calcular_pagina(dir_base);
     int espacio_ya_leido = 0;
     int offset = obtener_offset(file_tag, dir_base);
-    int restante_en_pag = block_size - offset;
+    int n_frame;
 
     for (int indice = dir_base; espacio_ya_leido < tam;)
     {
@@ -295,18 +307,28 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
             // Apartir de acá hay espacio
             reservar_frame(file_tag, pagina);
 
+            if(espacio_ya_leido == 0) //pura y exclusivamente para el log hago esto
+            {
+                entrada_tabla_pags *entrada_con_frame = obtener_frame(file_tag, dir_base);
+                if (entrada_con_frame == NULL)
+                {
+                    log_error(logger, "ENTRADA CON FRAME ES NULL");
+                }
+                n_frame = entrada_con_frame->marco;
+            }
+
             // Trae el contenido del bloque de storage
             //TODO: descomentar para que funcione storage
             //actualizar_pagina(file_tag, pagina);
         }
         // Apartir de acá existe la DL en memoria
-        realizar_lectura(leido + espacio_ya_leido, file_tag, indice, tam - espacio_ya_leido);
+        int bytes_leidos = realizar_lectura(leido + espacio_ya_leido, file_tag, indice, tam - espacio_ya_leido);
 
-        indice += (espacio_ya_leido == 0 ? restante_en_pag : block_size);
-        espacio_ya_leido = indice - dir_base;
+        indice += bytes_leidos;
+        espacio_ya_leido += bytes_leidos;
     }
     ((char *)leido)[tam] = '\0';
-    log_info(logger, "Query <%d>: Acción: <LEER> - Dirección Física: <%d> - Valor: <%s>", actual_worker->id_query, dir_base, leido);
+    log_info(logger, "Query <%d>: Acción: <LEER> - Dirección Física: <%d> - Valor: <%s>", actual_worker->id_query, n_frame * storage_block_size + offset, leido);
 }
 
 void ejecutar_commit(char *file, char *tag)
