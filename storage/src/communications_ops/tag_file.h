@@ -157,6 +157,14 @@ void tag_file_ops(char* file, char* tag_origen, char* tag_destino, worker* w){
 
     // 8. Crear metadata del tag destino
     char* path_metadata_destino = string_from_format("%s/metadata.config", path_tag_destino);
+
+    // Log de verificación: mostrar los bloques físicos que se van a guardar
+    log_orange(logger, "[TAG_FILE] Guardando metadata con %d bloques físicos:", list_size(bloques_destino));
+    for (int i = 0; i < list_size(bloques_destino); i++) {
+        int* bloque_ptr = (int*)list_get(bloques_destino, i);
+        log_orange(logger, "[TAG_FILE]   - Bloque lógico %d -> Bloque físico %d", i, *bloque_ptr);
+    }
+
     crear_metadata_config(path_metadata_destino, tamanio_origen, bloques_destino, WORK_IN_PROGRESS);
 
     log_orange(logger, "[TAG_FILE] Tag creado exitosamente: %s:%s", file, tag_destino);
