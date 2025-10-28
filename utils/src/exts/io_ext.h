@@ -272,5 +272,104 @@ void escribir_bloque_fisico(int bloque_fisico, char* contenido)
     }
 }
 
+/**
+ * Busca el primer bloque físico libre en el bitmap y clona el contenido del bloque físico origen.
+ *
+ * @param bloque_fisico_origen: Número del bloque físico a clonar
+ * @param g_bitmap: Bitmap de bloques físicos
+ * @param g_bitmap_size: Tamaño del bitmap en bytes
+ * @param g_block_size: Tamaño de cada bloque en bytes
+ * @param g_fs_size: Tamaño total del filesystem en bytes
+ * @param punto_montaje: Path del punto de montaje del filesystem
+ *
+ * @return: Número del bloque físico clonado (destino), o -1 si no hay bloques disponibles o hay error
+ */
+int clonar_bloque_fisico(int bloque_fisico_origen, t_bitarray* g_bitmap, size_t g_bitmap_size,
+                         int g_block_size, int g_fs_size, char* punto_montaje)
+{
+    // Calcular cantidad total de bloques
+    int cantidad_bloques = g_fs_size / g_block_size;
+
+    // Buscar el primer bloque físico libre
+    int bloque_destino = -1;
+    for (int i = 0; i < cantidad_bloques; i++) {
+        if (!bloque_ocupado(g_bitmap, i)) {
+            bloque_destino = i;
+            break;
+        }
+    }
+
+    // Si no hay bloques disponibles
+    if (bloque_destino == -1) {
+        log_orange(logger, "[CLONAR_BLOQUE] No hay bloques físicos disponibles");
+        return -1;
+    }
+
+    // Construir paths de origen y destino
+    char* path_origen = string_from_format("%s/physical_blocks/block%04d.dat", punto_montaje, bloque_fisico_origen);
+    char* path_destino = string_from_format("%s/physical_blocks/block%04d.dat", punto_montaje, bloque_destino);
+
+    // Leer contenido del bloque origen
+    FILE* f_origen = fopen(path_origen, "rb");
+    if (f_origen == NULL) {
+        log_orange(logger, "[CLONAR_BLOQUE] No se pudo abrir el bloque origen %d en %s", bloque_fisico_origen, path_origen);
+        free(path_origen);
+        free(path_destino);
+        return -1;
+    }
+
+    // Reservar buffer para el contenido
+    char* buffer = malloc(g_block_size);
+    if (buffer == NULL) {
+        log_orange(logger, "[CLONAR_BLOQUE] No se pudo reservar memoria para el buffer");
+        fclose(f_origen);
+        free(path_origen);
+        free(path_destino);
+        return -1;
+    }
+
+    // Leer contenido del bloque origen
+    size_t bytes_leidos = fread(buffer, 1, g_block_size, f_origen);
+    fclose(f_origen);
+
+    if (bytes_leidos != g_block_size) {
+        log_orange(logger, "[CLONAR_BLOQUE] Se leyeron %zu bytes en lugar de %d", bytes_leidos, g_block_size);
+    }
+
+    // Escribir contenido en el bloque destino
+    FILE* f_destino = fopen(path_destino, "wb");
+    if (f_destino == NULL) {
+        log_orange(logger, "[CLONAR_BLOQUE] No se pudo abrir el bloque destino %d en %s", bloque_destino, path_destino);
+        free(buffer);
+        free(path_origen);
+        free(path_destino);
+        return -1;
+    }
+
+    size_t bytes_escritos = fwrite(buffer, 1, g_block_size, f_destino);
+    fclose(f_destino);
+
+    if (bytes_escritos != g_block_size) {
+        log_orange(logger, "[CLONAR_BLOQUE] Error al escribir en el bloque destino %d", bloque_destino);
+        free(buffer);
+        free(path_origen);
+        free(path_destino);
+        return -1;
+    }
+
+    // Marcar el bloque destino como ocupado en el bitmap
+    ocupar_bloque(g_bitmap, bloque_destino, g_bitmap_size);
+
+    log_orange(logger, "[CLONAR_BLOQUE] Bloque físico %d clonado exitosamente al bloque %d",
+               bloque_fisico_origen, bloque_destino);
+
+    // Liberar recursos
+    free(buffer);
+    free(path_origen);
+    free(path_destino);
+
+    return bloque_destino;
+}
+
 
 #endif
