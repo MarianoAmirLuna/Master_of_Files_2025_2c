@@ -217,9 +217,7 @@ int get_block_size_superblock(t_config* superblock){
 }
 
 t_config* create_blocks_hash_index(char* path){
-    t_config* config = malloc(sizeof(t_config));
-    config->path = strdup(path);
-    config->properties = dictionary_create();
+    t_config* config = load_config(path);
     config_save(config);
     return config;
 }
