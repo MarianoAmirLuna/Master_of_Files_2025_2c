@@ -298,17 +298,10 @@ t_config* insert_crypto_hash_block_n(t_config* block_hash_index, void* value, in
 }
 t_config* create_metadata(char* path, int size, t_list* blocks, state_metadata state){
 
-    t_config* metadata = config_create(path);
+    //t_config* metadata = config_create(path);
+    t_config* metadata = load_config(path);
 
-    if(metadata == NULL){
-        //https://github.com/sisoputnfrba/so-commons-library/blob/master/src/commons/config.c
-        metadata = malloc(sizeof(t_config));
-        metadata->path = strdup(path);
-        metadata->properties = dictionary_create();
-        config_save(metadata);
-        metadata = config_create(path);
-    }
-    bool blocks_is_null_or_empty = blocks == NULL || list_is_empty(blocks);
+    int blocks_is_null_or_empty = blocks == NULL || list_is_empty(blocks);
     config_set_value(metadata, "TAMAÑO", string_itoa(size));
     config_set_value(metadata, "BLOCKS", blocks_is_null_or_empty ? "[]" : list_array_int_as_string_v2(blocks));
     config_set_value(metadata, "ESTADO", get_string_state(state));
