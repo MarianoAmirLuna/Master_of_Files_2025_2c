@@ -14,6 +14,16 @@ int list_get_int(t_list* l, int index){
     return res;
 }
 
+/// @brief Esto crea un PUNTERO de un entero y lo agrega en la lista, es útil cuando se quiere usar el método list_get_int.
+/// Porque si no fuera un puntero no se puede obtener valor con el list_get_int porque se espera QUE SEA UN PUNTERO.
+/// @param l 
+/// @param v 
+void list_add_int(t_list* l, int v){
+    int* val = malloc(sizeof(int));
+    memcpy(val, &v, sizeof(int));
+    list_add(l, val);
+}
+
 char* list_get_str(t_list* l, int index){
     return (char*)list_get(l, index);
     //return buffer_to_string(list_get(l, index));
@@ -92,7 +102,7 @@ int list_exists(t_list* l, int(*condition)(void*, void*), void* by)
     return list_find_by(l,condition, by) != NULL;
 }
 
-/// @brief Suponigendo que todos los elementos son de tipo entero
+/// @brief Suponiendo que todos los elementos son de tipo entero
 /// @param l 
 /// @return 
 int list_sum(t_list* l){

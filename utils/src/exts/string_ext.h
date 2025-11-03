@@ -4,6 +4,50 @@
 #include <inc/common.h>
 #include <commons/string.h>
 
+#define NUMBER_OF_DIGITS_BLOCK 4
+
+/// @brief `get_name_fmt_number("block_", 5, 6);` -> `block_000005`
+/// @param name 
+/// @param n 
+/// @param total_digits 
+/// @return 
+char* get_name_fmt_number(char* name, int n, int total_digits){
+    char* nn = string_new();
+    sprintf(nn, "%s%0*d", name, total_digits, n);
+    return nn;
+}
+
+/// @brief `get_name_extension_fmt_number("file_", "txt", 5, 6);` -> `file_000005.txt`
+/// @param name 
+/// @param extension 
+/// @param n 
+/// @param total_digits 
+/// @return 
+char* get_name_extension_fmt_number(char* name, char* extension, int n, int total_digits){
+    char* nn = string_new();
+    sprintf(nn, "%s%0*d.%s", name, total_digits, n, extension);
+    return nn;
+}
+
+/// @brief Cuando ya no se usa liberar con free()
+/// `get_block_name(5);` -> `block0005`
+/// @param nblock Número de bloque. La cantidad está difinida por macro `NUMBER_OF_DIGITS_BLOCK`
+/// @return 
+char* get_block_name(int nblock){
+    char* block_name = string_new();
+    sprintf(block_name, "block%0*d", NUMBER_OF_DIGITS_BLOCK, nblock);
+    return block_name;
+}
+/// @brief Cuando ya no se usa liberar con free()
+/// `get_block_name_by_n(5, 6);` -> `block000005`
+/// @param nblock El número de bloque
+/// @param n_numbers Cantidad de digitos
+/// @return 
+char* get_block_name_by_n(int nblock, int n_numbers){
+    char* block_name = string_new();
+    sprintf(block_name, "block%0*d", n_numbers, nblock);
+    return block_name;
+}
 //WARNING: USE MD5 OF CRYPTO LIBS COMMON DO NOT USE THIS
 unsigned long hash(unsigned char* str){
     unsigned long hash = 5381;

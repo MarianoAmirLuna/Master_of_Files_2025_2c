@@ -13,7 +13,18 @@ int main(int argc, char* argv[]) {
     char* lero1 = "HOLA MUNDO 2";
     void* vava1 = malloc(strlen(lero1)+1);
     memcpy(vava1, lero1, strlen(lero1));*/
-    t_config* blo = load_block_hash("bloquetest.config");
+    char* bb = get_block_name(4);
+    log_debug(logger, "BLOCK NAME: %s", bb);
+    bb = get_block_name(171);
+    log_debug(logger, "BLOCK NAME: %s", bb);
+    bb = get_block_name(3094);
+    log_debug(logger, "BLOCK NAME: %s", bb);
+    bb = get_block_name_by_n(45914,6);
+    log_debug(logger, "BLOCK NAME: %s", bb);
+
+    log_pink(logger, "%s", get_name_fmt_number("block_", 5, 6));
+    log_pink(logger, "%s", get_name_extension_fmt_number("copado", "dat", 12, 8));
+    /*t_config* blo = load_block_hash("bloquetest.config");
     t_list* vv = get_all_value__of_block_hash(blo);
     for(int i=0;i<list_size(vv);i++){
         char* val = list_get(vv, i);
@@ -39,7 +50,7 @@ int main(int argc, char* argv[]) {
     for(int i=0;i<list_size(blocks);i++){
         //int bn = list_get_int(blocks, i);
         log_debug(logger, "BLOCK %d", (int)list_get(blocks, i));
-    }
+    }*/
     /*insert_hash_block(blo, crypto_md5(vava, strlen(lero)), "block_0001");
     insert_hash_block(blo, crypto_md5(vava1, strlen(lero1)), "block_0002");
     t_list* ll = list_create();
