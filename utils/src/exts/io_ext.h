@@ -493,5 +493,4 @@ int clonar_bloque_fisico(int bloque_fisico_origen, t_bitarray* g_bitmap, size_t 
     }
 }
 
-
 #endif

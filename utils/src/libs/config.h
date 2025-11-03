@@ -183,7 +183,7 @@ config_storage load_config_storage(){
 t_config* load_config(char* path){
     config = config_create(path);
     if(config == NULL){
-        log_warning(logger, "No se encontro el config %s asi que se creo uno nuevo", path);
+        printf("No se encontro el config %s asi que se creo uno nuevo\n", path);
         config = malloc(sizeof(t_config));
         config->path = strdup(path);
         config->properties = dictionary_create();
