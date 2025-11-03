@@ -48,14 +48,15 @@ char* get_block_name_by_n(int nblock, int n_numbers){
     sprintf(block_name, "block%0*d", n_numbers, nblock);
     return block_name;
 }
+
 //WARNING: USE MD5 OF CRYPTO LIBS COMMON DO NOT USE THIS
-unsigned long hash(unsigned char* str){
+/*unsigned long hash(unsigned char* str){
     unsigned long hash = 5381;
     int c;
     while((c=*str++))
         hash=((hash<<5)+hash)+c;
     return hash;
-}
+}*/
 
 /// @brief Convierte la cadena en void*
 /// @param str Cadena
