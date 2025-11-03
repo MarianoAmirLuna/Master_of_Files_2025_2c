@@ -13,7 +13,7 @@ void commit_tag_ops(char* file, char* tag, worker* w){
         log_error(logger, "FILE o TAG son nulos");
         return;
     }
-
+    
     /*
         1. Primero verifico si el archivo ya estaba comitieado o no.
         2. Si no esta comiteado, cambio el estado a commited, al hacer esto antes de ponerme analizar los bloques fisicos evito

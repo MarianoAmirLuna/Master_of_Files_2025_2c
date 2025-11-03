@@ -220,6 +220,7 @@ t_config* insert_hash_block(t_config* block_hash_index, char* hash, char* block)
     }
 
     config_set_value(block_hash_index, hash, block);
+    config_save(block_hash_index);
     return block_hash_index;
 }
 t_config* create_metadata(char* path, int size, t_list* blocks, state_metadata state){
