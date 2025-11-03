@@ -183,11 +183,16 @@ config_storage load_config_storage(){
 t_config* load_config(char* path){
     config = config_create(path);
     if(config == NULL){
-        printf("ERROR no se pudo cargar el config");
-        exit(1);
+        log_warning(logger, "No se encontro el config %s asi que se creo uno nuevo", path);
+        config = malloc(sizeof(t_config));
+        config->path = strdup(path);
+        config->properties = dictionary_create();
+        /*printf("ERROR no se pudo cargar el config");
+        exit(1);*/
     }
     return config;
 }
+
 
 t_config* create_super_block(char* path, int fs_size, int block_size)
 {
@@ -196,17 +201,19 @@ t_config* create_super_block(char* path, int fs_size, int block_size)
         exit(EXIT_FAILURE);
     }
 
-    t_config* superblock = config_create(path);
-    if(superblock == NULL){
-        superblock = malloc(sizeof(t_config));
-        superblock->path = strdup(path);
-        superblock->properties = dictionary_create();
-    }
+    t_config* superblock = load_config(path);
     config_set_value(superblock, "FS_SIZE", string_itoa(fs_size));
-    config_set_value(superblock, "BLOCK_SIZE", string_itoa(block_size));
-    
+    config_set_value(superblock, "BLOCK_SIZE", string_itoa(block_size));    
     config_save(superblock);
     return superblock;
+}
+
+int get_fs_size_superblock(t_config* superblock){
+    return config_get_int_value(superblock, "FS_SIZE");
+}
+
+int get_block_size_superblock(t_config* superblock){
+    return config_get_int_value(superblock, "BLOCK_SIZE");
 }
 
 t_config* create_blocks_hash_index(char* path){
