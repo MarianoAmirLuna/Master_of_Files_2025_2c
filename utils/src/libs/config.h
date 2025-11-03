@@ -212,6 +212,31 @@ t_config* create_blocks_hash_index(char* path){
     return config;
 }
 
+t_config* load_block_hash(char* path){
+    return config_create(path);
+}
+
+/// @brief Recibe lista de hash (NO EL NOMBRE DEL BLOQUE SOLO EL HASH)
+/// @param block_hash_index 
+/// @return 
+t_list* get_all_hash_of_block_hash(t_config* block_hash_index){
+    return dictionary_keys(block_hash_index->properties);
+}
+
+t_list* get_all_value__of_block_hash(t_config* block_hash_index){
+    t_list* res = list_create();
+    t_list* keys = get_all_hash_of_block_hash(block_hash_index);
+    for(int i=0;i<list_size(keys);i++){
+        char* value =dictionary_get(block_hash_index->properties, (char*)list_get(keys, i));
+        list_add(res, value);
+    }
+    return res;
+}
+
+bool exists_hash_in_block_hash(t_config* block_hash_index, char* hash){
+    return config_has_property(block_hash_index, hash);
+}
+
 t_config* insert_hash_block(t_config* block_hash_index, char* hash, char* block){
     //Lo gracioso es que el MD5 es un hash pobre y es más propenso a tener colisión de hash que un SHA1
     if(block_hash_index == NULL){
@@ -220,7 +245,9 @@ t_config* insert_hash_block(t_config* block_hash_index, char* hash, char* block)
     }
 
     config_set_value(block_hash_index, hash, block);
-    config_save(block_hash_index);
+     if(config_save(block_hash_index) == -1){
+        log_error(logger, "Hubo un error no se pudo guardar el config en (%s:%d)", __func__, __LINE__);
+    }
     return block_hash_index;
 }
 t_config* create_metadata(char* path, int size, t_list* blocks, state_metadata state){
@@ -241,8 +268,49 @@ t_config* create_metadata(char* path, int size, t_list* blocks, state_metadata s
         exit(EXIT_FAILURE);
     }
     config_set_value(metadata, "TAMAÑO", string_itoa(size));
-    config_set_value(metadata, "BLOCKS", list_array_int_as_string(blocks));
+    config_set_value(metadata, "BLOCKS", list_array_int_as_string_v2(blocks));
     config_set_value(metadata, "ESTADO", get_string_state(state));
+    if(config_save(metadata) == -1){
+        log_error(logger, "Hubo un error no se pudo guardar el config en %s (%s:%d)", path, __func__, __LINE__);
+    }
     return metadata;
+}
+
+/// @brief Debe ser liberado con un string_array_destroy cuando ya no se usa
+/// @param metadata 
+/// @return 
+char** get_array_blocks_from_metadata(t_config* metadata){
+    return config_get_array_value(metadata, "BLOCKS");
+}
+
+t_list* get_array_blocks_as_list_from_metadata(t_config* metadata){
+    char** array = get_array_blocks_from_metadata(metadata);
+    t_list* res = list_create();
+    int len = string_array_size(array);
+    for(int i=0;i<len;i++){
+        list_add(res, atoi(array[i]));
+    }
+    string_array_destroy(array);
+    return res;
+}
+
+int remove_block_from_metadata(t_config* metadata, int block_number){
+    char** blocks_array = get_array_blocks_from_metadata(metadata);
+    int len = string_array_size(blocks_array);
+    t_list* blocks_list = list_create();
+    for(int i=0;i<len;i++){
+        int bn = atoi(blocks_array[i]);
+        if(bn != block_number){
+            list_add(blocks_list, bn);
+        }
+    }
+    string_array_destroy(blocks_array);
+    config_set_value(metadata, "BLOCKS", list_array_int_as_string_v2(blocks_list));
+    list_destroy(blocks_list);
+    //list_destroy_and_destroy_elements(blocks_list, free_element);
+    if(config_save(metadata) == -1){
+        log_error(logger, "Hubo un error no se pudo guardar el config en %s (%s:%d)", metadata->path, __func__, __LINE__);
+    }
+    return 0;
 }
 #endif

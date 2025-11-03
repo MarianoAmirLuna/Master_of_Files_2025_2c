@@ -170,6 +170,17 @@ char* list_array_int_as_string(t_list* l){
     return res;
 }
 
+char* list_array_int_as_string_v2(t_list* l){
+    int sz = list_size(l);
+    char* res = string_new();
+    string_append(&res, "[");
+    for(int i=0;i<sz;i++){
+        string_append_with_format(&res, i == sz-1 ? "%d" : "%d,", (int)list_get(l, i));
+    }
+    string_append(&res, "]");
+    return res;
+}
+
 void* list_remove_by_condition_by(t_list* l, int(*condition)(void*, void*), void* by){
     int sz = list_size(l);
     for(int i=0;i<sz;i++){

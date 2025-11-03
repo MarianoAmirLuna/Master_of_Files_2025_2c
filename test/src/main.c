@@ -7,15 +7,48 @@ int main(int argc, char* argv[]) {
     log_violet(logger, "%s", "Hola soy Test");
     load_config("../storage/storage.config");
     config_storage cs = load_config_storage();
-    char* lero = "HOLA MUNDO";
+    /*char* lero = "HOLA MUNDO";
     void* vava = malloc(strlen(lero)+1);
     memcpy(vava, lero, strlen(lero));
     char* lero1 = "HOLA MUNDO 2";
     void* vava1 = malloc(strlen(lero1)+1);
-    memcpy(vava1, lero1, strlen(lero1));
-    t_config* blo = create_blocks_hash_index("bloquetest.config");
-    insert_hash_block(blo, crypto_md5(vava, strlen(lero)), "block_0001");
+    memcpy(vava1, lero1, strlen(lero1));*/
+    t_config* blo = load_block_hash("bloquetest.config");
+    t_list* vv = get_all_value__of_block_hash(blo);
+    for(int i=0;i<list_size(vv);i++){
+        char* val = list_get(vv, i);
+        log_debug(logger, "VALOR %s", val);
+    }
+    log_info(logger, "AHora solo voy a recibir los KEYS");
+    t_list* vv1 = get_all_hash_of_block_hash(blo);
+    for(int i=0;i<list_size(vv1);i++){
+        char* val = list_get(vv1, i);
+        log_debug(logger, "VALOR %s", val);
+    }
+    log_debug(logger, "Existe el hash '68e4b9551869bce5b170e873f5abe1f7': %d", exists_hash_in_block_hash(blo, "68e4b9551869bce5b170e873f5abe1f7"));
+
+    t_config* metadata = config_create("metadata_test.config"); //como ya existe sólo lo abre.
+    t_list* blocks = get_array_blocks_as_list_from_metadata(metadata);
+    for(int i=0;i<list_size(blocks);i++){
+        //int bn = list_get_int(blocks, i);
+        log_debug(logger, "BLOCK %d", (int)list_get(blocks, i));
+    }
+    remove_block_from_metadata(metadata, 8);
+    log_pink(logger, "Removi el bloque 8 a ver ahora");
+    blocks = get_array_blocks_as_list_from_metadata(metadata);
+    for(int i=0;i<list_size(blocks);i++){
+        //int bn = list_get_int(blocks, i);
+        log_debug(logger, "BLOCK %d", (int)list_get(blocks, i));
+    }
+    /*insert_hash_block(blo, crypto_md5(vava, strlen(lero)), "block_0001");
     insert_hash_block(blo, crypto_md5(vava1, strlen(lero1)), "block_0002");
+    t_list* ll = list_create();
+    
+    list_add(ll, 2);
+    list_add(ll, 8);
+    list_add(ll, 1);
+    list_add(ll, 15);
+    create_metadata("metadata_test.config", 2048, ll, WORK_IN_PROGRESS);*/
     return;
 
 /*
