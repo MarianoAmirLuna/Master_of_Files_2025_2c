@@ -329,6 +329,19 @@ t_list* get_array_blocks_as_list_from_metadata(t_config* metadata){
     return res;
 }
 
+/// @brief `[PRIVATE]`
+/// @param metadata 
+/// @param blocks 
+void _set_blocks_metadata(t_config* metadata, t_list* blocks){
+    char* block_as_str = list_array_int_as_string_v2(blocks);
+    config_set_value(metadata, "BLOCKS", block_as_str);
+    free(block_as_str);
+    if(config_save(metadata) == -1){
+        log_error(logger, "Hubo un error no se pudo guardar el config en %s (%s:%d)", metadata->path, __func__, __LINE__);
+    }
+    list_destroy(blocks);
+}
+
 int remove_block_from_metadata(t_config* metadata, int block_number){
     char** blocks_array = get_array_blocks_from_metadata(metadata);
     int len = string_array_size(blocks_array);
@@ -340,31 +353,17 @@ int remove_block_from_metadata(t_config* metadata, int block_number){
         }
     }
     string_array_destroy(blocks_array);
-    config_set_value(metadata, "BLOCKS", list_array_int_as_string_v2(blocks_list));
-    list_destroy(blocks_list);
-    //list_destroy_and_destroy_elements(blocks_list, free_element);
-    if(config_save(metadata) == -1){
-        log_error(logger, "Hubo un error no se pudo guardar el config en %s (%s:%d)", metadata->path, __func__, __LINE__);
-    }
+    _set_blocks_metadata(metadata, blocks_list);
     return 0;
 }
 
 int insert_block_from_metadata(t_config* metadata, int block_number){
-    char** blocks_array = get_array_blocks_from_metadata(metadata);
-    int len = string_array_size(blocks_array);
-    t_list* blocks_list = list_create();
-    for(int i=0;i<len;i++){
-        int bn = atoi(blocks_array[i]);
-        list_add(blocks_list, bn);
+    t_list* blocks_list = get_array_blocks_as_list_from_metadata(metadata);
+    if(list_contain_int(blocks_list, block_number)){
+        log_warning(logger, "El bloque %d ya existe en el metadata %s, no se inserta de nuevo (%s:%d)", block_number, metadata->path, __func__, __LINE__);
     }
-    string_array_destroy(blocks_array);
     list_add(blocks_list, block_number);
-    config_set_value(metadata, "BLOCKS", list_array_int_as_string_v2(blocks_list));
-    list_destroy(blocks_list);
-    //list_destroy_and_destroy_elements(blocks_list, free_element);
-    if(config_save(metadata) == -1){
-        log_error(logger, "Hubo un error no se pudo guardar el config en %s (%s:%d)", metadata->path, __func__, __LINE__);
-    }
+    _set_blocks_metadata(metadata, blocks_list);
     return 0;
 }
 #endif

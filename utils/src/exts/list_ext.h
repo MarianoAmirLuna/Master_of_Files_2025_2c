@@ -202,4 +202,43 @@ void* list_remove_by_condition_by(t_list* l, int(*condition)(void*, void*), void
     }
     return NULL;
 }
+
+bool list_contain(t_list* l, void* element, int(*comparer)(void*, void*)){
+    for(int i=0;i<list_size(l);i++){
+        void* elem = list_get(l, i);
+        if(comparer(elem, element))
+            return true;
+    }
+    return false;
+}
+
+bool list_contain_int(t_list* l, int element){
+    for(int i=0;i<list_size(l);i++){
+        int elem= (int)list_get(l, i);
+        if(elem == element)
+            return true;
+    }
+    return false;
+}
+t_list* list_distinct(t_list* l, int(*comparer)(void*, void*)){
+    t_list* res = list_create();
+    for(int i=0;i<list_size(l);i++){
+        void* elem = list_get(l, i);
+        
+        if(!list_exists(res, comparer, elem)){
+            list_add(res, elem);
+        }
+    }
+    return res;
+}
+t_list* list_distinct_int(t_list* l){
+    t_list* res = list_create();
+    for(int i=0;i<list_size(l);i++){
+        int elem = (int)list_get(l, i);
+        if(!list_contain_int(res, elem)){
+            list_add(res, elem);
+        }
+    }
+    return res;
+}
 #endif
