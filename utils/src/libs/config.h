@@ -17,13 +17,18 @@
 #ifndef LIBS_LOGGER_H
 #include "logger.h"
 #endif
-
+#ifndef EXTS_STRING_H
+#include "exts/string_ext.h"
+#endif 
 #ifndef EXTS_LIST_EXT
 #include "exts/list_ext.h"
 #endif
 
 #ifndef CAST_EXT_H
 #include "../exts/cast_ext.h"
+#endif
+#ifndef CRYPTO_H_
+#include "commons/crypto.h"
 #endif
 t_config* config;
 
@@ -249,6 +254,40 @@ t_config* insert_hash_block(t_config* block_hash_index, char* hash, char* block)
         log_error(logger, "Hubo un error no se pudo guardar el config en (%s:%d)", __func__, __LINE__);
     }
     return block_hash_index;
+}
+
+t_config* insert_hash_block_n(t_config* block_hash_index, char* hash, int nblock){
+    char* blockname = get_block_name_by_n(nblock, NUMBER_OF_DIGITS_BLOCK);
+    t_config* res = insert_hash_block(block_hash_index, hash, blockname);
+    free(blockname);
+    return res;
+}
+
+t_config* insert_crypto_hash_block(t_config* block_hash_index, void* value, int len_value, char* block){
+    //Lo gracioso es que el MD5 es un hash pobre y es más propenso a tener colisión de hash que un SHA1
+    if(block_hash_index == NULL){
+        printf("%s (%s:%d)", "El Config block hash index no está creado...", __func__,__LINE__);
+        exit(EXIT_FAILURE);
+    }
+    if(len_value == 0 || value == NULL)
+    {
+        log_error(logger, "WTF el valor a hashear es nulo o de tamaño 0 (%s:%d)", __func__, __LINE__);
+        exit(EXIT_FAILURE);
+    }
+    char* hash = crypto_md5(value, len_value);
+    config_set_value(block_hash_index, hash, block);
+    if(config_save(block_hash_index) == -1){
+        log_error(logger, "Hubo un error no se pudo guardar el config en (%s:%d)", __func__, __LINE__);
+    }
+    free(hash);
+    return block_hash_index;
+}
+
+t_config* insert_crypto_hash_block_n(t_config* block_hash_index, void* value, int len_value, int nblock){
+    char* block_name = get_block_name_by_n(nblock, NUMBER_OF_DIGITS_BLOCK);
+    t_config* res = insert_crypto_hash_block(block_hash_index, value, len_value, block_name);
+    free(block_name);
+    return res;
 }
 t_config* create_metadata(char* path, int size, t_list* blocks, state_metadata state){
 
