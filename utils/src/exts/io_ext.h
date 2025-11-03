@@ -50,15 +50,16 @@ bool control_existencia_file_old(const char* path)
     }
 }
 
+/// @brief Verifica si existe un path en el sistema de archivos
+/// @param path
+/// @return 
 int control_existencia(char* path){
     //Controlo que no se me envie un path vacio
-    if (path==NULL)
-    {
+    if (path==NULL){
         return false;
     }
     struct stat statbuf;
-    if (stat(path, &statbuf)==0)
-    {
+    if (stat(path, &statbuf)==0){
         //Path encontrado
         return true;
     }
@@ -69,6 +70,9 @@ int control_existencia(char* path){
     }
 }
 
+/// @brief Verifica si existe un archivo en el sistema de archivos
+/// @param path 
+/// @return 
 int control_existencia_file(char* path)
 {
     //Controlo que no se me envie un path vacio
@@ -92,13 +96,17 @@ int control_existencia_file(char* path)
     }
 }
 
-bool tag_comiteado(char* file, char* tag){
+bool tag_comiteado(char* file, char* tag)
+{
     char* path = string_from_format("files/%s/%s/metadata.config", file, tag);
-    load_config(path);
+    t_config* conf = load_config(path);
+    char* estado = config_get_string_value(conf, "ESTADO");
+    bool is_commit=string_equals_ignore_case(estado, "COMMITED");
     free(path);
-    return 1;
+    free(estado);
+    config_destroy(conf);
+    return is_commit;
 }
-
 
 int cant_elementos_directorio(char* path){
     int cnt = 0;
@@ -122,16 +130,15 @@ int cant_elementos_directorio(char* path){
 
 int crear_archivo(char* path, char* nombre, char *extension){
     char* p_path = string_from_format("%s/%s.%s", path, nombre, extension);
-    if (!control_existencia(p_path))
-    {
-        FILE * archivo = fopen(p_path, "w");
-        fclose(archivo);
-    }
-    else
-    {
+    if(control_existencia_file(p_path)){
         log_warning(logger, "El archivo %s.%s ya existe en el path %s", nombre, extension, path);
+        free(p_path);
+        return -1;
     }
+    FILE * archivo = fopen(p_path, "w");
+    fclose(archivo);
     free(p_path);
+    return 0;
 }
 
 void eliminar_archivo (char* path, char* nombre)
@@ -144,8 +151,6 @@ void eliminar_archivo (char* path, char* nombre)
     }
     free(p_path);
 }
-
-
 
 void crear_hard_link(char* path_bloque_fisico, char* path_bloque_logico)
 {
@@ -160,16 +165,21 @@ void crear_hard_link(char* path_bloque_fisico, char* path_bloque_logico)
     }
 }
 
-void crear_config_path(char* p_path, char* name)
+t_config* crear_config_block_hash_index(char* p_path, char* name)
 {
     char* path = string_from_format("%s/%s", p_path, name);
-    create_blocks_hash_index(path);
+    t_config* conf = create_blocks_hash_index(path);
+
     free(path);
+    return conf;
 }
 
 
 t_config* crear_metadata_config(char* path, int tamanio, t_list* bloques, state_metadata estado) {
     // path debe terminar en /metadata.config
+    return create_metadata(path, tamanio, bloques, estado);
+
+    /*
     t_config* metadata = config_create(path);
     if (metadata == NULL) {
         metadata = malloc(sizeof(t_config));
@@ -205,7 +215,7 @@ t_config* crear_metadata_config(char* path, int tamanio, t_list* bloques, state_
     config_set_value(metadata, "ESTADO", (char*)estado_str);
 
     config_save(metadata);
-    return metadata;
+    return metadata;*/
 }
 
 void llenar_archivo_con_ceros(char* path_archivo, int g_block_size) 

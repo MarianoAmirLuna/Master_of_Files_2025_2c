@@ -59,7 +59,6 @@ int main(int argc, char* argv[]) {
             log_info(logger, "## Lectura realizada: %s, contenido: %s", archivo, contenido);
             free(archivo);
             free(contenido);
-            //Es la lectura del log obligatorio: "## Lectura realizada: Archivo <File:Tag>, contenido: <CONTENIDO>"
         }
         if(v == REQUEST_EXECUTE_QUERY){
             //Sera que el Master solicita el query y este modulo le responde? eso es lo que entendí.
