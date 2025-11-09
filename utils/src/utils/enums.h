@@ -189,6 +189,7 @@ typedef enum{
     RETURN_BLOCK_DATA,
 }storage_worker_data;
 
+//Como te complicas la vida pa, ni hace falta esto, simplemente respondes con la instrucción y se sabe que fue OK... 
 typedef enum{
     /// @brief Esta operación creará un nuevo File dentro del FS. Para ello recibirá el nombre del File y un Tag inicial para crearlo.
     ///Deberá crear el archivo de metadata en estado WORK_IN_PROGRESS y no asignarle ningún bloque.

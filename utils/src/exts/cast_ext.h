@@ -16,6 +16,17 @@ char* get_string_state(state_metadata state){
     return string_new();
 }
 
+int cast_state_metadata(char* state){
+    if(string_equals_ignore_case(state, "WORK_IN_PROGRESS")){
+        return WORK_IN_PROGRESS;
+    }
+    if(string_equals_ignore_case(state, "COMMITED")){
+        return COMMITED;
+    }
+    log_error(logger, "No se encontró estado %s:%d", __func__,__LINE__);
+    return -1;
+}
+
 instr_code cast_code(char* code){
     if(string_equals_ignore_case(code,"CREATE")){
         return CREATE;

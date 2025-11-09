@@ -309,6 +309,15 @@ t_config* create_metadata(char* path, int size, t_list* blocks, state_metadata s
     return metadata;
 }
 
+void set_state_metadata(char* path, state_metadata state){
+    t_config* metadata = load_config(path);
+    config_set_value(metadata, "ESTADO", get_string_state(state));
+    if(config_save(metadata) == -1){
+        log_error(logger, "Hubo un error no se pudo guardar el config en %s (%s:%d)", path, __func__, __LINE__);
+    }
+    config_destroy(metadata);
+}
+
 /// @brief Debe ser liberado con un string_array_destroy cuando ya no se usa
 /// @param metadata 
 /// @return 
@@ -363,5 +372,28 @@ int insert_block_from_metadata(t_config* metadata, int block_number){
     list_add(blocks_list, block_number);
     _set_blocks_metadata(metadata, blocks_list);
     return 0;
+}
+
+state_metadata get_state_metadata(t_config* metadata){
+    char* estado_str = config_get_string_value(metadata, "ESTADO");
+    return cast_state_metadata(estado_str);
+}
+
+t_config* get_metadata_from_file_tag(config_storage cs, char* file, char* tag){
+    char* fullpath = string_from_format("%s/%s/%s/metadata.config", cs.punto_montaje, file, tag);
+    t_config* res= load_config(fullpath);
+    free(fullpath);
+    return res;
+}
+
+t_config* get_block_hash_index(config_storage cs){
+    char* fullpath = string_from_format("%s/block_hash_index.config", cs.punto_montaje);
+    t_config* res= load_config(fullpath);
+    free(fullpath);
+    return res;
+}
+
+char* get_logical_blocks_dir(config_storage cs, char* file, char* tag){
+    return string_from_format("%s/%s/%s/logical_blocks/", cs.punto_montaje, file, tag);
 }
 #endif

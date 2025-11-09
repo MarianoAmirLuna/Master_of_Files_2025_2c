@@ -4,8 +4,9 @@
 #ifndef BASE_COMMUNICATION_OPS_H
 #include "base_communication_ops.h"
 #endif
-
-
+#ifndef CRYPTO_H_
+#include "commons/crypto.h"
+#endif
 void commit_tag_ops(char* file, char* tag, worker* w){
 
     //Control de que no se reciban cosas nulas
@@ -13,6 +14,31 @@ void commit_tag_ops(char* file, char* tag, worker* w){
         log_error(logger, "FILE o TAG son nulos");
         return;
     }
+
+    t_config* metadata = get_metadata_from_file_tag(cs, file, tag);
+    if(get_state_metadata(metadata) == COMMITED){
+        log_info(logger, "El tag %s del archivo %s ya estaba comiteado, no se hace nada (%s:%d)", tag, file, __func__, __LINE__);
+        return;
+    }
+    t_config* bhi = get_block_hash_index(cs);
+    char* logical_dir = get_logical_blocks_dir(cs, file, tag);
+    t_list* blocks_list = get_files_from_dir(logical_dir); 
+    
+    //Segun entendí, debe iterar todos los bloques lógico dentro del logical_blocks 
+    //y comprobar si el hash de cada bloque lógico existe algún bloque físico que tenga el mismo hash
+    //y si lo tiene debe liberar el bloque físico actual y reapuntar el bloque lógico al bloque físico pre-existente.
+    for(int i=0;i<list_size(blocks_list);i++){
+        char* block_f = (char*)list_get(blocks_list, i);
+        char* block_hash = crypto_md5(block_f, strlen(block_f));
+        if(exists_hash_in_block_hash(bhi, block_hash)){
+            //Debe hacer alguna mierda rara.
+            //liberar bloque fisico actual
+        }
+    }
+    list_destroy_and_destroy_elements(blocks_list, free);
+    
+    config_destroy(metadata);
+    config_destroy(bhi);
     
     /*
         1. Primero verifico si el archivo ya estaba comitieado o no.

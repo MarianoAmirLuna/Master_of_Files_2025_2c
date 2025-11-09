@@ -16,6 +16,9 @@
 
 #define MAX_PATH 255
 
+#ifndef LIST_H_
+#include "commons/collections/list.h"
+#endif
 void crear_directorio(char* nombre, char* path)
 {
     char* dir = string_from_format("%s/%s", path, nombre);    
@@ -25,6 +28,59 @@ void crear_directorio(char* nombre, char* path)
     free(dir);
 }
 
+void delete_directory(char* fullpathdir){
+    DIR* dir = opendir(fullpathdir);
+    struct dirent* entry;
+
+    if (dir == NULL) {
+        perror("No se pudo abrir el directorio");
+        return;
+    }
+
+    while ((entry = readdir(dir)) != NULL) {
+        // Ignorar "." y ".."
+        if (string_equals_ignore_case(entry->d_name, ".") || string_equals_ignore_case(entry->d_name, ".."))
+            continue;
+        char full_path[1024];
+        snprintf(full_path, sizeof(full_path), "%s/%s", fullpathdir, entry->d_name);
+
+        struct stat statbuf;
+        if (stat(full_path, &statbuf) == -1) {
+            perror("No se pudo obtener información del archivo");
+            continue;
+        }
+
+        if (S_ISDIR(statbuf.st_mode)) {
+            delete_directory(full_path); //RECURSIVE
+            if (rmdir(full_path) != 0)
+                perror("Error al eliminar directorio");
+        } else {
+            // Es un archivo
+            if (remove(full_path) != 0)
+                perror("Error al eliminar archivo");
+        }
+    }
+    closedir(dir);
+}
+
+t_list* get_files_from_dir(char* fullpathdir){
+    DIR* dir = opendir(fullpathdir);
+    struct dirent* entry;
+    t_list* res = list_create();
+    if (dir == NULL) {
+        perror("No se pudo abrir el directorio");
+        return;
+    }
+
+    while ((entry = readdir(dir)) != NULL) {
+        // Ignorar "." y ".."
+        if (string_equals_ignore_case(entry->d_name, ".") || string_equals_ignore_case(entry->d_name, ".."))
+            continue;
+        list_add(res, strdup(entry->d_name));
+    }
+    closedir(dir);
+    return res;
+}
 
 bool control_existencia_file_old(const char* path)
 {

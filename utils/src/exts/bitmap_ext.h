@@ -1,3 +1,6 @@
+#ifndef BITMAP_EXT_H
+#define BITMAP_EXT_H
+
 #ifndef INC_LIBS_H
 #include "inc/libs.h"
 #endif 
@@ -24,3 +27,4 @@ void destruir_bitmap(t_bitarray* g_bitmap, int g_bitmap_fd) {
     bitarray_destroy(g_bitmap);
     close(g_bitmap_fd);
 }
+#endif

@@ -246,6 +246,11 @@ void valido_bloques_fisicos(char* path)
 
 void inicializar_file_system()
 {
+    //TODO: Por defecto debe crear "superblock.config", "bitmap.bin", "block_hash_index.config"
+    //y crear directorio desde punto de montaje el "physical_blocks" y "files" y si no me equivoco también el "initial_file" dentro del "files"
+    
+    
+    //Y si no existe el superblock que haces???... Gato mulo
     char* path_superblock_config = string_from_format("%s/%s", cs.punto_montaje, "superblock.config");
     t_config* c_superblock = config_create(path_superblock_config);
 

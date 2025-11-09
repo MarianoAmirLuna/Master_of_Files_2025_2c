@@ -29,22 +29,41 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
     // valido existencia file
     char* path = string_from_format("%s/%s", cs.punto_montaje, file);
     if (control_existencia_file(path)){
+        t_packet* p = create_packet();
+        add_int_to_packet(p, FILE_NOT_FOUND);
+        send_and_free_packet(p, w->fd);
         log_error(logger, "No se encontro el file deseado");
+        free(path);
+        return;
     }
-    free(path);
     // valido existencia tag
     path = string_from_format("%s/%s/", cs.punto_montaje, file, tag);
     if (control_existencia_file(path)){
+        t_packet* p = create_packet();
+        add_int_to_packet(p, TAG_NOT_FOUND);
+        send_and_free_packet(p, w->fd);
         log_error(logger, "No se encontro el tag deseado");
+        free(path);
+        return;
     }
     free(path);
+    t_config* metadata = get_metadata_from_file_tag(cs, file, tag);
+    if(get_state_metadata(metadata) == COMMITED){
+        t_packet* p = create_packet();
+        add_int_to_packet(p, WRITE_NO_PERMISSION);
+        send_and_free_packet(p, w->fd);
+        log_error(logger, "El tag se encuentra en estado COMMITED, no se puede escribir");
+        config_destroy(metadata);
+        return;
+    }
+    config_destroy(metadata);
     // lock del file tag (bloqueo logico para que no toquen el mismo tag al mismo tiempo)
     pthread_mutex_t* tag_lock = get_file_tag_lock(file, tag);
     pthread_mutex_lock(tag_lock);
 
-        log_orange(logger, "estoy bloqueando al otro bobo :) ESTAS DURMIENDO 30 SEGUNDOS");
-        sleep(30);
-        //DANGER: OJO ACA ESTAS DURMIENDO 30 SEGUNDOS
+    log_orange(logger, "estoy bloqueando al otro bobo :) ESTAS DURMIENDO 30 SEGUNDOS");
+    sleep(30);
+    //DANGER: OJO ACA ESTAS DURMIENDO 30 SEGUNDOS
 
     /*
     int bloque_fisico = obtener_bloque_fisico(file, tag, bloque_logico); // todo: declarar funcion obtener_bloque_fisico

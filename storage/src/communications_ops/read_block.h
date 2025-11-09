@@ -13,7 +13,34 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
         Tag_inexistente
         Lectura_o_escritura_fuera_de_limite
     */
-    log_error(logger, "%s NOT IMPLEMENTED (%s:%d)",__func__, __func__,__LINE__);
+
+    //DANGER: OJOOO que cuando algo no existe sólo debe enviar al worker pertinente una excepción por ejemplo: "FILE_NOT_FOUND" o TAG_NOT_FOUND, etc. del errors_operation
+    char* block_name = get_block_name_by_n(numero_bloque, NUMBER_OF_DIGITS_BLOCK);
+    char* block_path = string_from_format("%s/%s/%s/%s.dat",cs.punto_montaje, file, tag, block_name);
+    free(block_name);
+    if(!control_existencia_file(block_path)){
+        log_error(logger, "El bloque lógico %d del File:Tag %s:%s no existe (%s:%d)", numero_bloque, file, tag, __func__, __LINE__);
+        free(block_path);
+        return;
+    }
+    FILE* f =fopen(block_path, "r");
+    if(f == NULL){
+        log_error(logger, "No se pudo abrir el bloque lógico %d del File:Tag %s:%s (%s:%d)", numero_bloque, file, tag, __func__, __LINE__);
+        free(block_path);
+        return;
+    }
+    fseek(f, 0, SEEK_END);
+    int sz = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    char* buffer = malloc(sz+1);
+    fgets(buffer, sz, f);
+    t_packet* p = create_packet();
+    add_int_to_packet(p, READ_BLOCK);
+    add_string_to_packet(p, buffer);
+    send_and_free_packet(p, w->fd);
+    free(block_path);
+    free(buffer);
+    //log_error(logger, "%s NOT IMPLEMENTED (%s:%d)",__func__, __func__,__LINE__);
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
 }
