@@ -410,4 +410,12 @@ t_config* get_block_hash_index(config_storage cs){
 char* get_logical_blocks_dir(config_storage cs, char* file, char* tag){
     return string_from_format("%s/files/%s/%s/logical_blocks/", cs.punto_montaje, file, tag);
 }
+
+char* get_files_from_punto_montaje(config_storage cs){
+    return string_from_format("%s/files", cs.punto_montaje);
+}
+
+char* get_filetag_path(config_storage cs, char* file, char* tag){
+    return string_from_format("%s/files/%s/%s", cs.punto_montaje, file, tag);
+}
 #endif

@@ -27,19 +27,23 @@ void delete_tag_ops(char* file, char* tag, worker* w){
     //WARNING: Debe obtenerse el número de bloque para especificar cuál liberar.
     liberar_bloque(g_bitmap, nblock, g_bitmap_size); // to_do: eliminar esta linea una vez implementado
     //char* logical = get_logical_blocks_dir(cs, file, tag);
-    char* fullpathdir = string_from_format("%s/%s/%s", cs.punto_montaje, file, tag);
+    /*char* fullpathdir = ;;
     if(!control_existencia(fullpathdir)){
-        /*t_packet* p = create_packet();
-        add_int_to_packet(p, );
-        send_and_free_packet(p, w->fd);*/
+        //t_packet* p = create_packet();
+        //add_int_to_packet(p, );
+        //send_and_free_packet(p, w->fd);
+
         log_error(logger, "No se encontro directorio");
         free(fullpathdir);
         return;
-    }
+    }*/
 
-    delete_directory(fullpathdir);
-    free(fullpathdir);
+    char* fullpath = get_filetag_path(cs, file, tag);
+    delete_directory(fullpath);
+    free( fullpath);
     log_error(logger, "%s NOT IMPLEMENTED (%s:%d)",__func__, __func__,__LINE__);
+    //No está implementado porque faltaría probar si libera el bloque, eso es lo que hacía falta no???
+
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
 }
