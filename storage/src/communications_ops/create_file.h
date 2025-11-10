@@ -11,28 +11,24 @@ void create_file_ops(char* file, char* tag, worker* w){
         log_error(logger, "FILE es NULL? %d TAG IS NULL? %d", file == NULL, tag == NULL );
         return;
     }
+    //La única comprobación que importa en CREATE es la de si el TAG existe, no el FILE.
+    if(!file_tag_exist_or_not(file, tag, w)){
+        return;
+    }
 
-    /*Esta operación creará un nuevo File dentro del FS. Para ello recibirá el nombre del File y un Tag inicial para crearlo.
-    Deberá crear el archivo de metadata en estado WORK_IN_PROGRESS y no asignarle ningún bloque.*/
-    char* path = string_from_format("%s/files", cs.punto_montaje);
-    log_info(logger, "Ejecutando la operacion CREATE_FILE");
-    crear_directorio(file, path); // creo el archivo (no verifico si existe)
-    free(path); //El string_from_format va a crear nueva dirección del puntero, por eso es aconsejable liberarlo antes de asignar otro
+    char* fullpath = string_from_format("%s/files/%s/%s/logical_blocks", cs.punto_montaje, file, tag);    
+    //Crea todos los directorios, significa que crea el files, el files/variable file, el files/variable file/variable tag y el files/variable file/variable tag/ con logical_blocks
+    char* fulllogical = string_from_format("%s/logical_blocks", fullpath);
+    create_nested_directories(fulllogical);
     
-    // creo el tag
-    path = string_from_format("%s/%s", path, file); // uso el path porque es dentro del archivo
-    crear_directorio(tag, path); // creo el tag
-    free(path); //El string_from_format va a crear nueva dirección del puntero, por eso es aconsejable liberarlo antes de asignar otro
+
+    char* metadata = string_from_format("%s/metadata.config", fullpath);
+    t_config* conf = crear_metadata_config(metadata, g_block_size, NULL, WORK_IN_PROGRESS);
     
-    // espacio de bloques logicos
-    path = string_from_format("%s/%s", path, tag);
-    crear_directorio("logical_blocks", path);
-    free(path); //El string_from_format va a crear nueva dirección del puntero, por eso es aconsejable liberarlo antes de asignar otro
-    
-    // metadata
-    path = string_from_format("%s/metadata.config", path);
-    crear_metadata_config(path, g_block_size, NULL, WORK_IN_PROGRESS);
-    free(path);
+    free(metadata);
+    free(fullpath);
+    free(fulllogical);
+    config_destroy(conf);
 
     log_orange(logger, "FILE: %s, TAG: %s", file, tag);
     if(w == NULL){

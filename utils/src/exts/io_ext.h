@@ -28,6 +28,26 @@ void crear_directorio(char* nombre, char* path)
     free(dir);
 }
 
+int create_nested_directories(const char *path) {
+    char** spl = string_split(path, "/");
+    int sz = string_array_size(spl);
+    char* build = string_new();
+    for(int i=0;i<sz;i++){
+        string_append(&build, spl[i]);
+        if(i < sz -1){
+            string_append(&build, "/");
+        }
+        if(mkdir(build, 0777) != 0 && errno != EEXIST){
+            perror("Error creating directory");
+            string_array_destroy(spl);
+            free(build);
+            return -1;
+        }
+    }
+    string_array_destroy(spl);
+    free(build);
+    return 1;
+}
 void delete_directory(char* fullpathdir){
     DIR* dir = opendir(fullpathdir);
     struct dirent* entry;

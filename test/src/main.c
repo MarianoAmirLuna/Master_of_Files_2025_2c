@@ -1,6 +1,26 @@
 #include "main.h"
 #include "commons/crypto.h"
 
+/*int create_nested_directories(const char *path) {
+    char** spl = string_split(path, "/");
+    int sz = string_array_size(spl);
+    char* build = string_new();
+    for(int i=0;i<sz;i++){
+        string_append(&build, spl[i]);
+        if(i < sz -1){
+            string_append(&build, "/");
+        }
+        if(mkdir(build, 0777) != 0 && errno != EEXIST){
+            perror("Error creating directory");
+            string_array_destroy(spl);
+            free(build);
+            return -1;
+        }
+    }
+    string_array_destroy(spl);
+    return 1;
+}*/
+
 int main(int argc, char* argv[]) {
     
     create_log("test", LOG_LEVEL_TRACE);
@@ -24,6 +44,8 @@ int main(int argc, char* argv[]) {
 
     log_pink(logger, "%s", get_name_fmt_number("block_", 5, 6));
     log_pink(logger, "%s", get_name_extension_fmt_number("copado", "dat", 12, 8));
+    create_nested_directories("/home/utnso/tp-2025-2c-Pizza/test/bin/lero/que/onda/pepe");
+    //mkdir("/home/utnso/tp-2025-2c-Pizza/test/bin/lero", 0777);
     /*t_config* blo = load_block_hash("bloquetest.config");
     t_list* vv = get_all_value__of_block_hash(blo);
     for(int i=0;i<list_size(vv);i++){
