@@ -11,6 +11,7 @@ void create_file_ops(char* file, char* tag, worker* w){
         log_error(logger, "FILE es NULL? %d TAG IS NULL? %d", file == NULL, tag == NULL );
         return;
     }
+
     /*Esta operación creará un nuevo File dentro del FS. Para ello recibirá el nombre del File y un Tag inicial para crearlo.
     Deberá crear el archivo de metadata en estado WORK_IN_PROGRESS y no asignarle ningún bloque.*/
     char* path = string_from_format("%s/files", cs.punto_montaje);

@@ -182,6 +182,33 @@ void disconnect_callback(void* params){
     log_warning(logger, "Se desconectó el cliente %s fd:%d", ocm_to_string(ocm), sock_client);
 }
 
+/// @brief Comprueba si el file o el tag existe, en caso de no existir se envía el packet de error y se retorna falso
+/// @param file 
+/// @param tag 
+/// @param w 
+/// @return Verdadero si existe, falso caso contrario.
+int file_tag_exist_or_not(char* file, char* tag, worker* w){
+    char* fullpath = string_from_format("%s/files/%s", cs.punto_montaje, file);
+    if(!directory_exists(fullpath)){
+        send_basic_packet(w->fd, FILE_NOT_FOUND); //File inexistente
+        log_error(logger, "No se encontro el file deseado");
+        free(fullpath);
+        return 0;
+    }
+    char* fullpathtag = string_from_format("%s/%s", fullpath, tag);
+    if(!directory_exists(fullpathtag)){
+        send_basic_packet(w->fd, TAG_NOT_FOUND); //Tag inexistente
+        log_error(logger, "No se encontro el tag deseado");
+        free(fullpath);
+        free(fullpathtag);
+        return 0;
+    }
+    free(fullpath);
+    free(fullpathtag);
+    return 1;
+
+}
+
 void instance_signal_handler(){
     if(signal(SIGINT, catch_handler_termination) == SIG_ERR){
         log_error(logger, "Problema seteando un handler para señales");

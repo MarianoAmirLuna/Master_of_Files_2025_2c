@@ -21,6 +21,9 @@ void delete_tag_ops(char* file, char* tag, worker* w){
     //- Borrar directorio
     //- Si el bloque físico al que apunta cada bloque lógico eliminado no es referenciado por ningún otro File:Tag deberá ser marcado como libre en bitmap
 
+    if(!file_tag_exist_or_not(file, tag, w)){
+        return; //Ya se envió el error al worker
+    }
     int nblock = 0;
     //WARNING: Debe obtenerse el número de bloque para especificar cuál liberar.
     liberar_bloque(g_bitmap, nblock, g_bitmap_size); // to_do: eliminar esta linea una vez implementado

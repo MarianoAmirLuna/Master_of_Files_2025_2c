@@ -25,33 +25,21 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
     char* tag  = args[1];
     int bloque_logico = atoi(args[2]);
     char* contenido   = args[3];*/
+        
+    if(!file_tag_exist_or_not(file, tag, w)){
+        return; //Ya se envió el error al worker
+    }
 
-    // valido existencia file
-    char* path = string_from_format("%s/%s", cs.punto_montaje, file);
-    if (control_existencia_file(path)){
-        t_packet* p = create_packet();
-        add_int_to_packet(p, FILE_NOT_FOUND);
-        send_and_free_packet(p, w->fd);
-        log_error(logger, "No se encontro el file deseado");
-        free(path);
-        return;
-    }
-    // valido existencia tag
-    path = string_from_format("%s/%s/", cs.punto_montaje, file, tag);
-    if (control_existencia_file(path)){
-        t_packet* p = create_packet();
-        add_int_to_packet(p, TAG_NOT_FOUND);
-        send_and_free_packet(p, w->fd);
-        log_error(logger, "No se encontro el tag deseado");
-        free(path);
-        return;
-    }
-    free(path);
+    //TODO: CHECK ESPACIO INSUFICIENTE
+    //TODO: CHECK OVERFLOW WRITE OR READ
+    
     t_config* metadata = get_metadata_from_file_tag(cs, file, tag);
+    if(metadata == NULL){
+        log_error(logger, "No se pudo obtener la metadata del File:Tag %s:%s", file, tag);
+        return;
+    }
     if(get_state_metadata(metadata) == COMMITED){
-        t_packet* p = create_packet();
-        add_int_to_packet(p, WRITE_NO_PERMISSION);
-        send_and_free_packet(p, w->fd);
+        send_basic_packet(w->fd, WRITE_NO_PERMISSION);
         log_error(logger, "El tag se encuentra en estado COMMITED, no se puede escribir");
         config_destroy(metadata);
         return;

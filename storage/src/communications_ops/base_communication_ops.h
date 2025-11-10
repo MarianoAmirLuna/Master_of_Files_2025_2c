@@ -21,6 +21,8 @@ op_code_module itself_ocm;
 
 //Se debe tomar como si fuera un encabezado o tendrás warning implicit-declaration y puede ser un problema al ejecutarlo
 void eliminar_contenido(const char* path);
+
+int file_tag_exist_or_not(char* file, char* tag, worker* w);
 #ifndef IO_EXT_H
 #include "exts/io_ext.h"
 #endif 

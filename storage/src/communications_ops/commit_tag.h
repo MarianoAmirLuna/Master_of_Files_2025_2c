@@ -14,7 +14,9 @@ void commit_tag_ops(char* file, char* tag, worker* w){
         log_error(logger, "FILE o TAG son nulos");
         return;
     }
-
+    if(!file_tag_exist_or_not(file, tag, w)){
+        return; //Ya se envió el error al worker
+    }
     t_config* metadata = get_metadata_from_file_tag(cs, file, tag);
     if(get_state_metadata(metadata) == COMMITED){
         log_info(logger, "El tag %s del archivo %s ya estaba comiteado, no se hace nada (%s:%d)", tag, file, __func__, __LINE__);

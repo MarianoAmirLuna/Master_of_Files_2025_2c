@@ -5,6 +5,10 @@
 #include "base_communication_ops.h"
 #endif
 
+#ifndef EXTS_FILE_EXT_H
+#include "exts/file_ext.h"
+#endif
+
 void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     /*Dado un File:Tag y número de bloque lógico, la operación de lectura obtendrá y devolverá el contenido del mismo.*/
     
@@ -13,8 +17,11 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
         Tag_inexistente
         Lectura_o_escritura_fuera_de_limite
     */
-
-    //DANGER: OJOOO que cuando algo no existe sólo debe enviar al worker pertinente una excepción por ejemplo: "FILE_NOT_FOUND" o TAG_NOT_FOUND, etc. del errors_operation
+    
+    if(!file_tag_exist_or_not(file, tag, w)){
+        return; //Ya se envió el error al worker
+    }
+    
     char* block_name = get_block_name_by_n(numero_bloque, NUMBER_OF_DIGITS_BLOCK);
     char* block_path = string_from_format("%s/%s/%s/%s.dat",cs.punto_montaje, file, tag, block_name);
     free(block_name);
@@ -29,9 +36,7 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
         free(block_path);
         return;
     }
-    fseek(f, 0, SEEK_END);
-    int sz = ftell(f);
-    fseek(f, 0, SEEK_SET);
+    int sz = get_size_file(f);
     char* buffer = malloc(sz+1);
     fgets(buffer, sz, f);
     t_packet* p = create_packet();

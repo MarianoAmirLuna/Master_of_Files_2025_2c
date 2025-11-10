@@ -15,8 +15,10 @@ void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
         log_error(logger, "FILE o TAG son nulos");
         return;
     }
-
-
+        
+    if(!file_tag_exist_or_not(file, tag, w)){
+        return; //Ya se envió el error al worker
+    }
 
 }
 

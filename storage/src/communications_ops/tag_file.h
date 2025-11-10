@@ -16,7 +16,10 @@ void tag_file_ops(char* file, char* tag_origen, char* tag_destino, worker* w){
         log_error(logger, "FILE, TAG_ORIGEN o TAG_DESTINO son nulos");
         return;
     }
-
+        
+    if(!file_tag_exist_or_not(file, tag_origen, w)){
+        return; //Ya se envió el error al worker
+    }
     log_orange(logger, "[TAG_FILE] Iniciando operacion TAG para %s:%s -> %s:%s", file, tag_origen, file, tag_destino);
 
     // 1. Verificar que el file de origen existe
