@@ -22,6 +22,10 @@ void commit_tag_ops(char* file, char* tag, worker* w){
         log_info(logger, "El tag %s del archivo %s ya estaba comiteado, no se hace nada (%s:%d)", tag, file, __func__, __LINE__);
         return;
     }
+    
+    //Según la condiciión si no está comiteado debo especificarlo como comiteado
+    set_state_metadata_from_config(metadata, COMMITED);
+
     t_config* bhi = get_block_hash_index(cs);
     char* logical_dir = get_logical_blocks_dir(cs, file, tag);
     t_list* blocks_list = get_files_from_dir(logical_dir); 
@@ -37,6 +41,7 @@ void commit_tag_ops(char* file, char* tag, worker* w){
             //liberar bloque fisico actual
         }
     }
+
     list_destroy_and_destroy_elements(blocks_list, free);
     
     config_destroy(metadata);

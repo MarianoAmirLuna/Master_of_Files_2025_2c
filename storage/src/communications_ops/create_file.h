@@ -21,7 +21,6 @@ void create_file_ops(char* file, char* tag, worker* w){
     char* fulllogical = string_from_format("%s/logical_blocks", fullpath);
     create_nested_directories(fulllogical);
     
-
     char* metadata = string_from_format("%s/metadata.config", fullpath);
     t_config* conf = crear_metadata_config(metadata, g_block_size, NULL, WORK_IN_PROGRESS);
     

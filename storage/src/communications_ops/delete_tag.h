@@ -13,7 +13,6 @@ void delete_tag_ops(char* file, char* tag, worker* w){
     Al realizar esta operación, si el bloque físico al que apunta cada bloque lógico eliminado 
     no es referenciado por ningún otro File:Tag, deberá ser marcado como libre en el bitmap.*/
     // Para la implementación de esta parte se recomienda consultar la documentación de la syscall stat(2).
-
     /* EXCEPCIONES A TENER EN CUENTA EN ESTE PROCEDIMIENTO
         File_inexistente
         Tag_inexistente

@@ -318,6 +318,16 @@ void set_state_metadata(char* path, state_metadata state){
     config_destroy(metadata);
 }
 
+/// @brief Setea el metadata pero no destruye el puntero t_config
+/// @param conf 
+/// @param state 
+void set_state_metadata_from_config(t_config* conf, state_metadata state){
+    config_set_value(conf, "ESTADO", get_string_state(state));
+    if(config_save(conf) == -1){
+        log_error(logger, "Hubo un error no se pudo guardar el config en %s (%s:%d)", conf->path, __func__, __LINE__);
+    }
+}
+
 /// @brief Debe ser liberado con un string_array_destroy cuando ya no se usa
 /// @param metadata 
 /// @return 
@@ -334,6 +344,10 @@ t_list* get_array_blocks_as_list_from_metadata(t_config* metadata){
     }
     string_array_destroy(array);
     return res;
+}
+
+int get_size_from_metadata(t_config* metadata){
+    return config_get_int_value(metadata, "TAMAÑO");
 }
 
 /// @brief `[PRIVATE]`
@@ -380,7 +394,7 @@ state_metadata get_state_metadata(t_config* metadata){
 }
 
 t_config* get_metadata_from_file_tag(config_storage cs, char* file, char* tag){
-    char* fullpath = string_from_format("%s/%s/%s/metadata.config", cs.punto_montaje, file, tag);
+    char* fullpath = string_from_format("%s/files/%s/%s/metadata.config", cs.punto_montaje, file, tag);
     t_config* res= load_config(fullpath);
     free(fullpath);
     return res;
@@ -394,6 +408,6 @@ t_config* get_block_hash_index(config_storage cs){
 }
 
 char* get_logical_blocks_dir(config_storage cs, char* file, char* tag){
-    return string_from_format("%s/%s/%s/logical_blocks/", cs.punto_montaje, file, tag);
+    return string_from_format("%s/files/%s/%s/logical_blocks/", cs.punto_montaje, file, tag);
 }
 #endif

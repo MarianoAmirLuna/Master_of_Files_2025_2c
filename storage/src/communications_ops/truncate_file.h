@@ -23,9 +23,6 @@ void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
 }
 
 #endif
-
-
-
   /*Esta operación se encargará de modificar el tamaño del File:Tag especificados agrandando o achicando el tamaño del mismo 
     para reflejar el nuevo tamaño deseado (actualizando la metadata necesaria).
     Al incrementar el tamaño del File, se le asignarán tantos bloques lógicos (hard links) como sea necesario. 
@@ -55,34 +52,6 @@ void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
     off_t nuevo_tam = atoll(args[2]); //LONG INT??? ENFERMO*/
 
     // paths
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     //OLD CODE - Se comenta el codigo por errores en la forma que se gestionan los bloques fisicos y logicos.
