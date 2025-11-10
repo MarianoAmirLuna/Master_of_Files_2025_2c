@@ -27,9 +27,9 @@ typedef struct
 } t_paquete;
 
 typedef struct{
-    /// @brief Código de operación
+    /// @brief [PRIVATE DO NOT USE THIS] Código de operación
     op_code opcode;
-    /// @brief Buffer
+    /// @brief [PRIVATE DO NOT USE THIS] Buffer
     t_buffer* buffer;
 }t_packet;
 

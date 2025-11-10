@@ -218,7 +218,7 @@ int calcular_pagina(int dir_base)
 
 void ejecutar_write(char *file_tag, int dir_base, char *contenido)
 {
-    log_orange(logger, "FILETAG ES NULL? %d, DIR=%d, CONTENIDO ES NULL?: %d", file_tag == NULL ? 1 : 0, dir_base, contenido == NULL ? 1 : 0);
+    log_orange(logger, "FILETAG ES NULL? %d, DIR=%d, CONTENIDO ES NULL?: %d", file_tag == NULL, dir_base, contenido == NULL);
     int pagina = calcular_pagina(dir_base);
     int offset = obtener_offset(file_tag, dir_base);
     int restante_en_pag = block_size - offset;
@@ -311,7 +311,7 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
             {
                 entrada_tabla_pags *entrada_con_frame = obtener_frame(file_tag, dir_base);
                 if (entrada_con_frame == NULL)
-                {
+{
                     log_error(logger, "ENTRADA CON FRAME ES NULL");
                 }
                 n_frame = entrada_con_frame->marco;
@@ -364,11 +364,10 @@ void ejecutar_delete(char *file, char *tag)
     add_string_to_packet(paq, tag);
     send_and_free_packet(paq, sock_storage);
 }
-
 void ejecutar_end()
 {
     t_packet *paq = create_packet();
-    paq->opcode = QUERY_END;
+    add_int_to_packet(paq, QUERY_END);
     send_and_free_packet(paq, sock_master);
 }
 
