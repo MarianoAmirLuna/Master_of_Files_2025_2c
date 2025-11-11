@@ -7,12 +7,36 @@ Este documento contiene la descripción completa de todas las funciones generale
 ## Índice
 
 1. [Funciones de Directorio](#funciones-de-directorio)
+   - `crear_directorio` - Crea un directorio simple
+   - `create_nested_directories` - Crea directorios anidados (mkdir -p)
+   - `delete_directory` - Elimina directorio recursivamente (rm -rf)
+   - `get_files_from_dir` - Lista archivos y directorios
+   - `cant_elementos_directorio` - Cuenta elementos en un directorio
 2. [Funciones de Verificación de Existencia](#funciones-de-verificación-de-existencia)
+   - `control_existencia` - Verifica existencia de path (stat)
+   - `control_existencia_file` - Verifica existencia de archivo (fopen)
+   - `control_existencia_file_old` - Versión antigua (retorna bool)
+   - `tag_comiteado` - Verifica si un tag está comiteado
 3. [Funciones de Archivo](#funciones-de-archivo)
+   - `crear_archivo` - Crea un archivo vacío
+   - `eliminar_archivo` - Elimina un archivo
+   - `llenar_archivo_con_ceros` - Llena archivo con '0'
 4. [Funciones de Bloques Físicos](#funciones-de-bloques-físicos)
+   - `crear_bloques_fisicos` - Crea múltiples bloques
+   - `eliminar_bloques_fisicos` - Elimina bloques sobrantes
+   - `escribir_bloque_fisico` - Escribe en un bloque (⚠️ tiene bug)
+   - `clonar_bloque_fisico` - Clona bloque con verificación MD5
 5. [Funciones de Bitmap](#funciones-de-bitmap)
+   - `ocupar_bloque` - Marca bloque como ocupado
+   - `liberar_bloque` - Marca bloque como libre
+   - `bloque_ocupado` - Verifica si bloque está ocupado
+   - `destruir_bitmap` - Destruye bitmap y cierra fd
 6. [Funciones de Metadata](#funciones-de-metadata)
+   - `crear_metadata_config` - Crea metadata.config de File:Tag
+   - `crear_config_block_hash_index` - Crea blocks_hash_index.config
 7. [Funciones de Hard Links](#funciones-de-hard-links)
+   - `crear_hard_link` - Crea hard link entre bloques
+8. [Bugs Conocidos](#bugs-conocidos)
 
 ---
 
@@ -43,6 +67,108 @@ Crea un directorio en el sistema de archivos.
 ```c
 crear_directorio("mi_carpeta", "/home/utnso/storage");
 // Crea: /home/utnso/storage/mi_carpeta
+```
+
+---
+
+### `create_nested_directories`
+
+```c
+int create_nested_directories(const char *path)
+```
+
+**Descripción:**
+Crea directorios anidados de forma recursiva (equivalente a `mkdir -p`).
+
+**Parámetros:**
+- `path` (const char*): Ruta completa con todos los directorios a crear
+
+**Retorna:**
+- `1`: Si todos los directorios se crearon exitosamente o ya existían
+- `-1`: Si hubo un error al crear algún directorio
+
+**Comportamiento:**
+- Divide el path en segmentos usando '/' como separador
+- Crea cada nivel de directorio de forma secuencial
+- Ignora errores si el directorio ya existe (EEXIST)
+- Crea directorios con permisos 0777
+- Libera automáticamente la memoria de los arrays temporales
+
+**Ejemplo:**
+```c
+int result = create_nested_directories("/home/utnso/storage/files/archivo1/tag1");
+// Crea toda la jerarquía de directorios si no existen
+if (result == 1) {
+    printf("Directorios creados exitosamente\n");
+}
+```
+
+---
+
+### `delete_directory`
+
+```c
+void delete_directory(char* fullpathdir)
+```
+
+**Descripción:**
+Elimina un directorio y todo su contenido de forma recursiva (equivalente a `rm -rf`).
+
+**Parámetros:**
+- `fullpathdir` (char*): Ruta completa del directorio a eliminar
+
+**Retorna:**
+`void` - No retorna ningún valor
+
+**Comportamiento:**
+- Recorre recursivamente todo el contenido del directorio
+- Elimina archivos usando `remove()`
+- Elimina subdirectorios usando `rmdir()` después de vaciarlos
+- Ignora las entradas "." y ".."
+- Registra errores con `perror()` si falla alguna operación
+
+**Ejemplo:**
+```c
+delete_directory("/home/utnso/storage/files/archivo1/tag_old");
+// Elimina el directorio tag_old y todo su contenido
+```
+
+**Nota:**
+⚠️ Esta función es destructiva y no pide confirmación. Usar con precaución.
+
+---
+
+### `get_files_from_dir`
+
+```c
+t_list* get_files_from_dir(char* fullpathdir)
+```
+
+**Descripción:**
+Obtiene una lista con los nombres de todos los archivos y subdirectorios dentro de un directorio.
+
+**Parámetros:**
+- `fullpathdir` (char*): Ruta completa del directorio a listar
+
+**Retorna:**
+- `t_list*`: Lista de strings con los nombres de archivos y directorios (usando `strdup()`)
+- Lista vacía si el directorio no contiene elementos
+- Retorna sin valor definido si no se puede abrir el directorio (genera perror)
+
+**Comportamiento:**
+- Ignora las entradas "." y ".."
+- Cada nombre se duplica usando `strdup()` antes de agregarlo a la lista
+- El usuario debe liberar la memoria de cada string y de la lista
+
+**Ejemplo:**
+```c
+t_list* archivos = get_files_from_dir("/home/utnso/storage/files/archivo1");
+for (int i = 0; i < list_size(archivos); i++) {
+    char* nombre = list_get(archivos, i);
+    printf("Archivo: %s\n", nombre);
+    free(nombre);
+}
+list_destroy(archivos);
 ```
 
 ---
@@ -127,6 +253,32 @@ if (control_existencia_file("/home/utnso/storage/metadata.config")) {
 
 ---
 
+### `control_existencia_file_old`
+
+```c
+bool control_existencia_file_old(const char* path)
+```
+
+**Descripción:**
+Versión antigua de la función de verificación de existencia de archivos. Retorna bool en lugar de int.
+
+**Parámetros:**
+- `path` (const char*): Ruta completa del archivo a verificar
+
+**Retorna:**
+- `true`: Si el archivo existe y se puede abrir
+- `false`: Si el archivo no existe o es NULL
+
+**Comportamiento:**
+- Similar a `control_existencia_file()` pero con tipo de retorno bool
+- Registra el path en un log de warning
+- Registra si el archivo existe o no
+
+**Nota:**
+⚠️ Se recomienda usar `control_existencia_file()` en lugar de esta versión.
+
+---
+
 ### `tag_comiteado`
 
 ```c
@@ -134,17 +286,30 @@ bool tag_comiteado(char* file, char* tag)
 ```
 
 **Descripción:**
-Verifica si un tag de un archivo ha sido comiteado (estado COMMITED).
+Verifica si un tag de un archivo ha sido comiteado leyendo el estado en el metadata.config.
 
 **Parámetros:**
 - `file` (char*): Nombre del archivo
 - `tag` (char*): Nombre del tag a verificar
 
 **Retorna:**
-- `true` (1): Siempre retorna true (implementación incompleta)
+- `true`: Si el estado del tag es "COMMITED"
+- `false`: Si el estado del tag NO es "COMMITED"
 
-**Nota:**
-⚠️ Esta función tiene una implementación temporal y siempre retorna `true`.
+**Comportamiento:**
+- Construye el path: `files/{file}/{tag}/metadata.config`
+- Carga la configuración y lee el campo "ESTADO"
+- Compara el estado con "COMMITED" (case insensitive)
+- Libera automáticamente la memoria del config y strings
+
+**Ejemplo:**
+```c
+if (tag_comiteado("archivo1", "v1.0")) {
+    printf("El tag v1.0 ya fue comiteado\n");
+} else {
+    printf("El tag v1.0 está en WORK_IN_PROGRESS\n");
+}
+```
 
 ---
 
@@ -165,15 +330,23 @@ Crea un archivo vacío con la extensión especificada.
 - `extension` (char*): Extensión del archivo (sin el punto)
 
 **Retorna:**
-`int` - Código de resultado (implementación actual no retorna valor explícito)
+- `0`: Si el archivo se creó exitosamente
+- `-1`: Si el archivo ya existe
 
 **Comportamiento:**
+- Verifica si el archivo ya existe antes de crearlo
 - Solo crea el archivo si no existe previamente
-- Si el archivo ya existe, registra un warning
+- Si el archivo ya existe, registra un warning y retorna -1
+- Libera automáticamente la memoria del path concatenado
 
 **Ejemplo:**
 ```c
-crear_archivo("/home/utnso/storage", "test", "txt");
+int result = crear_archivo("/home/utnso/storage", "test", "txt");
+if (result == 0) {
+    printf("Archivo creado exitosamente\n");
+} else {
+    printf("El archivo ya existe\n");
+}
 // Crea: /home/utnso/storage/test.txt
 ```
 
@@ -535,29 +708,33 @@ t_config* metadata = crear_metadata_config(
 
 ---
 
-### `crear_config_path`
+### `crear_config_block_hash_index`
 
 ```c
-void crear_config_path(char* p_path, char* name)
+t_config* crear_config_block_hash_index(char* p_path, char* name)
 ```
 
 **Descripción:**
-Crea el archivo blocks_hash_index.config en la ruta especificada.
+Crea el archivo blocks_hash_index.config en la ruta especificada y retorna el t_config.
 
 **Parámetros:**
 - `p_path` (char*): Ruta donde se creará el archivo
 - `name` (char*): Nombre del archivo de configuración
 
 **Retorna:**
-`void` - No retorna ningún valor
+- `t_config*`: Puntero a la configuración creada
 
 **Comportamiento:**
-- Concatena el path y el nombre
+- Concatena el path y el nombre formando la ruta completa
 - Llama a `create_blocks_hash_index()` para crear el archivo
+- Libera automáticamente la memoria del path concatenado
+- Retorna el t_config para su posterior uso
 
 **Ejemplo:**
 ```c
-crear_config_path("/home/utnso/storage", "blocks_hash_index.config");
+t_config* hash_index = crear_config_block_hash_index("/home/utnso/storage", "blocks_hash_index.config");
+// Crea y retorna: /home/utnso/storage/blocks_hash_index.config
+config_destroy(hash_index);
 ```
 
 ---
@@ -637,5 +814,34 @@ Las funciones utilizan las siguientes bibliotecas:
 
 ---
 
-**Última actualización:** 2025-10-28
-**Versión:** 1.0
+## Bugs Conocidos
+
+### `escribir_bloque_fisico`
+
+**Ubicación:** [io_ext.h:353](../utils/src/exts/io_ext.h#L353)
+
+**Descripción del bug:**
+```c
+if( f = NULL )  // ❌ INCORRECTO - asignación en lugar de comparación
+```
+
+**Solución:**
+```c
+if( f == NULL )  // ✅ CORRECTO - comparación
+```
+
+Este bug causa que siempre se asigne NULL a `f` y se ejecute el bloque de error, incluso cuando el archivo se abre correctamente.
+
+---
+
+**Última actualización:** 2025-11-11
+**Versión:** 2.0
+
+**Cambios en esta versión:**
+- Agregadas funciones `create_nested_directories`, `delete_directory`, `get_files_from_dir`
+- Agregada función `control_existencia_file_old`
+- Actualizada documentación de `tag_comiteado` con implementación real
+- Actualizada documentación de `crear_archivo` con valores de retorno correctos
+- Renombrada función `crear_config_path` a `crear_config_block_hash_index` con retorno de t_config*
+- Agregada sección de Bugs Conocidos
+- Mejorados ejemplos y descripciones de comportamiento
