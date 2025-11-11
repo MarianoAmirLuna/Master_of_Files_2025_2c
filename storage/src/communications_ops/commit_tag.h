@@ -20,6 +20,7 @@ void commit_tag_ops(char* file, char* tag, worker* w){
     t_config* metadata = get_metadata_from_file_tag(cs, file, tag);
     if(get_state_metadata(metadata) == COMMITED){
         log_info(logger, "El tag %s del archivo %s ya estaba comiteado, no se hace nada (%s:%d)", tag, file, __func__, __LINE__);
+        config_destroy(metadata);
         return;
     }
     
@@ -28,42 +29,113 @@ void commit_tag_ops(char* file, char* tag, worker* w){
 
     t_config* bhi = get_block_hash_index(cs);
     char* logical_dir = get_logical_blocks_dir(cs, file, tag);
-    t_list* blocks_list = get_files_from_dir(logical_dir); 
-    
-    //Segun entendí, debe iterar todos los bloques lógico dentro del logical_blocks 
-    //y comprobar si el hash de cada bloque lógico existe algún bloque físico que tenga el mismo hash
-    //y si lo tiene debe liberar el bloque físico actual y reapuntar el bloque lógico al bloque físico pre-existente.
-    for(int i=0;i<list_size(blocks_list);i++){
-        char* block_f = (char*)list_get(blocks_list, i);
-        char* block_hash = crypto_md5(block_f, strlen(block_f));
-        if(exists_hash_in_block_hash(bhi, block_hash)){
-            //Debe hacer alguna mierda rara.
-            //liberar bloque fisico actual
+
+    // Obtener la lista de bloques físicos desde el metadata
+    t_list* bloques_fisicos = get_array_blocks_as_list_from_metadata(metadata);
+    int cantidad_bloques = list_size(bloques_fisicos);
+
+    // Iterar por cada bloque lógico del File:Tag
+    for(int i = 0; i < cantidad_bloques; i++){
+        // Obtener el número del bloque físico actual desde el metadata
+        int bloque_fisico_actual = (int)list_get(bloques_fisicos, i);
+
+        // Construir el path del bloque lógico
+        char* logical_block_path = string_from_format("%s%06d.dat", logical_dir, i);
+
+        // Leer el contenido del bloque lógico (que es un hard link al bloque físico)
+        FILE* f = fopen(logical_block_path, "rb");
+        if(f == NULL){
+            log_error(logger, "[COMMIT_TAG] No se pudo abrir el bloque lógico %s", logical_block_path);
+            free(logical_block_path);
+            continue;
         }
+
+        // Reservar buffer para leer el contenido del bloque
+        char* buffer = malloc(g_block_size);
+        if(buffer == NULL){
+            log_error(logger, "[COMMIT_TAG] No se pudo reservar memoria para el buffer");
+            fclose(f);
+            free(logical_block_path);
+            continue;
+        }
+
+        // Leer el contenido del bloque
+        size_t bytes_leidos = fread(buffer, 1, g_block_size, f);
+        fclose(f);
+
+        if(bytes_leidos != g_block_size){
+            log_warning(logger, "[COMMIT_TAG] Se leyeron %zu bytes en lugar de %d del bloque lógico %d", bytes_leidos, g_block_size, i);
+        }
+
+        // Calcular el hash MD5 del contenido del bloque
+        char* block_hash = crypto_md5(buffer, g_block_size);
+        free(buffer);
+
+        // Verificar si ya existe un bloque físico con el mismo hash
+        if(exists_hash_in_block_hash(bhi, block_hash)){
+            // Obtener el nombre del bloque físico pre-existente (ej: "block0005")
+            char* bloque_fisico_existente_str = config_get_string_value(bhi, block_hash);
+
+            // Extraer el número del bloque físico existente (ej: "block0005" -> 5)
+            int bloque_fisico_existente = atoi(bloque_fisico_existente_str + 5); // Skip "block" prefix
+
+            // Si el bloque físico actual es diferente al pre-existente, hacer la reasignación
+            if(bloque_fisico_actual != bloque_fisico_existente){
+                // Construir el path del bloque físico antiguo
+                char* physical_block_old_path = string_from_format("%s/physical_blocks/block%04d.dat", cs.punto_montaje, bloque_fisico_actual);
+
+                // Eliminar el hard link del bloque lógico actual
+                if(unlink(logical_block_path) != 0){
+                    log_error(logger, "[COMMIT_TAG] Error al hacer unlink del bloque lógico %s (errno=%d)", logical_block_path, errno);
+                    free(physical_block_old_path);
+                    free(logical_block_path);
+                    free(block_hash);
+                    continue;
+                }
+
+                log_info(logger, "##%d - %s:%s Se eliminó el hard link del bloque lógico %d al bloque físico %d", w->id_query, file, tag, i, bloque_fisico_actual);
+
+                // Crear un nuevo hard link al bloque físico pre-existente
+                char* physical_block_new_path = string_from_format("%s/physical_blocks/block%04d.dat", cs.punto_montaje, bloque_fisico_existente);
+                crear_hard_link(physical_block_new_path, logical_block_path);
+
+                log_info(logger, "##%d - %s:%s Se agregó el hard link del bloque lógico %d al bloque físico %d", w->id_query, file, tag, i, bloque_fisico_existente);
+                log_info(logger, "##%d - %s:%s Bloque Lógico %d se reasigna de %d a %d", w->id_query, file, tag, i, bloque_fisico_actual, bloque_fisico_existente);
+
+                // Verificar si el bloque físico antiguo tiene más referencias
+                struct stat st;
+                if(stat(physical_block_old_path, &st) == -1){
+                    log_error(logger, "[COMMIT_TAG] Error al hacer stat del bloque físico %s (errno=%d)", physical_block_old_path, errno);
+                } else {
+                    // Si solo queda el archivo físico sin referencias lógicas, liberarlo
+                    if(st.st_nlink == 1){
+                        liberar_bloque(g_bitmap, bloque_fisico_actual, g_bitmap_size);
+                        log_info(logger, "##%d - Bloque Físico Liberado - Número de Bloque: %d", w->id_query, bloque_fisico_actual);
+                    }
+                }
+
+                free(physical_block_old_path);
+                free(physical_block_new_path);
+            }
+        } else {
+            // Si no existe el hash, agregarlo al block_hash_index
+            char* block_name = string_from_format("block%04d", bloque_fisico_actual);
+            insert_hash_block(bhi, block_hash, block_name);
+            free(block_name);
+        }
+
+        free(block_hash);
+        free(logical_block_path);
     }
 
-    list_destroy_and_destroy_elements(blocks_list, free);
-    
+    list_destroy(bloques_fisicos);
+    free(logical_dir);
     config_destroy(metadata);
     config_destroy(bhi);
-    
-    /*
-        1. Primero verifico si el archivo ya estaba comitieado o no.
-        2. Si no esta comiteado, cambio el estado a commited, al hacer esto antes de ponerme analizar los bloques fisicos evito
-        de condicion de carrera.
-        3. Genero los hash de cada bloque logico trabajado, y busco si hay otro bloque fisico con el mismo hash.
-            a. Caso que se encuentre, directamente vinculo el bloque logico con el fisico correspondiente.
-            b. En el caso de que no encuentre ninguno, busco un bloque fisico libre y copio la data, para luego linkquear el bloque logico con el bloque fisico.
-        4. Avisar al worker que se comiteo correctamente el archivo.
-     ---------------------------------------------------------------------------------------------------
-     Detalles:
-     1. Segun la documetacion, la funcion no debe hacer nada cuando un worker le envia el commit y el archivo esta comiteado.
-     Debo avisar al worker que el archivo ya estaba comiteado? O directamente hago como si se completara el commit normalmente?
-     2. Como impacta el commit de un archivo cuando se solicita una copia nueva del mismo? - Resolucion temporal:
-      Se copian los datos los bloques logicos
-     y luego cuando se cierre la copia ahi se calculan los bloques fisicos.
-    */
-    log_error(logger, "%s NOT IMPLEMENTED (%s:%d)",__func__, __func__,__LINE__);
+
+    // Log de commit exitoso
+    log_info(logger, "##%d - Commit de File:Tag %s:%s", w->id_query, file, tag);
+
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
 }
