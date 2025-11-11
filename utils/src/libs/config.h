@@ -407,14 +407,34 @@ t_config* get_block_hash_index(config_storage cs){
     return res;
 }
 
+/// @brief Obtiene el cs.montaje/files/$file$/$tag$/logical_blocks
+/// @param cs 
+/// @param file 
+/// @param tag 
+/// @return 
 char* get_logical_blocks_dir(config_storage cs, char* file, char* tag){
-    return string_from_format("%s/files/%s/%s/logical_blocks/", cs.punto_montaje, file, tag);
+    return string_from_format("%s/files/%s/%s/logical_blocks", cs.punto_montaje, file, tag);
 }
 
+/// @brief Obtiene el cs.montaje/physical_blocks
+/// @param cs 
+/// @return 
+char* get_physical_blocks_dir(config_storage cs){
+    return string_from_format("%s/physical_blocks", cs.punto_montaje);
+}
+/// @brief 
+/// @brief Obtiene el cs.montaje/files
+/// @param cs 
+/// @return 
 char* get_files_from_punto_montaje(config_storage cs){
     return string_from_format("%s/files", cs.punto_montaje);
 }
 
+/// @brief  Obtiene el cs.montaje/files/$file$/$tag$
+/// @param cs 
+/// @param file 
+/// @param tag 
+/// @return 
 char* get_filetag_path(config_storage cs, char* file, char* tag){
     return string_from_format("%s/files/%s/%s", cs.punto_montaje, file, tag);
 }

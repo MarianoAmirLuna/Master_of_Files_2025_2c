@@ -25,7 +25,8 @@ void delete_tag_ops(char* file, char* tag, worker* w){
     }
 
     // Aplicar retardo de operación
-    usleep(cs.retardo_operacion * 1000);
+    //Esto no es necesario porque ya se aplica en la función tratar_mensaje en comunicacion_worker.h
+    //usleep(cs.retardo_operacion * 1000);
 
     // Verificar que File:Tag existe
     if(!file_tag_exist_or_not(file, tag, w)){
@@ -45,7 +46,8 @@ void delete_tag_ops(char* file, char* tag, worker* w){
 
     // Construir el path del directorio del File:Tag
     char* fullpath = get_filetag_path(cs, file, tag);
-
+    char* physical_blocks_dir= get_physical_blocks_dir(cs);
+    char* logical_blocks_dir = get_logical_blocks_dir(cs, file, tag);
     // Iterar por cada bloque lógico del File:Tag
     for(int i = 0; i < cantidad_bloques; i++){
         // Aplicar retardo de acceso a bloque
@@ -55,11 +57,11 @@ void delete_tag_ops(char* file, char* tag, worker* w){
         int bloque_fisico = (int)list_get(bloques_fisicos, i);
 
         // Construir el path del bloque lógico
-        char* logical_block_path = string_from_format("%s/logical_blocks/%06d.dat", fullpath, i);
+        char* logical_block_path = string_from_format("%s/%06d.dat", logical_blocks_dir, i);
 
         // Construir el path del bloque físico
-        char* physical_block_path = string_from_format("%s/physical_blocks/block%04d.dat",
-                                                         cs.punto_montaje, bloque_fisico);
+        char* physical_block_path = string_from_format("%s/block%04d.dat",
+                                                         physical_blocks_dir, bloque_fisico);
 
         // Eliminar el hard link del bloque lógico
         if(unlink(logical_block_path) == 0){
@@ -100,7 +102,8 @@ void delete_tag_ops(char* file, char* tag, worker* w){
     log_info(logger, "##%d - Tag Eliminado %s:%s", w->id_query, file, tag);
 
     free(fullpath);
-
+    free(physical_blocks_dir);
+    free(logical_blocks_dir);
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
 }
