@@ -393,13 +393,29 @@ state_metadata get_state_metadata(t_config* metadata){
     return cast_state_metadata(estado_str);
 }
 
+
+/// @brief  Obtiene el cs.montaje/files/$file$/$tag$
+/// @param cs 
+/// @param file 
+/// @param tag 
+/// @return 
+char* get_filetag_path(config_storage cs, char* file, char* tag){
+    return string_from_format("%s/files/%s/%s", cs.punto_montaje, file, tag);
+}
+
+char* get_metadata_fullpath(config_storage cs, char* file, char* tag){
+    char* filetag =get_filetag_path(cs, file, tag);
+    char* fullpath = string_from_format("%s/metadata.config", filetag);
+    free(filetag);
+    return fullpath;
+}
 t_config* get_metadata_from_file_tag(config_storage cs, char* file, char* tag){
-    char* fullpath = string_from_format("%s/files/%s/%s/metadata.config", cs.punto_montaje, file, tag);
+    
+    char* fullpath = get_metadata_fullpath(cs,file,tag);
     t_config* res= load_config(fullpath);
     free(fullpath);
     return res;
 }
-
 t_config* get_block_hash_index(config_storage cs){
     char* fullpath = string_from_format("%s/block_hash_index.config", cs.punto_montaje);
     t_config* res= load_config(fullpath);
@@ -430,12 +446,4 @@ char* get_files_from_punto_montaje(config_storage cs){
     return string_from_format("%s/files", cs.punto_montaje);
 }
 
-/// @brief  Obtiene el cs.montaje/files/$file$/$tag$
-/// @param cs 
-/// @param file 
-/// @param tag 
-/// @return 
-char* get_filetag_path(config_storage cs, char* file, char* tag){
-    return string_from_format("%s/files/%s/%s", cs.punto_montaje, file, tag);
-}
 #endif

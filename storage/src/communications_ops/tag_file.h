@@ -22,8 +22,9 @@ void tag_file_ops(char* file, char* tag_origen, char* tag_destino, worker* w){
     }
     log_orange(logger, "[TAG_FILE] Iniciando operacion TAG para %s:%s -> %s:%s", file, tag_origen, file, tag_destino);
     
-    char* path_tag_destino = string_from_format("%s/files/%s/%s", cs.punto_montaje, file, tag_destino);
-    char* path_tag_origen = string_from_format("%s/files/%s/%s", cs.punto_montaje, file, tag_origen);
+    char* path_tag_destino =get_filetag_path(cs, file, tag_destino);
+    char* path_tag_origen = get_filetag_path(cs, file, tag_origen);
+
     if (control_existencia(path_tag_destino)){
         log_error(logger, "[TAG_FILE] El tag destino %s ya existe", tag_destino);
         free(path_tag_destino);
@@ -31,7 +32,7 @@ void tag_file_ops(char* file, char* tag_origen, char* tag_destino, worker* w){
     }
 
     //Leer metadata del tag de origen
-    char* path_metadata_origen = string_from_format("%s/metadata.config", path_tag_origen);
+    char* path_metadata_origen =get_metadata_fullpath(cs, file, tag_origen);
     t_config* metadata_origen = get_metadata_from_file_tag(cs, file, tag_origen);
     if (metadata_origen == NULL){
         log_error(logger, "[TAG_FILE] No se pudo abrir metadata del tag origen: %s", path_metadata_origen);
@@ -46,9 +47,10 @@ void tag_file_ops(char* file, char* tag_origen, char* tag_destino, worker* w){
 
     int cantidad_bloques = list_size(bloques_origen);
     log_orange(logger, "[TAG_FILE] Tag origen tiene %d bloques", cantidad_bloques);
-
-    char* fullpathnested = string_from_format("%s/logical_blocks", path_tag_destino);
-    create_nested_directories(fullpathnested);
+    char* logical_blocks_dir = get_logical_blocks_dir(cs, file,tag_destino);
+    //char* logical_blocks_dir = string_from_format("%s/logical_blocks", path_tag_destino);
+    create_nested_directories(logical_blocks_dir);
+    
     
     t_list* bloques_destino = list_create();
     for (int i = 0; i < cantidad_bloques; i++){
@@ -88,7 +90,7 @@ void tag_file_ops(char* file, char* tag_origen, char* tag_destino, worker* w){
             list_destroy(bloques_origen);
             list_destroy(bloques_destino);
             config_destroy(metadata_origen);
-            free(fullpathnested);
+            free(logical_blocks_dir);
             free(path_tag_origen);
             free(path_tag_destino);
             free(path_metadata_origen);
@@ -104,13 +106,23 @@ void tag_file_ops(char* file, char* tag_origen, char* tag_destino, worker* w){
         list_add(bloques_destino, bloque_fisico_origen);
 
         // Crear hard link del bloque lógico al bloque físico clonado
-        char* path_bloque_fisico = string_from_format("%s/physical_blocks/block%04d.dat", cs.punto_montaje, bloque_fisico_destino);
-        char* path_bloque_logico = string_from_format("%s/%06d.dat",fullpathnested, i);
-
+        char* block_physical_dir = get_physical_blocks_dir(cs);
+        char* block_physical_name = get_block_name_physical(bloque_fisico_destino);
+        char* path_bloque_fisico = string_from_format("%s/%s", block_physical_dir, block_physical_name);
+        
+        //char* block_logical_dir = get_logical_blocks_dir(cs, file,tag_destino);
+        char* block_logical_name = get_block_name_logical(i);
+        char* path_bloque_logico = string_from_format("%s/%s",logical_blocks_dir, block_logical_name);
+       
+        
         crear_hard_link(path_bloque_fisico, path_bloque_logico);
 
         log_info(logger, "## %d - %s:%s Se agregó el hard link del bloque lógico %d al bloque físico %d", w->id_query, file, tag_destino, i, bloque_fisico_destino);
-
+         
+        free(block_physical_dir);
+        free(block_physical_name);
+        //free(block_logical_dir);
+        free(block_logical_name);
         free(path_bloque_fisico);
         free(path_bloque_logico);
     }
@@ -142,8 +154,7 @@ void tag_file_ops(char* file, char* tag_origen, char* tag_destino, worker* w){
     free(path_tag_destino);
     free(path_metadata_origen);
     free(path_metadata_destino);
-    free(fullpathnested);
-    
+    free(logical_blocks_dir);
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
 }

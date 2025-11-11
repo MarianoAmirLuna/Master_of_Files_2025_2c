@@ -15,18 +15,15 @@ void create_file_ops(char* file, char* tag, worker* w){
     if(!file_tag_exist_or_not(file, tag, w)){
         return;
     }
-
-    char* fullpath = string_from_format("%s/files/%s/%s/logical_blocks", cs.punto_montaje, file, tag);    
-    //Crea todos los directorios, significa que crea el files, el files/variable file, el files/variable file/variable tag y el files/variable file/variable tag/ con logical_blocks
-    char* fulllogical = string_from_format("%s/logical_blocks", fullpath);
-    create_nested_directories(fulllogical);
     
-    char* metadata = string_from_format("%s/metadata.config", fullpath);
+    char* logical_blocks_dir = get_logical_blocks_dir(cs, file, tag);
+    //Crea todos los directorios, significa que crea el files, el files/variable file, el files/variable file/variable tag y el files/variable file/variable tag/ con logical_blocks
+    create_nested_directories(logical_blocks_dir);
+    char* metadata = get_metadata_fullpath(cs, file,tag);
     t_config* conf = crear_metadata_config(metadata, g_block_size, NULL, WORK_IN_PROGRESS);
     
     free(metadata);
-    free(fullpath);
-    free(fulllogical);
+    free(logical_blocks_dir);
     config_destroy(conf);
 
     log_orange(logger, "FILE: %s, TAG: %s", file, tag);

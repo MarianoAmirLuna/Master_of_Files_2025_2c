@@ -22,17 +22,20 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
         return; //Ya se envió el error al worker
     }
     
-    char* block_name = get_block_name_by_n(numero_bloque, NUMBER_OF_DIGITS_BLOCK);
-    char* block_path = string_from_format("%s/%s/%s/%s.dat",cs.punto_montaje, file, tag, block_name);
+    char* block_name = get_block_name_logical(numero_bloque);
+    char* logical_blocks_dir = get_logical_blocks_dir(cs, file, tag);
+    char* block_path = string_from_format("%s/%s",logical_blocks_dir, block_name);
+    free(logical_blocks_dir);
     free(block_name);
+    
     if(!control_existencia_file(block_path)){
-        log_error(logger, "El bloque lógico %d del File:Tag %s:%s no existe (%s:%d)", numero_bloque, file, tag, __func__, __LINE__);
+        log_error(logger, "El bloque lógico %d del File:Tag %s:%s no existe (%s:%d) BLOCKPATH=%s", numero_bloque, file, tag, __func__, __LINE__, block_path);
         free(block_path);
         return;
     }
     FILE* f =fopen(block_path, "r");
     if(f == NULL){
-        log_error(logger, "No se pudo abrir el bloque lógico %d del File:Tag %s:%s (%s:%d)", numero_bloque, file, tag, __func__, __LINE__);
+        log_error(logger, "No se pudo abrir el bloque lógico %d del File:Tag %s:%s (%s:%d) BLOCKPATH=%s", numero_bloque, file, tag, __func__, __LINE__, block_path);
         free(block_path);
         return;
     }
@@ -45,7 +48,6 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     send_and_free_packet(p, w->fd);
     free(block_path);
     free(buffer);
-    //log_error(logger, "%s NOT IMPLEMENTED (%s:%d)",__func__, __func__,__LINE__);
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
 }

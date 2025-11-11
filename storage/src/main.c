@@ -188,7 +188,9 @@ void disconnect_callback(void* params){
 /// @param w 
 /// @return Verdadero si existe, falso caso contrario.
 int file_tag_exist_or_not(char* file, char* tag, worker* w){
-    char* fullpath = string_from_format("%s/files/%s", cs.punto_montaje, file);
+    char* filespath =get_files_from_punto_montaje(cs);
+    char* fullpath = string_from_format("%s/%s", filespath, file);
+    free(filespath);
     if(!directory_exists(fullpath)){
         send_basic_packet(w->fd, FILE_NOT_FOUND); //File inexistente
         log_error(logger, "No se encontro el file deseado");
