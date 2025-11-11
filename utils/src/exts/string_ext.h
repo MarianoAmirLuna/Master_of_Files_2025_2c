@@ -38,6 +38,22 @@ char* get_block_name(int nblock){
     sprintf(block_name, "block%0*d", NUMBER_OF_DIGITS_BLOCK, nblock);
     return block_name;
 }
+/// @brief Se tiene  XXXXXX.dat con 6 números.
+/// @param n 
+/// @return 
+char* get_block_name_logical(int n){
+    char* block_name = string_new();
+    sprintf(block_name, "%0*d.dat", 6, n);
+    return block_name;
+}
+/// @brief Se tiene el blockXXXX.dat con 4 números.
+/// @param n 
+/// @return 
+char* get_block_name_physical(int n){
+    char* block_name = string_new();
+    sprintf(block_name, "block%0*d.dat", 4, n);
+    return block_name;
+}
 /// @brief Cuando ya no se usa liberar con free()
 /// `get_block_name_by_n(5, 6);` -> `block000005`
 /// @param nblock El número de bloque

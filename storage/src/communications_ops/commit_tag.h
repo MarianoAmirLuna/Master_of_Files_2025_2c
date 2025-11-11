@@ -33,15 +33,15 @@ void commit_tag_ops(char* file, char* tag, worker* w){
     // Obtener la lista de bloques físicos desde el metadata
     t_list* bloques_fisicos = get_array_blocks_as_list_from_metadata(metadata);
     int cantidad_bloques = list_size(bloques_fisicos);
-
     // Iterar por cada bloque lógico del File:Tag
     for(int i = 0; i < cantidad_bloques; i++){
         // Obtener el número del bloque físico actual desde el metadata
         int bloque_fisico_actual = (int)list_get(bloques_fisicos, i);
 
         // Construir el path del bloque lógico
-        char* logical_block_path = string_from_format("%s%06d.dat", logical_dir, i);
-
+        char* block_logical_name = get_block_name_logical(i);
+        char* logical_block_path = string_from_format("%s/%s", logical_dir, block_logical_name);
+        free(block_logical_name);
         // Leer el contenido del bloque lógico (que es un hard link al bloque físico)
         FILE* f = fopen(logical_block_path, "rb");
         if(f == NULL){
@@ -82,13 +82,17 @@ void commit_tag_ops(char* file, char* tag, worker* w){
             // Si el bloque físico actual es diferente al pre-existente, hacer la reasignación
             if(bloque_fisico_actual != bloque_fisico_existente){
                 // Construir el path del bloque físico antiguo
-                char* physical_block_old_path = string_from_format("%s/physical_blocks/block%04d.dat", cs.punto_montaje, bloque_fisico_actual);
-
+                char* block_physical_name = get_block_name_physical(bloque_fisico_actual);
+                char* physical_block_dir = get_physical_blocks_dir(cs);
+                char* physical_block_old_path = string_from_format("%s/%s", physical_block_dir, block_physical_name);
+                free(block_physical_name);
+                
                 // Eliminar el hard link del bloque lógico actual
                 if(unlink(logical_block_path) != 0){
                     log_error(logger, "[COMMIT_TAG] Error al hacer unlink del bloque lógico %s (errno=%d)", logical_block_path, errno);
                     free(physical_block_old_path);
                     free(logical_block_path);
+                    free(physical_block_dir);
                     free(block_hash);
                     continue;
                 }
@@ -96,7 +100,10 @@ void commit_tag_ops(char* file, char* tag, worker* w){
                 log_info(logger, "##%d - %s:%s Se eliminó el hard link del bloque lógico %d al bloque físico %d", w->id_query, file, tag, i, bloque_fisico_actual);
 
                 // Crear un nuevo hard link al bloque físico pre-existente
-                char* physical_block_new_path = string_from_format("%s/physical_blocks/block%04d.dat", cs.punto_montaje, bloque_fisico_existente);
+                char* new_block_physical_name = get_block_name_physical(bloque_fisico_existente);
+                char* physical_block_new_path = string_from_format("%s/%s", physical_block_dir, new_block_physical_name);
+                free(new_block_physical_name);
+
                 crear_hard_link(physical_block_new_path, logical_block_path);
 
                 log_info(logger, "##%d - %s:%s Se agregó el hard link del bloque lógico %d al bloque físico %d", w->id_query, file, tag, i, bloque_fisico_existente);
@@ -119,7 +126,8 @@ void commit_tag_ops(char* file, char* tag, worker* w){
             }
         } else {
             // Si no existe el hash, agregarlo al block_hash_index
-            char* block_name = string_from_format("block%04d", bloque_fisico_actual);
+            char* block_name = get_block_name_by_n(bloque_fisico_actual, NUMBER_OF_DIGITS_BLOCK);
+            //char* block_name = string_from_format("block%04d", bloque_fisico_actual);
             insert_hash_block(bhi, block_hash, block_name);
             free(block_name);
         }

@@ -51,17 +51,20 @@ void delete_tag_ops(char* file, char* tag, worker* w){
     // Iterar por cada bloque lógico del File:Tag
     for(int i = 0; i < cantidad_bloques; i++){
         // Aplicar retardo de acceso a bloque
-        usleep(cs.retardo_acceso_bloque * 1000);
+        msleep(cs.retardo_acceso_bloque);
 
         // Obtener el número del bloque físico desde el metadata
         int bloque_fisico = (int)list_get(bloques_fisicos, i);
 
         // Construir el path del bloque lógico
-        char* logical_block_path = string_from_format("%s/%06d.dat", logical_blocks_dir, i);
+        char* logical_name_block = get_block_name_logical(i);
+        char* logical_block_path = string_from_format("%s/%s", logical_blocks_dir, logical_name_block);
+        free(logical_name_block);
 
         // Construir el path del bloque físico
-        char* physical_block_path = string_from_format("%s/block%04d.dat",
-                                                         physical_blocks_dir, bloque_fisico);
+        char* physical_name_block = get_block_name_physical(bloque_fisico);
+        char* physical_block_path = string_from_format("%s/%s", physical_blocks_dir, physical_name_block);
+        free(physical_name_block);
 
         // Eliminar el hard link del bloque lógico
         if(unlink(logical_block_path) == 0){
