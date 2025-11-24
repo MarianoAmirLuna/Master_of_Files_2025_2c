@@ -97,7 +97,7 @@ void commit_tag_ops(char* file, char* tag, worker* w){
                     continue;
                 }
 
-                log_info(logger, "##%d - %s:%s Se eliminó el hard link del bloque lógico %d al bloque físico %d", w->id_query, file, tag, i, bloque_fisico_actual);
+                log_info(logger, "## %d - %s:%s Se eliminó el hard link del bloque lógico %d al bloque físico %d", w->id_query, file, tag, i, bloque_fisico_actual);
 
                 // Crear un nuevo hard link al bloque físico pre-existente
                 char* new_block_physical_name = get_block_name_physical(bloque_fisico_existente);
@@ -106,8 +106,8 @@ void commit_tag_ops(char* file, char* tag, worker* w){
 
                 crear_hard_link(physical_block_new_path, logical_block_path);
 
-                log_info(logger, "##%d - %s:%s Se agregó el hard link del bloque lógico %d al bloque físico %d", w->id_query, file, tag, i, bloque_fisico_existente);
-                log_info(logger, "##%d - %s:%s Bloque Lógico %d se reasigna de %d a %d", w->id_query, file, tag, i, bloque_fisico_actual, bloque_fisico_existente);
+                log_info(logger, "## %d - %s:%s Se agregó el hard link del bloque lógico %d al bloque físico %d", w->id_query, file, tag, i, bloque_fisico_existente);
+                log_info(logger, "## %d - %s:%s Bloque Lógico %d se reasigna de %d a %d", w->id_query, file, tag, i, bloque_fisico_actual, bloque_fisico_existente);
 
                 // Verificar si el bloque físico antiguo tiene más referencias
                 struct stat st;
@@ -117,7 +117,7 @@ void commit_tag_ops(char* file, char* tag, worker* w){
                     // Si solo queda el archivo físico sin referencias lógicas, liberarlo
                     if(st.st_nlink == 1){
                         liberar_bloque(g_bitmap, bloque_fisico_actual, g_bitmap_size);
-                        log_info(logger, "##%d - Bloque Físico Liberado - Número de Bloque: %d", w->id_query, bloque_fisico_actual);
+                        log_info(logger, "## %d - Bloque Físico Liberado - Número de Bloque: %d", w->id_query, bloque_fisico_actual);
                     }
                 }
 
@@ -142,7 +142,7 @@ void commit_tag_ops(char* file, char* tag, worker* w){
     config_destroy(bhi);
 
     // Log de commit exitoso
-    log_info(logger, "##%d - Commit de File:Tag %s:%s", w->id_query, file, tag);
+    log_info(logger, "## %d - Commit de File:Tag %s:%s", w->id_query, file, tag);
 
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);

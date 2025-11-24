@@ -42,12 +42,20 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     int sz = get_size_file(f);
     char* buffer = malloc(sz+1);
     fgets(buffer, sz, f);
+    // Aplicar retardo de acceso a bloque
+    msleep(cs.retardo_acceso_bloque);
+
     t_packet* p = create_packet();
     add_int_to_packet(p, READ_BLOCK);
     add_string_to_packet(p, buffer);
     send_and_free_packet(p, w->fd);
+
+    fclose(f);
     free(block_path);
     free(buffer);
+
+    // Log obligatorio de bloque lógico leído
+    log_info(logger, "## %d - Bloque Lógico Leído %s:%s - Número de Bloque: %d", w->id_query, file, tag, numero_bloque);
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
 }

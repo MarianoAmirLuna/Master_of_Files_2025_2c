@@ -68,7 +68,7 @@ void delete_tag_ops(char* file, char* tag, worker* w){
 
         // Eliminar el hard link del bloque lógico
         if(unlink(logical_block_path) == 0){
-            log_info(logger, "##%d - %s:%s Se eliminó el hard link del bloque lógico %d al bloque físico %d",
+            log_info(logger, "## %d - %s:%s Se eliminó el hard link del bloque lógico %d al bloque físico %d",
                      w->id_query, file, tag, i, bloque_fisico);
         } else {
             log_warning(logger, "[DELETE_TAG] No se pudo eliminar el hard link %s (errno=%d)",
@@ -82,7 +82,7 @@ void delete_tag_ops(char* file, char* tag, worker* w){
             // (nadie más lo está usando) -> LIBERAR del bitmap
             if(st.st_nlink == 1){
                 liberar_bloque(g_bitmap, bloque_fisico, g_bitmap_size);
-                log_info(logger, "##%d - Bloque Físico Liberado - Número de Bloque: %d",
+                log_info(logger, "## %d - Bloque Físico Liberado - Número de Bloque: %d",
                          w->id_query, bloque_fisico);
             }
         } else {
@@ -102,7 +102,7 @@ void delete_tag_ops(char* file, char* tag, worker* w){
     delete_directory(fullpath);
 
     // Log final de eliminación exitosa
-    log_info(logger, "##%d - Tag Eliminado %s:%s", w->id_query, file, tag);
+    log_info(logger, "## %d - Tag Eliminado %s:%s", w->id_query, file, tag);
 
     free(fullpath);
     free(physical_blocks_dir);
