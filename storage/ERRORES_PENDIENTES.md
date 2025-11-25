@@ -25,8 +25,6 @@ l
 4. Otros errores y faltantes en el codigo (Paja de escribirlos todos)
 
 
-
-
 5. Que pasa cuando se realiza un flush desde worker y uno de los archivos que se intenta modificar esta ya comiteado? Puede derivar en un bucle aparentemente, porque Master indica desalojar y en dicho caso Worker genera un flush, lo cual deriva en un error de permisos, y por lo tanto el mismo error.
 -- no hago nada
 
