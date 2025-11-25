@@ -346,6 +346,52 @@ void crear_bloques_fisicos (int cantidad_bloques_faltantes, char* path, int bloq
 
 void escribir_bloque_fisico(int bloque_fisico, char* contenido)
 {
+    // 1) Retardo de acceso al bloque
+    msleep(cs.retardo_acceso_bloque);
+
+    // 2) Armamos path
+    char* path = string_from_format("%s/physical_blocks/block%04d.dat", cs.punto_montaje, bloque_fisico);
+
+    // 3) Abrimos el archivo físico
+    FILE* f = fopen(path, "r+");
+    if (f == NULL) {
+        // Si no existe, creamos el archivo desde cero
+        f = fopen(path, "w+");
+        if (f == NULL) {
+            log_error(logger, "[WRITE_BLOCK] No se pudo abrir o crear bloque físico %d (%s)",
+                      bloque_fisico, path);
+            free(path);
+            return;
+        }
+    }
+
+    // 4) Nos aseguramos de escribir EXACTAMENTE g_block_size bytes
+    //    Si el contenido mide menos, se completa con '\0'
+
+    // Limpiamos el archivo (por si hay datos viejos)
+    fseek(f, 0, SEEK_SET);
+
+    int len = strlen(contenido);
+
+    // Escribimos el contenido primero
+    fwrite(contenido, 1, len, f);
+
+    // Si falta completar hasta g_block_size:
+    if (len < g_block_size) {
+        int padding = g_block_size - len;
+        char* zeros = calloc(1, padding);
+        fwrite(zeros, 1, padding, f);
+        free(zeros);
+    }
+
+    fflush(f);
+    fclose(f);
+    free(path);
+}
+
+/*
+void escribir_bloque_fisico(int bloque_fisico, char* contenido)
+{
     char* path = string_from_format("%s/physical_blocks/block%04d.dat",cs.punto_montaje, bloque_fisico);
 
     FILE* f = fopen(path, "r+");
@@ -357,7 +403,7 @@ void escribir_bloque_fisico(int bloque_fisico, char* contenido)
         return;
     }
 }
-
+*/
 /**
  * Busca el primer bloque físico libre en el bitmap y clona el contenido del bloque físico origen.
  * Verifica la integridad del bloque clonado usando hash MD5 y reintenta hasta 3 veces en caso de error.
