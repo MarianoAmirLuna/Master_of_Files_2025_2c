@@ -24,12 +24,14 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     if(numero_bloque < 0 || numero_bloque >= cant_bloques){
         log_pink(logger, "[READ_BLOCK] Bloque lógico fuera de límite");
         send_basic_packet(w->fd, READ_WRITE_OVERFLOW); // lectura fuera de limites
-        free(t_list);
-        free(t_config);
+        config_destroy(metadata);
+        list_destroy(bloques);
         return;
     } // si no falla los libero igual
-    free(t_list);
-    free(t_config);
+    config_destroy(metadata);
+    list_destroy(bloques);
+    /*free(t_list);
+    free(t_config);*/
 
 
     char* block_name = get_block_name_logical(numero_bloque);
