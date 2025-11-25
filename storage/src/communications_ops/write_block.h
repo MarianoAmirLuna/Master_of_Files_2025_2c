@@ -56,12 +56,13 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
     t_list* bloques_fisicos = get_array_blocks_as_list_from_metadata(metadata);
     int cantidad_bloques = list_size(bloques_fisicos);
 
-    // 5) Validar que el bloque lógico exista
+    // 5) Validar que el bloque lógico exista -- Escritura fuera de limite
     if(bloque_logico < 0 || bloque_logico >= cantidad_bloques){
         // Acá deberías mandar el error de "Lectura_o_escritura_fuera_de_limite"
         // send_basic_packet(w->fd, READ_WRITE_OUT_OF_LIMIT);
         log_error(logger, "[WRITE_BLOCK] Bloque lógico fuera de límite: %d (máximo %d) para %s:%s",
                   bloque_logico, cantidad_bloques - 1, file, tag);
+        send_basic_packet(w->fd, READ_WRITE_OVERFLOW); // lectura fuera de limites
 
         list_destroy(bloques_fisicos);
         config_destroy(metadata);
@@ -189,8 +190,7 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
     }
 
     else {
-        log_error(logger, "[WRITE_BLOCK] ERROR: bloque físico %d tiene links inesperados (%d)",
-                  bloque_fisico_actual, cantidad_links);
+        log_error(logger, "[WRITE_BLOCK] ERROR: bloque físico %d tiene links inesperados (%d)", bloque_fisico_actual, cantidad_links);
         free(physical_dir);
         free(physical_name);
         free(physical_path);
@@ -223,8 +223,7 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
     config_destroy(metadata);
 
     log_info(logger, "Ejecutando la operacion WRITE_BLOCK");
-    log_info(logger, "## %d - Bloque Lógico Escrito %s:%s Número de Bloque %d",
-             w->id_query, file, tag, bloque_logico);
+    log_info(logger, "## %d - Bloque Lógico Escrito %s:%s Número de Bloque %d", w->id_query, file, tag, bloque_logico);
 }
 
 #endif

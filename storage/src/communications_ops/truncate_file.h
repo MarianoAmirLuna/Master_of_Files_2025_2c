@@ -65,6 +65,34 @@ void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
 
     // CASO 1: Incrementar tamaño - agregar bloques lógicos apuntando al bloque físico 0
     if(bloques_necesarios > bloques_actuales){
+        // Calcular cuántos bloques nuevos se necesitan agregar
+        int bloques_a_agregar = bloques_necesarios - bloques_actuales;
+
+        // Contar bloques físicos libres disponibles en el bitmap
+        int total_bloques = g_fs_size / g_block_size;
+        int bloques_libres = 0;
+        for(int i = 0; i < total_bloques; i++){
+            if(!bloque_ocupado(g_bitmap, i)){
+                bloques_libres++;
+            }
+        }
+
+        log_debug(logger, "[TRUNCATE] Bloques a agregar: %d, Bloques libres disponibles: %d",
+                  bloques_a_agregar, bloques_libres);
+
+        // Verificar que hay suficientes bloques libres
+        // Nota: Aunque inicialmente apuntan al bloque 0, cuando se escriban necesitarán bloques físicos propios
+        if(bloques_libres < bloques_a_agregar){
+            send_basic_packet(w->fd, INSUFFICIENT_SPACE);
+            log_error(logger, "[TRUNCATE] Espacio insuficiente para %s:%s - Se necesitan %d bloques pero solo hay %d disponibles",
+                      file, tag, bloques_a_agregar, bloques_libres);
+            list_destroy(bloques_fisicos);
+            config_destroy(metadata);
+            free(logical_blocks_dir);
+            free(physical_blocks_dir);
+            return;
+        }
+
         // Construir path del bloque físico 0
         char* physical_block_0_name = get_block_name_physical(0);
         char* physical_block_0_path = string_from_format("%s/%s", physical_blocks_dir, physical_block_0_name);

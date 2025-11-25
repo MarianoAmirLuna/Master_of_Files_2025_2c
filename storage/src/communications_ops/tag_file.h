@@ -47,11 +47,37 @@ void tag_file_ops(char* file, char* tag_origen, char* tag_destino, worker* w){
 
     int cantidad_bloques = list_size(bloques_origen);
     log_orange(logger, "[TAG_FILE] Tag origen tiene %d bloques", cantidad_bloques);
+
+    // Validar que hay suficientes bloques físicos libres antes de empezar a clonar
+    int total_bloques = g_fs_size / g_block_size;
+    int bloques_libres = 0;
+    for(int i = 0; i < total_bloques; i++){
+        if(!bloque_ocupado(g_bitmap, i)){
+            bloques_libres++;
+        }
+    }
+
+    log_orange(logger, "[TAG_FILE] Bloques necesarios: %d, Bloques libres disponibles: %d",
+               cantidad_bloques, bloques_libres);
+
+    // Verificar que hay suficientes bloques libres
+    if(bloques_libres < cantidad_bloques){
+        send_basic_packet(w->fd, INSUFFICIENT_SPACE);
+        log_error(logger, "[TAG_FILE] Espacio insuficiente para clonar %s:%s -> %s:%s - Se necesitan %d bloques pero solo hay %d disponibles",
+                  file, tag_origen, file, tag_destino, cantidad_bloques, bloques_libres);
+        list_destroy(bloques_origen);
+        config_destroy(metadata_origen);
+        free(path_tag_origen);
+        free(path_tag_destino);
+        free(path_metadata_origen);
+        return;
+    }
+
     char* logical_blocks_dir = get_logical_blocks_dir(cs, file,tag_destino);
     //char* logical_blocks_dir = string_from_format("%s/logical_blocks", path_tag_destino);
     create_nested_directories(logical_blocks_dir);
-    
-    
+
+
     t_list* bloques_destino = list_create();
     for (int i = 0; i < cantidad_bloques; i++){
         int bloque_fisico_origen = (int)list_get(bloques_origen, i);
@@ -98,12 +124,12 @@ void tag_file_ops(char* file, char* tag_origen, char* tag_destino, worker* w){
         }
 
         log_orange(logger, "[TAG_FILE] Bloque físico %d clonado a bloque %d", bloque_fisico_origen, bloque_fisico_destino);
-        
+
         //Debe eliminar el origen??????
         //delete_directory(path_tag_origen);
-                
+
         // Agregar el nuevo bloque a la lista de bloques destino
-        list_add(bloques_destino, bloque_fisico_origen);
+        list_add(bloques_destino, bloque_fisico_destino);
 
         // Crear hard link del bloque lógico al bloque físico clonado
         char* block_physical_dir = get_physical_blocks_dir(cs);

@@ -8,20 +8,22 @@
 void create_file_ops(char* file, char* tag, worker* w){
     if(file == NULL || tag == NULL){
         log_error(logger, "Hubo un problema file o tag son nulos en (%s:%d)", __func__,__LINE__);
-        log_error(logger, "FILE es NULL? %d TAG IS NULL? %d", file == NULL, tag == NULL );
+//        log_error(logger, "FILE es NULL? %d TAG IS NULL? %d", file, tag);
         return;
     }
     //La única comprobación que importa en CREATE es la de si el TAG existe, no el FILE.
     if(!file_tag_exist_or_not(file, tag, w)){
+        log_error(logger, "Existe el FILE con el TAG indicado");
+    // send_basic_packet(w->fd, READ_WRITE_OVERFLOW); //  agregar si decidimos mandar error
         return;
     }
-    
+
     char* logical_blocks_dir = get_logical_blocks_dir(cs, file, tag);
     //Crea todos los directorios, significa que crea el files, el files/variable file, el files/variable file/variable tag y el files/variable file/variable tag/ con logical_blocks
     create_nested_directories(logical_blocks_dir);
     char* metadata = get_metadata_fullpath(cs, file,tag);
     t_config* conf = crear_metadata_config(metadata, g_block_size, NULL, WORK_IN_PROGRESS);
-    
+
     free(metadata);
     free(logical_blocks_dir);
     config_destroy(conf);
@@ -39,3 +41,4 @@ void create_file_ops(char* file, char* tag, worker* w){
 }
 
 #endif
+

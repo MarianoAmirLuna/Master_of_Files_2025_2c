@@ -15,7 +15,23 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     /* EXCEPCIONES A TENER EN CUENTA EN ESTE PROCEDIMIENTO
         Lectura fuera de limite faltaria
     */
-    
+
+
+    t_config* metadata = get_metadata_from_file_tag(cs, file, tag);
+    t_list* bloques = get_array_blocks_as_list_from_metadata(metadata);
+    int cant_bloques = list_size(bloques);
+
+    if(numero_bloque < 0 || numero_bloque >= cant_bloques){
+        log_pink(logger, "[READ_BLOCK] Bloque lógico fuera de límite");
+        send_basic_packet(w->fd, READ_WRITE_OVERFLOW); // lectura fuera de limites
+        free(t_list);
+        free(t_config);
+        return;
+    } // si no falla los libero igual
+    free(t_list);
+    free(t_config);
+
+
     char* block_name = get_block_name_logical(numero_bloque);
     char* logical_blocks_dir = get_logical_blocks_dir(cs, file, tag);
     char* block_path = string_from_format("%s/%s",logical_blocks_dir, block_name);
@@ -23,13 +39,13 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     free(block_name);
     
     if(!control_existencia_file(block_path)){
-        log_error(logger, "El bloque lógico %d del File:Tag %s:%s no existe (%s:%d) BLOCKPATH=%s", numero_bloque, file, tag, __func__, __LINE__, block_path);
+        log_pink(logger, "El bloque lógico %d del File:Tag %s:%s no existe (%s:%d) BLOCKPATH=%s", numero_bloque, file, tag, __func__, __LINE__, block_path);
         free(block_path);
         return;
     }
     FILE* f =fopen(block_path, "r");
     if(f == NULL){
-        log_error(logger, "No se pudo abrir el bloque lógico %d del File:Tag %s:%s (%s:%d) BLOCKPATH=%s", numero_bloque, file, tag, __func__, __LINE__, block_path);
+        log_pink(logger, "No se pudo abrir el bloque lógico %d del File:Tag %s:%s (%s:%d) BLOCKPATH=%s", numero_bloque, file, tag, __func__, __LINE__, block_path);
         free(block_path);
         return;
     }
