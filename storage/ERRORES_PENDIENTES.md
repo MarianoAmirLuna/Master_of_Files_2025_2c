@@ -12,9 +12,6 @@ Los detectados por ahora son:
   - TAG_FILE: Tag destino ya existe.
   - CREATE_FILE: Parametros NULL.
   - WRITE_BLOCK: Metadata NULL.
-l
-
-
 
 3. Validaciones faltantes
 - Insuficiente espacio en WRITE_BLOCK.
