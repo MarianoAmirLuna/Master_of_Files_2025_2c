@@ -125,9 +125,6 @@ void tag_file_ops(char* file, char* tag_origen, char* tag_destino, worker* w){
 
         log_orange(logger, "[TAG_FILE] Bloque físico %d clonado a bloque %d", bloque_fisico_origen, bloque_fisico_destino);
 
-        //Debe eliminar el origen??????
-        //delete_directory(path_tag_origen);
-
         // Agregar el nuevo bloque a la lista de bloques destino
         list_add(bloques_destino, bloque_fisico_destino);
 
