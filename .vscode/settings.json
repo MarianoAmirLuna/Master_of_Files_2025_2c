@@ -18,5 +18,6 @@
         "queue.h": "c",
         "list_ext.h": "c",
         "stdbool.h": "c"
-    }
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }
