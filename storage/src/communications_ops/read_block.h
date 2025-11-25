@@ -13,14 +13,8 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     /*Dado un File:Tag y número de bloque lógico, la operación de lectura obtendrá y devolverá el contenido del mismo.*/
     
     /* EXCEPCIONES A TENER EN CUENTA EN ESTE PROCEDIMIENTO
-        File_inexistente
-        Tag_inexistente
-        Lectura_o_escritura_fuera_de_limite
+        Lectura fuera de limite faltaria
     */
-    
-    if(!file_tag_exist_or_not(file, tag, w)){
-        return; //Ya se envió el error al worker
-    }
     
     char* block_name = get_block_name_logical(numero_bloque);
     char* logical_blocks_dir = get_logical_blocks_dir(cs, file, tag);
