@@ -5,6 +5,8 @@ PD: Aparentemente no afecta porque Worker no hace nada cuando se recibe SUCCESS.
 -- es una pelotudez
 
 
+Hola, el que se puso a leer el codigo para pegarse un susto, GGG :D
+
 2. Errores no maneCCjados
 - Hay errores en los cuales no se envia a Worker y solo se loguea. 
 Los detectados por ahora son:
