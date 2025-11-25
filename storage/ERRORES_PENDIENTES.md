@@ -24,13 +24,11 @@ Los detectados por ahora son:
 /* 
   ver con dimi que hacer
 */
-
-
-
 ---
 
 6. TAG_FILE - Si falla la copia, eliminar el nuevo directorio creado.
 // no deberia fallar en teoria al ser un read, no creo sea necesario pero lo tenemos en cuenta
+
 
 
 
