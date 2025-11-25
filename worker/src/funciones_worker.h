@@ -99,6 +99,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==COMMIT)
     {
+        ejecutar_flush(parametro1); 
         t_packet* paq = create_packet();
         add_int_to_packet(paq, COMMIT_TAG);
         add_file_tag_to_packet(paq, parametro1);
@@ -262,7 +263,6 @@ void loop_atender_queries()
                 actual_worker->pc,
                 instruccion
             );
-            //log_info(logger, "## Query: %d: -FETCH - Program Counter: %d - %s", actual_worker->id_query, actual_worker->pc, instruccion);
             decode_y_execute(instruccion);
             actual_worker->pc++;
         }

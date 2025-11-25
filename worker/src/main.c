@@ -140,8 +140,8 @@ void packet_callback(void* params){
             
             //log_orange(logger, "REQUEST_DESALOJO NOT IMPLEMENTED (%s:%d)", __func__,__LINE__);
 
-            //Implementar su desalojo y responder SUCCESS o FAILURE 
-            //Por ahora respondo success PERO SE DEBE REALIZAR SU IMPLEMENTACION...
+            flushear_tabla_paginas();
+
             t_packet* p = create_packet();
             add_int_to_packet(p, SUCCESS);
             add_int_to_packet(p, actual_worker->pc);
@@ -176,21 +176,19 @@ void packet_callback(void* params){
             storage_block_size = list_get_int(packet, 1);
             data_bloque = malloc(storage_block_size);
         }
-        /*if(op_code == RETURN_BLOCK_DATA){
-            char* data = list_get_int(packet, 1);
-            memcpy(data_bloque, data, storage_block_size);
-            sem_post(&sem_bloque_recibido);
-        }*/
-        if(op_code==INSTRUCTION_ERROR)
+        if(op_code==INSTRUCTION_ERROR || op_code==FILE_NOT_FOUND || op_code==TAG_NOT_FOUND || op_code==INSUFFICIENT_SPACE || op_code==WRITE_NO_PERMISSION || op_code==READ_WRITE_OVERFLOW)
         {
             t_packet* paq=create_packet();
             add_int_to_packet(paq, op_code);
             send_and_free_packet(paq, sock_master);
         }
-    }    
-    list_destroy(packet); //véase como en por ejemplo EJECUTAR_QUERY al recibir el list_get_str luego lo libero, como el resto son enteros, los enteros no sep ueden liberar porque lo hace el compilador
+        if(op_code == SUCCESS)
+        {
+        }
+    }
+    list_destroy(packet); //véase como en por ejemplo EJECUTAR_QUERY al recibir el list_get_str luego lo libero,
+    //como el resto son enteros, los enteros no se pueden liberar porque lo hace el compilador
     //Por lo tanto sólo debo destruir/liberar la lista
-    //list_destroy_and_destroy_elements(packet, free_element);
 }
 
 void instance_signal_handler(){

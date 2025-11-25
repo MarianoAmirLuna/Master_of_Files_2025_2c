@@ -22,11 +22,6 @@ void inicializar_memoria()
         entrada_frame_table->inicio = (char*)memory + i * block_size; //Se castea a char* para aritmetica de punteros
         
         list_add(lista_frames, entrada_frame_table);
-        
-        //Sos un tarado, cómo vas a hacer eso? se bloquea cuando inicias Worker
-        /*sem_wait(&tabla_frame_en_uso);
-        list_add(lista_frames, entrada_frame_table);
-        sem_post(&tabla_frame_en_uso);*/
     }
     log_pink(logger, "tamaño de la lista: %d", list_size(lista_frames));
 }
@@ -306,6 +301,39 @@ entrada_tabla_pags* seleccionar_victima()
     }
 
     return victima;
+}
+
+bool contiene_string(t_list* lista, char* valor) {
+    for (int i = 0; i < list_size(lista); i++) {
+        char* elem = list_get(lista, i);
+        if (strcmp(elem, valor) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+t_list* obtener_file_tags_unicos(t_list* entradas) {
+    t_list* unicos = list_create();
+
+    for (int i = 0; i < list_size(entradas); i++) {
+        entrada_tabla_pags* entry = list_get(entradas, i);
+
+        if (!contiene_string(unicos, entry->file_tag)) {
+            list_add(unicos, entry->file_tag);   // agrego el puntero original
+        }
+    }
+
+    return unicos;
+}
+
+void flushear_tabla_paginas(){
+    
+    t_list* file_tags = obtener_file_tags_unicos(tabla_pags_global);
+
+    for(int i = 0; i < list_size(file_tags); i++){
+        ejecutar_flush(i);
+    }
 }
 
 #endif
