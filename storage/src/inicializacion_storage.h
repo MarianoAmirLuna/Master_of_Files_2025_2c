@@ -182,7 +182,7 @@ void valido_hash(const char* p_path)
     }
     else
     {
-        log_orange(logger, "[valido_hash] Se encontro el archivo blocks_hash_index en el path %s", path); // to_do: sacar despues
+        log_light_green(logger, "[valido_hash] Se encontro el archivo blocks_hash_index en el path %s", path); // to_do: sacar despues
     }
     free(path);
 }
