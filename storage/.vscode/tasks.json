@@ -10,6 +10,41 @@
         "isDefault": true
       },
       "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "build planificacion",
+      "command": "make clean all",
+      "type": "shell",
+      "group": "build",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "build memoria_worker",
+      "command": "make clean all",
+      "type": "shell",
+      "group": "build",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "build errores",
+      "command": "make clean all",
+      "type": "shell",
+      "group": "build",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "build storage",
+      "command": "make clean all",
+      "type": "shell",
+      "group": "build",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "build estabilidad_general",
+      "command": "make clean all",
+      "type": "shell",
+      "group": "build",
+      "problemMatcher": ["$gcc"]
     }
   ]
 }

@@ -1,10 +1,6 @@
 {
   "version": "0.2.0",
   "configurations": [
-    
-
-
-
     {
       "name": "run",
       "type": "cppdbg",
@@ -30,11 +26,11 @@
       "preLaunchTask": "build"
     },
     {
-      "name": "prueba planificacion",
+      "name": "planificacion",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/bin/${workspaceFolderBasename}",
-      "args": [],
+      "args": ["planificacion.config"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
@@ -51,14 +47,14 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "build"
+      "preLaunchTask": "build planificacion"
     },
     {
-      "name": "memoria worker",
+      "name": "memoria_worker",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/bin/${workspaceFolderBasename}",
-      "args": [],
+      "args": ["memoria_worker.config"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
@@ -75,14 +71,14 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "build"
+      "preLaunchTask": "build memoria_worker"
     },
     {
-      "name": "prueba errores",
+      "name": "errores",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/bin/${workspaceFolderBasename}",
-      "args": [],
+      "args": ["errores.config"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
@@ -99,14 +95,14 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "build"
+      "preLaunchTask": "build errores"
     },
     {
-      "name": "prueba storage",
+      "name": "storage",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/bin/${workspaceFolderBasename}",
-      "args": [],
+      "args": ["storage.config"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
@@ -123,14 +119,14 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "build"
+      "preLaunchTask": "build storage"
     },
     {
-      "name": "prueba estabilidad general",
+      "name": "estabilidad_general",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/bin/${workspaceFolderBasename}",
-      "args": [],
+      "args": ["estabilidad_general.config"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
@@ -147,7 +143,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "build"
+      "preLaunchTask": "build estabilidad_general"
     }
   ]
 }

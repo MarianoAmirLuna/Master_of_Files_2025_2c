@@ -10,7 +10,12 @@
 int main(int argc, char* argv[]) {
     //TODO: ESTE MODULO TAMBIEN TIENE EL superblock.config y el blocks_hash_index.config
     itself_ocm = MODULE_STORAGE;
-    load_config("storage.config");
+    if(argc >= 2){
+        char* config_path = argv[1];
+        load_config(config_path);
+    }else{
+        load_config("storage.config");
+    }
     cs =load_config_storage();
     create_log("storage", cs.log_level);
     log_violet(logger, "%s", "Hola soy STORAGE");
