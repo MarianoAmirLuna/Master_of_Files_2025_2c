@@ -23,9 +23,20 @@ void ejecutar_truncate(char *file_y_tag, int tam)
 {
     t_packet* paq = create_packet();
     add_int_to_packet(paq, TRUNCATE_FILE);
-    add_string_to_packet(paq, file_y_tag);
+//    add_string_to_packet(paq, file_y_tag);
+
+    char* file = string_new();
+    char* tag = string_new();
+    get_tag_file(file_y_tag, file, tag);
+    
+    add_string_to_packet(paq, file);
+    add_string_to_packet(paq, tag);
+
     add_int_to_packet(paq, tam);
     send_and_free_packet(paq, sock_storage);
+    free(file);
+    free(tag);
+
 }
 
 /*
