@@ -215,13 +215,35 @@ void actualizarPrioridadLRU(entrada_tabla_pags *entrada)
         queue_push(tabla_pags_global, entradaRemovida);                                  // Lo vuelvo a agregar al final
     }
 }
-
+/*
 void actualizar_pagina_en_storage(entrada_tabla_pags *elemento)
 {
     t_packet* paq = create_packet();
     add_int_to_packet(paq, WRITE_BLOCK);
     add_string_to_packet(paq, elemento->file_tag);
     add_string_to_packet(paq, elemento->pag); //numero de bloque
+    send_and_free_packet(paq, sock_storage);
+}
+*/
+void actualizar_pagina_en_storage(entrada_tabla_pags *elemento)
+{
+    char* contenido = malloc(storage_block_size);
+    memcpy(contenido, memory + buscar_base_pagina(elemento->file_tag, elemento->pag), storage_block_size);
+
+    log_info(logger, "Contenido enviado a storage: %s", contenido);
+    
+    t_packet* paq = create_packet();
+    add_int_to_packet(paq, WRITE_BLOCK);
+    char* file=string_new();
+    char* tag= string_new();
+    get_tag_file(elemento->file_tag, file,tag);
+    add_string_to_packet(paq, file);
+    add_string_to_packet(paq, tag);
+    free(file);
+    free(tag);
+    add_int_to_packet(paq, elemento->pag); //numero de bloque // TODO
+    add_string_to_packet(paq, contenido);
+
     send_and_free_packet(paq, sock_storage);
 }
 

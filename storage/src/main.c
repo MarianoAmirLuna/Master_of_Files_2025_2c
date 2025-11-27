@@ -213,7 +213,6 @@ int file_tag_exist_or_not(char* file, char* tag, worker* w){
     free(fullpath);
     free(fullpathtag);
     return 1;
-
 }
 
 void instance_signal_handler(){
