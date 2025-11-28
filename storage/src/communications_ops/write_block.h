@@ -9,7 +9,7 @@
 #include "../control_accesos.h"
 #endif
 
-void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, worker* w){
+void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, worker* w, bool reportar_error){
     /*Esta operación recibirá el contenido de un bloque lógico de un File:Tag y guardará los cambios en el 
     bloque físico correspondiente, siempre y cuando el File:Tag no se encuentre en estado COMMITED y 
     el bloque lógico se encuentre asignado.
@@ -45,7 +45,7 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
     int tamanio_actual = get_size_from_metadata(metadata);
 
     // 3) Verificar estado COMMITED
-    if(get_state_metadata(metadata) == COMMITED){
+    if(reportar_error && get_state_metadata(metadata) == COMMITED){
         send_basic_packet(w->fd, WRITE_NO_PERMISSION);   // Escritura_no_permitida
         log_error(logger, "[WRITE_BLOCK] El tag %s:%s está COMMITED, no se puede escribir", file, tag);
         config_destroy(metadata);
@@ -57,7 +57,7 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
     int cantidad_bloques = list_size(bloques_fisicos);
 
     // 5) Validar que el bloque lógico exista -- Escritura fuera de limite
-    if(bloque_logico < 0 || bloque_logico >= cantidad_bloques){
+    if(reportar_error && (bloque_logico < 0 || bloque_logico >= cantidad_bloques)){
         // Acá deberías mandar el error de "Lectura_o_escritura_fuera_de_limite"
         // send_basic_packet(w->fd, READ_WRITE_OUT_OF_LIMIT);
         log_error(logger, "[WRITE_BLOCK] Bloque lógico fuera de límite: %d (máximo %d) para %s:%s",

@@ -356,14 +356,14 @@ void ejecutar_noop()
     return;
 }
 
-void ejecutar_flush(char *file_tag)
+void ejecutar_flush(char *file_tag, bool reportar_error)
 {
     log_debug(logger, "entre a ejecutar_flush()");
     t_list *tabla = obtener_tabla_paginas(file_tag);
     for (int i = 0; i < list_size(tabla); i++)
     {
         entrada_tabla_pags *entrada = list_get(tabla, i);
-        actualizar_pagina_en_storage(entrada);
+        actualizar_pagina_en_storage(entrada, reportar_error);
     }
 }
 

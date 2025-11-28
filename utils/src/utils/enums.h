@@ -166,8 +166,11 @@ typedef enum{
 }storage_operation;
 
 typedef enum{
+    WRITE_BLOCK_NOT_ERROR = DELETE_TAG +1,
+}storage_operation_additional;
+typedef enum{
     //Una operación quiere realizar una acción sobre un File:Tag que no existe (salvo la operación de CREATE que crea un nuevo File:Tag).
-    FILE_NOT_FOUND = DELETE_TAG+1,
+    FILE_NOT_FOUND = WRITE_BLOCK_NOT_ERROR+1,
     /// @brief Una operación quiere realizar una acción sobre un tag que no existe, salvo la operación de TAG que crea un nuevo Tag.
     TAG_NOT_FOUND,
     /// @brief Al intentar asignar un nuevo bloque físico, no se encuentra ninguno disponible.

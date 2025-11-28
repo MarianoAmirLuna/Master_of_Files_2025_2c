@@ -99,7 +99,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==COMMIT)
     {
-        ejecutar_flush(parametro1); 
+        ejecutar_flush(parametro1, true); 
         t_packet* paq = create_packet();
         add_int_to_packet(paq, COMMIT_TAG);
         add_file_tag_to_packet(paq, parametro1);
@@ -107,7 +107,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==FLUSH)
     {
-        ejecutar_flush(parametro1); 
+        ejecutar_flush(parametro1, false); 
     }
     else if(caso==DELETE)
     {

@@ -225,7 +225,7 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento)
     send_and_free_packet(paq, sock_storage);
 }
 */
-void actualizar_pagina_en_storage(entrada_tabla_pags *elemento)
+void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_error)
 {
     char* contenido = malloc(storage_block_size);
     memcpy(contenido, memory + buscar_base_pagina(elemento->file_tag, elemento->pag), storage_block_size);
@@ -233,7 +233,7 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento)
     log_info(logger, "Contenido enviado a storage: %s", contenido);
     
     t_packet* paq = create_packet();
-    add_int_to_packet(paq, WRITE_BLOCK);
+    add_int_to_packet(paq, reportar_error ? WRITE_BLOCK : WRITE_BLOCK_NOT_ERROR);
     char* file=string_new();
     char* tag= string_new();
     get_tag_file(elemento->file_tag, file,tag);
@@ -251,7 +251,7 @@ void liberar_entrada_TPG(entrada_tabla_pags *elemento)
 {
     if (elemento->modificada)
     {
-        actualizar_pagina_en_storage(elemento);
+        actualizar_pagina_en_storage(elemento, true);
     }
 
     marco* el_frame = list_get(lista_frames, elemento->marco);

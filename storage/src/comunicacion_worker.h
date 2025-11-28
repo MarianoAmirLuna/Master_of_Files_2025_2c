@@ -60,10 +60,10 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     if(opcode == COMMIT_TAG){
         commit_tag_ops(file, tag, w);
     }
-    if(opcode == WRITE_BLOCK){
+    if(opcode == WRITE_BLOCK || opcode == WRITE_BLOCK_NOT_ERROR){
         int sz = list_get_int(pack, 3);
         char* contenido = list_get_str(pack ,4);
-        write_block_ops(file, tag, sz, contenido, w);
+        write_block_ops(file, tag, sz, contenido, w, opcode == WRITE_BLOCK_NOT_ERROR);
         free(contenido);
     }
     if(opcode == READ_BLOCK){
