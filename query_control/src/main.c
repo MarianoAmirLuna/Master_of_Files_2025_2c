@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
 
     for(;;){
         t_list* l = recv_operation_packet(fd_master);
-        log_info(logger, "Recibi: %d cantidad de elementos", list_size(l));
+        log_debug(logger, "Recibi: %d cantidad de elementos", list_size(l));
         /*//Por ahora asumo que si recibe cantidad vacía rompo este programa y listo.
         if(list_size(l) == 0)
             break;*/

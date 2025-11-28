@@ -343,21 +343,29 @@ void work_worker(t_list* pack, int id, int sock){
         w->id_query = -1; //Debo especificar que ahora este worker no tiene asignado ningún query.
         w->is_free=1;
     }*/
-    if(opcode == QUERY_END){
-        log_info(logger, "## Se terminó la Query: %d en el Worker %d",
-            w->id_query, id
-        );
+    if(opcode == QUERY_END || opcode==INSTRUCTION_ERROR || opcode==FILE_NOT_FOUND || opcode==TAG_NOT_FOUND || opcode==INSUFFICIENT_SPACE || opcode==WRITE_NO_PERMISSION || opcode==READ_WRITE_OVERFLOW)
+    {
+        if(opcode == QUERY_END){
+            log_info(logger, "## Se terminó la Query: %d en el Worker %d",
+                w->id_query, id
+            );
+        }else{
+            log_orange(logger, "El Worker %d reporta un ERROR en la Query %d - OPCODE ERROR: %d",
+                id,
+                w->id_query,
+                opcode
+            );
+        }
         query* q = get_query_by_qid(w->id_query);
         if(q == NULL){
             log_error(logger, "La query es NULL (%s:%d)", __func__,__LINE__);
         }
         t_packet* p = create_packet();
         add_int_to_packet(p, REQUEST_KILL);
-        add_string_to_packet(p, "Por fin de query");
+        add_string_to_packet(p, opcode == QUERY_END ? "Por fin de query" : get_motivo_error(opcode));
         send_and_free_packet(p, q->fd);
         w->id_query = -1; //Debo especificar que ahora este worker no tiene asignado ningún query.
         w->is_free=1;
-
     }
     if(opcode == REQUEST_READ){
         query* q = get_query_by_qid(w->id_query);

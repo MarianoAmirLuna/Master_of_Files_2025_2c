@@ -174,4 +174,26 @@ void remove_new_line(char* line){
     line[len-1] = '\0';
 }
 
+char* get_motivo_error(int code_error){
+    if(code_error == INSTRUCTION_ERROR){
+        return "Error de instrucción";
+    }
+    if(code_error == FILE_NOT_FOUND){
+        return "Archivo no encontrado";
+    }
+    if(code_error == TAG_NOT_FOUND){
+        return "Tag no encontrado";
+    }
+    if(code_error == INSUFFICIENT_SPACE){
+        return "Espacio insuficiente";
+    }
+    if(code_error == WRITE_NO_PERMISSION){
+        return "No tiene permisos de escritura";
+    }
+    if(code_error == READ_WRITE_OVERFLOW){
+        return "Desborde de lectura/escritura";
+    }
+    return "Error desconocido";
+}
+
 #endif

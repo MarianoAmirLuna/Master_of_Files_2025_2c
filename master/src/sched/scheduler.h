@@ -116,7 +116,7 @@ void* scheduler(void* params){
 
         int ts = cm.tiempo_aging <= 0 ? 250 : cm.tiempo_aging/4;
         msleep(ts); //Divido por 4 para prevenir posible margen de error en temporal_gettime tiempo agging
-        if(cm.tiempo_aging <= 0)
+        if(cm.tiempo_aging <= 0) //al ser sin aging no debe incrementar prioridad no es relevante, por lo que tiene en cuenta el número de prioridad y prioriza la misma.
             continue;
         int sz = list_size(queries);
         for(int i=0;i<sz;i++){
