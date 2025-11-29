@@ -26,8 +26,8 @@ void ejecutar_truncate(char *file_y_tag, int tam)
     char* file = NULL;
     char* tag = NULL;
     char** spl= string_split(file_y_tag, ":");
-    file = malloc(strlen(spl[0])+1);
-    tag = malloc(strlen(spl[1])+1);
+    file = malloc(strlen(spl[0]));
+    tag = malloc(strlen(spl[1]));
     strcpy(file, spl[0]);
     strcpy(tag, spl[1]);
     
