@@ -179,7 +179,7 @@ void *actualizar_pagina(char *file_tag, int pagina)
     }
 
     int base = buscar_base_pagina(file_tag, pagina);
-
+    //DANGER: NUNCA SE INVOCO ESTE MÉTODO, NUNCA SE ESCRIBE EN LA MEMORIA INTERNA memory
     memcpy(memory + base, data_bloque, storage_block_size);
 
     int marco = base / storage_block_size;

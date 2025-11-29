@@ -19,7 +19,8 @@ void inicializar_memoria()
         marco *entrada_frame_table = malloc(sizeof(marco));
 
         entrada_frame_table->libre = true;
-        entrada_frame_table->inicio = (char*)memory + i * block_size; //Se castea a char* para aritmetica de punteros
+        //entrada_frame_table->inicio = (char*)memory + i * block_size; //Se castea a char* para aritmetica de punteros
+        entrada_frame_table->inicio = (char*)(memory + i * block_size); //Se castea a char* para aritmetica de punteros
         
         list_add(lista_frames, entrada_frame_table);
     }
@@ -223,6 +224,8 @@ void mostrar_contenido_memoria() {
     for (int i = 0; i < cw.tam_memoria; i++) {
         unsigned char byte = *((unsigned char *)memory + i);
         log_info(logger, "Byte %d: 0x%02X (%c)", i, byte, (byte >= 32 && byte <= 126) ? byte : '.');
+        //unsigned char* byte = (unsigned char *)memory + i;
+        //log_info(logger, "Byte %d: 0x%02X (%s)", i, byte, byte);
     }
 
     log_light_green(logger, "Fin del contenido de la memoria.");
@@ -232,43 +235,54 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
 {
     char* contenido = malloc(storage_block_size);
     int base = buscar_base_pagina(elemento->file_tag, elemento->pag);
-    log_pink(logger,"base: %d" ,base);
+    log_pink(logger,"base: %d, storage_block_size=%d" ,base, storage_block_size);
     if (base < 0 || base + storage_block_size > cw.tam_memoria) {
         log_error(logger, "Acceso fuera de límites en memoria: base=%d, tamaño=%d", base, storage_block_size);
         free(contenido);
         return;
     }
+
     memcpy(contenido, memory + base, storage_block_size);
 
-    log_light_green(logger, "#################################");
+    /*log_light_green(logger, "#################################");
     mostrar_contenido_memoria();
-    log_light_green(logger, "#################################");
+    log_light_green(logger, "#################################");*/
 
-    log_trace(logger, "Contenido enviado a storage: %s, el bloque lógico es: %d y el archivo es: %s",
-          contenido, elemento->pag, elemento->file_tag);
+    log_trace(logger, "Contenido enviado a storage: %s, el bloque lógico es: %d y el archivo es: %s", 
+        contenido, elemento->pag, elemento->file_tag
+    );
 
-    log_pink(logger, "#################################");
+    /*log_pink(logger, "#################################");
     log_pink(logger,"base: %d" ,base);
-    char* cont2 = malloc(storage_block_size)
+    char* cont2 = malloc(storage_block_size);
     memcpy(cont2, memory, storage_block_size);
     log_pink(logger,"contenido: %s" ,cont2);
 
-    log_pink(logger, "#################################");
+    log_pink(logger, "#################################");*/
 
     t_packet* paq = create_packet();
     add_int_to_packet(paq, reportar_error ? WRITE_BLOCK : WRITE_BLOCK_NOT_ERROR);
-    char* file=string_new();
-    char* tag= string_new();
-    get_tag_file(elemento->file_tag, file,tag);
+    /*char* file=string_new();
+    char* tag= string_new();*/
+    log_light_green(logger, "FileTag del elemento: %s", elemento->file_tag);
+    char* file = NULL;
+    char* tag = NULL;
+    char** spl= string_split(elemento->file_tag, ":");
+    file = malloc(strlen(spl[0])+1);
+    tag = malloc(strlen(spl[1])+1);
+    strcpy(file, spl[0]);
+    strcpy(tag, spl[1]);
+    
     add_string_to_packet(paq, file);
     add_string_to_packet(paq, tag);
     add_int_to_packet(paq, elemento->pag); 
     add_string_to_packet(paq, contenido);
     
     send_and_free_packet(paq, sock_storage);
-
+    log_light_blue(logger, "FILE: %s, TAG:%s a enviar al storage", file, tag);
     free(file);
     free(tag);
+    string_array_destroy(spl);
     free(contenido);
 }
 /*

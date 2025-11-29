@@ -10,9 +10,17 @@
 
 void parse_code(instr_code code, char* instr){
     if(code == CREATE){
-        char* file=string_new();
-        char* tag= string_new();;
-        get_tag_file(instr, file,tag);
+        char* file = NULL;
+        char* tag = NULL;
+        char** spl= string_split(file_y_tag, ":");
+        file = malloc(strlen(spl[0])+1);
+        tag = malloc(strlen(spl[1])+1);
+        strcpy(file, spl[0]);
+        strcpy(tag, spl[1]);
+        
+        /*char* file=string_new();
+        char* tag= string_new();
+        get_tag_file(instr, file,tag);*/
 
         /*char** spl = string_split(instr, ":");
         char* file = string_new();

@@ -86,7 +86,7 @@ void* attend_multiple_clients(void* params)
         char* superblockpath = string_from_format("%s/%s", cs.punto_montaje, "superblock.config");
         t_config* c_superblock = config_create(superblockpath);
         int block_size = config_get_int_value(c_superblock,"BLOCK_SIZE");
-
+        log_pink(logger, "El BLOCK_SIZE es: %d", block_size);
         t_packet* pack = create_packet();
         add_int_to_packet(pack, BLOCK_SIZE);
         add_int_to_packet(pack, block_size);

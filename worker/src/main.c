@@ -74,6 +74,7 @@ void* connect_to_server(void* params){
     if(ocm == MODULE_STORAGE){
         t_list* l = recv_operation_packet(wcl);
         block_size = list_get_int(l, 1); //Véase en main.c de Storage en primer índice envían un ENUM BLOCK_SIZE 
+        storage_block_size = block_size;
         log_trace(logger, "TENGO EL BLOCK SIZE DEL STORAGE: %d", block_size);
         list_destroy_and_destroy_elements(l, free_element);
     }
@@ -178,6 +179,7 @@ void packet_callback(void* params){
         if(op_code == BLOCK_SIZE)
         {
             storage_block_size = list_get_int(packet, 1);
+            
             data_bloque = malloc(storage_block_size);
         }
         if(op_code==INSTRUCTION_ERROR || op_code==FILE_NOT_FOUND || op_code==TAG_NOT_FOUND || op_code==INSUFFICIENT_SPACE || op_code==WRITE_NO_PERMISSION || op_code==READ_WRITE_OVERFLOW)
