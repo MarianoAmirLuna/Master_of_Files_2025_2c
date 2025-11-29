@@ -24,10 +24,14 @@ void ejecutar_truncate(char *file_y_tag, int tam)
     t_packet* paq = create_packet();
     add_int_to_packet(paq, TRUNCATE_FILE);
 //    add_string_to_packet(paq, file_y_tag);
-
-    char* file = string_new();
-    char* tag = string_new();
-    get_tag_file(file_y_tag, file, tag);
+    char* file = NULL;
+    char* tag = NULL;
+    char** spl= string_split(file_y_tag, ":");
+    file = malloc(strlen(spl[0])+1);
+    tag = malloc(strlen(spl[1])+1);
+    strcpy(file, spl[0]);
+    strcpy(tag, spl[1]);
+    //get_tag_file(file_y_tag, file, tag);
     
     add_string_to_packet(paq, file);
     add_string_to_packet(paq, tag);
@@ -36,7 +40,7 @@ void ejecutar_truncate(char *file_y_tag, int tam)
     send_and_free_packet(paq, sock_storage);
     free(file);
     free(tag);
-
+    string_array_destroy(spl);
 }
 
 /*
@@ -322,7 +326,7 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
             {
                 entrada_tabla_pags *entrada_con_frame = obtener_frame(file_tag, dir_base);
                 if (entrada_con_frame == NULL)
-{
+                {
                     log_error(logger, "ENTRADA CON FRAME ES NULL");
                 }
                 n_frame = entrada_con_frame->marco;

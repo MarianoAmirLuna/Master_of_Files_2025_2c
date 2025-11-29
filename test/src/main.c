@@ -27,6 +27,8 @@ int main(int argc, char* argv[]) {
     log_violet(logger, "%s", "Hola soy Test");
     load_config("../storage/storage.config");
     config_storage cs = load_config_storage();
+    int n= 0;
+    log_pink(logger, "%s", string_from_format("block%0*d.dat", 4, n));
     /*char* lero = "HOLA MUNDO";
     void* vava = malloc(strlen(lero)+1);
     memcpy(vava, lero, strlen(lero));
@@ -44,7 +46,7 @@ int main(int argc, char* argv[]) {
 
     log_pink(logger, "%s", get_name_fmt_number("block_", 5, 6));
     log_pink(logger, "%s", get_name_extension_fmt_number("copado", "dat", 12, 8));
-    create_nested_directories("/home/utnso/tp-2025-2c-Pizza/test/bin/lero/que/onda/pepe");
+    
     //mkdir("/home/utnso/tp-2025-2c-Pizza/test/bin/lero", 0777);
     /*t_config* blo = load_block_hash("bloquetest.config");
     t_list* vv = get_all_value__of_block_hash(blo);

@@ -107,9 +107,13 @@ void set_opcode_to_packet(t_packet* packet, int opcode){
 }
 
 void add_file_tag_to_packet(t_packet* packet, char* instr){
-    char* file=string_new();
-    char* tag= string_new();
-    get_tag_file(instr, file,tag);
+     char* file = NULL;
+    char* tag = NULL;
+    char** spl= string_split(instr, ":");
+    file = malloc(strlen(spl[0])+1);
+    tag = malloc(strlen(spl[1])+1);
+    strcpy(file, spl[0]);
+    strcpy(tag, spl[1]);
     add_string_to_packet(packet, file);
     add_string_to_packet(packet, tag);
     free(file);

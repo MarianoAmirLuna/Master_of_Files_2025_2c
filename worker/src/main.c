@@ -114,7 +114,7 @@ void packet_callback(void* params){
     log_info(logger, "Recibi mensaje de %s cantidad del packet: %d", ocm_to_string(ocm), list_size(packet));
     
     int op_code = list_get_int(packet, 0); //si del otro lado se usa el add_int_to_packet(...) entonces es recomendable utilizar el list_get_int(...) si por alguna razón da malos valores intentar con casteo (int)...
-    
+    log_pink(logger,"OPCODE: %d", op_code);
     if(ocm == MODULE_MASTER){
         //ACA RECIBIS UN PAQUETE PROVENIENTE DE MASTER
         if(op_code == REQUEST_EXECUTE_QUERY){
@@ -122,36 +122,45 @@ void packet_callback(void* params){
             char* str =list_get_str(packet, 2);
             archivo_query_actual = malloc(strlen(str)+1);
             strcpy(archivo_query_actual, str);
-
-            actual_worker->pc = list_get_int(packet, 3);
+            
+            int pc = list_get_int(packet, 3);
             actual_worker->is_free=false;
             actual_worker->id_query = id_query;
-
-            actual_query = create_basic_query(id_query, archivo_query_actual, actual_worker->pc);
+            log_pink(logger, "Por re-setear el actual_query");
+            
+            actual_query = create_basic_query(id_query, archivo_query_actual, pc);
 
             log_info(logger, "## Query %d: Se recibe la Query. El path de operaciones es: %s", id_query, archivo_query_actual); 
             sem_post(&sem_query_recibida); //Aviso que ya tengo una query para ejecutar
             free(str);
         }
         if(op_code == REQUEST_DESALOJO){
-            qid id_query = list_get_int(packet, 1);
+            /*if(actual_worker == NULL || actual_query == NULL){
+                t_packet* p = create_packet();
+                add_int_to_packet(p, ERROR);
+                send_and_free_packet(p, sock);
+                list_destroy(packet);
+                return;
+            }*/
+            //qid id_query = list_get_int(packet, 1);
             need_stop=1;
             sem_wait(&sem_need_stop);
             
             //log_orange(logger, "REQUEST_DESALOJO NOT IMPLEMENTED (%s:%d)", __func__,__LINE__);
-
             flushear_tabla_paginas(false);
 
             t_packet* p = create_packet();
             add_int_to_packet(p, SUCCESS);
-            add_int_to_packet(p, actual_worker->pc);
+            add_int_to_packet(p, actual_query->id);
+            add_int_to_packet(p, actual_query->pc);
             
             //add_worker_to_packet(p, actual_worker);
             send_and_free_packet(p, sock);
-            
-            actual_worker->id_query = id_query;
+            actual_worker->is_free=true;
 
-            log_info(logger, "## Query %d: Desalojado por pedido del Master", id_query);
+            log_info(logger, "## Query %d: Desalojado por pedido del Master", actual_query->id);
+            actual_worker->id_query = -1;
+            free(actual_query);
             need_stop=0;
         }
         if(op_code == REQUEST_KNOW)

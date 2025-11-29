@@ -207,28 +207,16 @@ void disconnect_callback(void* params){
             if(w == NULL){ //No se encuentra
                 log_warning(logger, "%s","No se encontró el worker en la lista de workers");
             }else{
-                t_packet* p = create_packet();
-                add_int_to_packet(p, REQUEST_DESALOJO);
-                add_int_to_packet(p, q->id);
-                send_and_free_packet(p, w->fd);
-                
-                t_list* recpd = recv_operation_packet(w->fd);
-                response resp = list_get_int(recpd ,0);
-                int pc = list_get_int(recpd, 1);
-                w->pc = pc;
-                log_violet(logger, "PC DEL WORKER %d: PC=%d", w->id, w->pc);
-                /*worker* ww = list_get_worker(recpd, 1);
-                w->pc= ww->pc;*/
-                if(resp == SUCCESS){
-                    //TODO: Revisar... porque pasaría a Ready si se desconectó este Query. Básicamente se rre murió.
-                    query_to(q, STATE_EXIT); 
-                    //Ok puedo notificar error al Query
+                if(desalojo(w))
+                {
+                    query_to(q, STATE_EXIT);
                 }else{
-                    log_warning(logger, "No se pudo desalojar el worker %d que ejecutaba la query %d", w->id, q->id);
+                    log_warning(logger, "No se pudo desalojar el worker %d que ejecutaba la query %d", w->id, q->id);   
                 }
                 //Me tendra que responder el PC???
-                log_info(logger, "## Se desaloja la Query %d del Worker %d",
+                log_info(logger, "## Se desaloja la Query <%d> (%d) del Worker <%d> - Motivo: DESCONEXION",
                     q->id,
+                    q->priority,
                     w->id
                 );
             }
@@ -357,8 +345,11 @@ void work_worker(t_list* pack, int id, int sock){
             );
         }
         query* q = get_query_by_qid(w->id_query);
-        if(q == NULL){
-            log_error(logger, "La query es NULL (%s:%d)", __func__,__LINE__);
+        if(q == NULL || w->id_query == -1){
+            log_error(logger, "La query %d es NULL (%s:%d)", w->id_query, __func__,__LINE__);
+            w->id_query = -1; //Debo especificar que ahora este worker no tiene asignado ningún query.
+            w->is_free=1;
+            return;
         }
         t_packet* p = create_packet();
         add_int_to_packet(p, REQUEST_KILL);

@@ -34,6 +34,7 @@ void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
     }
 
     // Obtener metadata del tag
+    log_pink(logger, "FILE: %s, TAG: %s", file, tag);
     t_config* metadata = get_metadata_from_file_tag(cs, file, tag);
     if(metadata == NULL){
         log_error(logger, "[TRUNCATE] No se pudo obtener metadata de %s:%s", file, tag);

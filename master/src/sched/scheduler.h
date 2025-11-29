@@ -30,15 +30,16 @@ void execute_this_query_on_this_worker(query* q, worker* w){
     pthread_mutex_lock(&mutex_sched);
     //sem_wait(&sem_locker);
 
+    desalojo(w);
     t_packet* p = create_packet();
-    log_debug(logger, "Estoy por enviar query id:%d, Archivo: %s, PC: %d", q->id, q->archive_query, q->pc);
+    //log_debug(logger, "Estoy por enviar query id:%d, Archivo: %s, PC: %d", q->id, q->archive_query, q->pc);
     add_int_to_packet(p, REQUEST_EXECUTE_QUERY);
     add_int_to_packet(p, q->id); //enviar el id_query
     add_string_to_packet(p, q->archive_query); //enviarle el nombre del query a ejecutar
     add_int_to_packet(p, q->pc);
     
     w->id_query = q->id;
-    log_info(logger, "## Se envía la Query %d al Worker %d", q->id, w->id_query);
+    log_info(logger, "## Se envía la Query %d al Worker %d", q->id, w->id);
     send_and_free_packet(p, w->fd);
 
     //Le hago saber al query que mandé algo a ejecutar
@@ -69,11 +70,11 @@ void execute_this_query_on_this_worker(query* q, worker* w){
 }
 
 void execute_worker(){
-    log_light_blue(logger, "%s", "On ExecuteWorker");
+    //log_light_blue(logger, "%s", "On ExecuteWorker");
     
     //TODO: Debo comprobar entre todas las queries tanto EXEC como en READY si existe alguno más prioritario que los que ya se ejecutan en worker para que este la desaloje
     sem_wait(&sem_worker);
-    log_light_blue(logger, "%s", "Finish waiting ExecuteWorker");
+    //log_light_blue(logger, "%s", "Finish waiting ExecuteWorker");
 
     pthread_mutex_lock(&mutex_sched);
     //TODO: Tengo que agarrar un worker libre (si lo hay) y si existe algún query a ejecutar en ready tengo que agarrar ese y mandarlo a EXEC
@@ -82,7 +83,7 @@ void execute_worker(){
     
     if(w == NULL || !have_query_ready()) //De Morgan papá. Viste que es útil la matemática discreta.
     {
-        log_pink(logger, "Estoy en execute_worker y la cosa se puso fea (%s:%d) worker es NULL??? %d", __func__,__LINE__, w==NULL ? 1 : 0);
+        //log_pink(logger, "Estoy en execute_worker y la cosa se puso fea (%s:%d) worker es NULL??? %d", __func__,__LINE__, w==NULL ? 1 : 0);
         sem_post(&sem_worker);
         return;
     }
@@ -112,7 +113,7 @@ void* scheduler(void* params){
     for(;;){
         execute_worker();
         
-        log_pink(logger, "%s", "ON AGING sleep");
+        //log_pink(logger, "%s", "ON AGING sleep");
 
         int ts = cm.tiempo_aging <= 0 ? 250 : cm.tiempo_aging/4;
         msleep(ts); //Divido por 4 para prevenir posible margen de error en temporal_gettime tiempo agging

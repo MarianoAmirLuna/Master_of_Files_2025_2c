@@ -61,6 +61,40 @@ void on_query_state_changed(void* elem);
 void on_query_priority_changed(void* elem);
 void on_changed(void(*cbMeth)(void*), void* argsMeth);
 
+int desalojo(worker* w)
+{
+    log_pink(logger, "DESALOJO IS INVOKED");
+    if(w == NULL){
+        log_error(logger, "W es nulo en desalojo (%s:%d)", __func__, __LINE__);
+        return;
+    }
+    
+    if(w->is_free){
+        return;
+    }
+    t_packet* pdes = create_packet();
+    add_int_to_packet(pdes, REQUEST_DESALOJO);
+    send_and_free_packet(pdes, w->fd); //Envío y espero su respuesta de success
+
+    t_list* re = recv_operation_packet(w->fd);
+    int resp_success = list_get_int(re,0) == SUCCESS;
+    if(!resp_success)
+    {
+        log_warning(logger, "No se pudo desalojar el worker %d retorno un valor distinto de SUCCESS", w->id);
+        return;
+    }else{
+        log_pink(logger, "Desalojó satisfactoriamente el worker %d", w->id);
+    }
+
+    qid qid = list_get_int(re, 1);
+    int pc = list_get_int(re, 2);
+    query* q = get_query_by_qid(qid);
+    if(q != NULL){
+        q->pc = pc;
+    }
+    w->is_free = 1; //El worker ahora está libre
+    return resp_success;
+}
 
 int increment_priority(query* q){
     //Recordar que cuanto menor es el número mayor es su prioridad. No confundir.

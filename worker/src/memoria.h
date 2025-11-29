@@ -39,13 +39,14 @@ bool hay_espacio_memoria(char *contenido)
     for(int i = 0; i < list_size(lista_frames); i++){
         marco* aux = (list_get(lista_frames, i));
         log_info(logger, "frame: %d", aux->inicio);
+        //log_info(logger, "frame v2: %s", (char*)aux->inicio);*/
 
     }
 
     sem_wait(&tabla_pag_en_uso);
     t_list *frames_libres = list_filter(lista_frames, esta_libre);
     sem_post(&tabla_pag_en_uso);
-
+    log_pink(logger, "cantidad de frames libres: %d, cantidad de páginas: %d", list_size(frames_libres), cant_pags);
     bool aux = list_size(frames_libres) >= cant_pags;
     list_destroy(frames_libres);
 

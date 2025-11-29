@@ -24,9 +24,7 @@ char* get_name_fmt_number(char* name, int n, int total_digits){
 /// @param total_digits 
 /// @return 
 char* get_name_extension_fmt_number(char* name, char* extension, int n, int total_digits){
-    char* nn = string_new();
-    sprintf(nn, "%s%0*d.%s", name, total_digits, n, extension);
-    return nn;
+    return string_from_format("%s%0*d.%s", name, total_digits, n, extension);
 }
 
 /// @brief Cuando ya no se usa liberar con free()
@@ -34,25 +32,22 @@ char* get_name_extension_fmt_number(char* name, char* extension, int n, int tota
 /// @param nblock Número de bloque. La cantidad está difinida por macro `NUMBER_OF_DIGITS_BLOCK`
 /// @return 
 char* get_block_name(int nblock){
-    char* block_name = string_new();
-    sprintf(block_name, "block%0*d", NUMBER_OF_DIGITS_BLOCK, nblock);
-    return block_name;
+    return string_from_format("block%0*d", NUMBER_OF_DIGITS_BLOCK, nblock);
 }
 /// @brief Se tiene  XXXXXX.dat con 6 números.
 /// @param n 
 /// @return 
 char* get_block_name_logical(int n){
-    char* block_name = string_new();
-    sprintf(block_name, "%0*d.dat", 6, n);
-    return block_name;
+    return string_from_format("%0*d.dat", 6, n);
 }
 /// @brief Se tiene el blockXXXX.dat con 4 números.
 /// @param n 
 /// @return 
 char* get_block_name_physical(int n){
-    char* block_name = string_new();
-    sprintf(block_name, "block%0*d.dat", 4, n);
-    return block_name;
+    //char* block_name = string_new();
+    return string_from_format("block%0*d.dat", 4, n);
+    /*sprintf(block_name, "block%0*d.dat", 4, n);
+    return block_name;*/
 }
 /// @brief Cuando ya no se usa liberar con free()
 /// `get_block_name_by_n(5, 6);` -> `block000005`
@@ -60,9 +55,7 @@ char* get_block_name_physical(int n){
 /// @param n_numbers Cantidad de digitos
 /// @return 
 char* get_block_name_by_n(int nblock, int n_numbers){
-    char* block_name = string_new();
-    sprintf(block_name, "block%0*d", n_numbers, nblock);
-    return block_name;
+    return string_from_format("block%0*d", n_numbers, nblock);
 }
 
 //WARNING: USE MD5 OF CRYPTO LIBS COMMON DO NOT USE THIS
@@ -130,6 +123,17 @@ char* buffer_to_string(void* buf){
 */
 void get_tag_file(char* instr, char* file,char* tag){
     char** spl= string_split(instr, ":");
+    char* file_temp = realloc(file, strlen(spl[0])+1);
+    if(file_temp == NULL){
+        printf("Error al reallocar memoria en %s:%d", __func__, __LINE__);
+        
+    }
+    file = file_temp;
+    char* tag_temp = realloc(tag, strlen(spl[1])+1);
+    if(tag_temp == NULL){
+        printf("Error al reallocar memoria en %s:%d", __func__, __LINE__);
+    }
+    tag = tag_temp;
     strcpy(file, spl[0]);
     strcpy(tag, spl[1]);
     string_array_destroy(spl);

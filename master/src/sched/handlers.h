@@ -53,7 +53,8 @@ void on_query_priority_changed(void* elem){
         if(q_worker->priority <= q->priority)
             continue;
         log_debug(logger, "Voy a desalojarlo");
-        t_packet* p = create_packet();
+        desalojo(w);
+        /*t_packet* p = create_packet();
         add_int_to_packet(p, REQUEST_DESALOJO);
         add_int_to_packet(p, q->id);
         send_and_free_packet(p, w->fd); //Envío y espero su respuesta de success
@@ -65,16 +66,21 @@ void on_query_priority_changed(void* elem){
             continue; //Debería hacer continue???
         }else{
             log_pink(logger, "Desalojó satisfactoriamente el worker %d", w->id);
-        }
+        }*/
 
         w->is_free = 1; //El worker ahora está libre
-        log_info(logger, "## Se desaloja la Query %d (%d) y comienza a ejecutar la Query %d (%d) en el Worker %d",
+        log_info(logger, "## Se desaloja la Query <%d> (%d) del Worker <%d> - Motivo: PRIORIDAD",
+            q_worker->id,
+            q_worker->priority,
+            w->id
+        );
+        /*log_info(logger, "## Se desaloja la Query %d (%d) y comienza a ejecutar la Query %d (%d) en el Worker %d",
             q_worker->id,
             q_worker->priority,
             q->id,
             q->priority,
             w->id
-        );
+        );*/
         w->id_query = -1; //El worker ya no tiene query asignado    
         
         execute_this_query_on_this_worker(q, w);

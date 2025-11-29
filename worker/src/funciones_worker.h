@@ -69,7 +69,7 @@
 // FASE EXECUTE //
 void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, char *parametro3)
 {
-    log_debug(logger, "%s | %s | %s", parametro1, parametro2, parametro3);
+    log_debug(logger, "EJECUTAR_INSTRUCCION %s | %s | %s", parametro1, parametro2, parametro3);
     if (caso == CREATE)
     {
         //El tamaño del archivo debe ser 0
@@ -124,12 +124,12 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     {
         t_packet* paq = create_packet();
         add_int_to_packet(paq, QUERY_END);
-        add_int_to_packet(paq, actual_worker->id_query);
-        add_int_to_packet(paq, actual_worker->pc);
+        add_int_to_packet(paq, actual_query->id);
+        add_int_to_packet(paq, actual_query->pc);
         send_and_free_packet(paq, sock_master); 
         actual_worker->is_free=true;
     }
-    log_info(logger, "## Query: %d: - Instrucción realizada: %s", actual_worker->id_query, instr_to_string(caso));
+    log_info(logger, "## Query: %d: - Instrucción realizada: %s", actual_query->id, instr_to_string(caso));
 }
 
 /*
@@ -186,7 +186,7 @@ void decode_y_execute(char *linea_de_instruccion)
 
     instr_code caso = cast_code(instruccion);
     //NOTE: Se podría crear un campo en actual_worker para el PROGRAM_COUNTER
-    log_info(logger, "## Query: %d: -FETCH - Program Counter: %d - %s", actual_worker->id_query, actual_worker->pc, instruccion);
+    log_info(logger, "## Query: %d: -FETCH - Program Counter: %d - %s", actual_query->id, actual_query->pc, instruccion);
     ejecutar_instruccion(caso, parametro1, parametro2, parametro3);
 }
 
@@ -234,6 +234,8 @@ void loop_atender_queries()
         log_pink(logger, "Recibi una QUERYYYYYYYYYYYYYYYYYYYYYY");
         char* fullpath = string_from_format("%s%s", cw.path_queries, archivo_query_actual);
         actual_query->instructions = obtener_instrucciones_v2(fullpath);
+        int sz = list_size(actual_query->instructions);
+        log_pink(logger, "CANTIDAD DE INSTRUCCIONES QUE TIENE EL QUERY PATH: %s ES %d", archivo_query_actual, sz);
         free(fullpath);
         actual_worker->is_free = false;
 
@@ -249,22 +251,35 @@ void loop_atender_queries()
                 actual_worker->is_free = true;
                 t_packet* p = create_packet();
                 add_int_to_packet(p, QUERY_END);
-                add_int_to_packet(p, actual_worker->id_query);
-                add_int_to_packet(p, actual_worker->pc);
+                add_int_to_packet(p, actual_query->id);
+                add_int_to_packet(p, actual_query->pc);
                 send_and_free_packet(p, sock_master);
                 
                 //free_query(actual_query);
                 
                 break;
             }
-            char *instruccion = list_get(actual_query->instructions, actual_worker->pc); //Nótese que incrementa el pc
+            if(actual_query == NULL){
+                log_error(logger, "ACTUAL QUERY ES NULO %s:%d", __func__, __LINE__);
+                break;
+            }
+            if(actual_query->instructions == NULL)
+            {
+                log_error(logger, "ACTUAL QUERY INSTRUCTIONS ES NULO %s:%d", __func__, __LINE__);
+                break;
+            }
+            if(list_size(actual_query->instructions) == 0){
+                log_error(logger, "ACTUAL QUERY INSTRUCTIONS NO TIENE ELEMENTOS %s:%d", __func__, __LINE__);
+                break;
+            }
+            char *instruccion = list_get(actual_query->instructions, actual_query->pc); //Nótese que incrementa el pc
             log_debug(logger, "QID=%d, PC=%d, Instrucción que va a ejecutar: %s", 
-                actual_worker->id_query, 
-                actual_worker->pc,
+                actual_query->id, 
+                actual_query->pc,
                 instruccion
             );
             decode_y_execute(instruccion);
-            actual_worker->pc++;
+            actual_query->pc++;
         }
     }
 }
