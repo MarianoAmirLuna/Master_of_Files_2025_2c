@@ -231,14 +231,21 @@ void mostrar_contenido_memoria() {
 void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_error)
 {
     char* contenido = malloc(storage_block_size);
-    memcpy(contenido, memory + buscar_base_pagina(elemento->file_tag, elemento->pag), storage_block_size);
+    int base = buscar_base_pagina(elemento->file_tag, elemento->pag);
+    if (base < 0 || base + storage_block_size > cw.tam_memoria) {
+        log_error(logger, "Acceso fuera de límites en memoria: base=%d, tamaño=%d", base, storage_block_size);
+        free(contenido);
+        return;
+    }
+    memcpy(contenido, memory + base, storage_block_size);
 
     log_light_green(logger, "#################################");
     mostrar_contenido_memoria();
     log_light_green(logger, "#################################");
 
-    log_trace(logger, "Contenido enviado a storage: %s, el bloque lógico es: %d y el archivo es: %s", contenido, elemento->pag, elemento->file_tag);
-    
+    log_trace(logger, "Contenido enviado a storage: %.*s, el bloque lógico es: %d y el archivo es: %s",
+          storage_block_size, contenido, elemento->pag, elemento->file_tag);
+          
     t_packet* paq = create_packet();
     add_int_to_packet(paq, reportar_error ? WRITE_BLOCK : WRITE_BLOCK_NOT_ERROR);
     char* file=string_new();
@@ -246,12 +253,14 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
     get_tag_file(elemento->file_tag, file,tag);
     add_string_to_packet(paq, file);
     add_string_to_packet(paq, tag);
-    free(file);
-    free(tag);
     add_int_to_packet(paq, elemento->pag); 
     add_string_to_packet(paq, contenido);
-
+    
     send_and_free_packet(paq, sock_storage);
+
+    free(file);
+    free(tag);
+    free(contenido);
 }
 
 void liberar_entrada_TPG(entrada_tabla_pags *elemento)
