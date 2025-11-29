@@ -24,8 +24,6 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
     //  - Escritura_no_permitida
     //  - Lectura_o_escritura_fuera_de_limite
 
-    log_white_background(logger, "EJECUTE UN WRITE (write_block_ops)");
-
     if(file == NULL || tag == NULL || contenido == NULL){
         log_error(logger, "[WRITE_BLOCK] FILE, TAG o CONTENIDO son nulos");
         return;

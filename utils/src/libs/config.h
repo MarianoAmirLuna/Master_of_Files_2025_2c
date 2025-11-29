@@ -302,6 +302,7 @@ t_config* create_metadata(char* path, int size, t_list* blocks, state_metadata s
     int blocks_is_null_or_empty = blocks == NULL || list_is_empty(blocks);
     config_set_value(metadata, "TAMAÑO", string_itoa(size));
     config_set_value(metadata, "BLOCKS", blocks_is_null_or_empty ? "[]" : list_array_int_as_string_v2(blocks));
+//    _set_blocks_metadata(metadata, blocks);
     config_set_value(metadata, "ESTADO", get_string_state(state));
     if(config_save(metadata) == -1){
         log_error(logger, "Hubo un error no se pudo guardar el config en %s (%s:%d)", path, __func__, __LINE__);
