@@ -26,6 +26,7 @@ t_dictionary* dict_state;
 /// @brief Es como PID, es incremental desde 0, doc página 13
 qid query_idx=0;
 int degree_multiprocess;
+sem_t sem_incoming_client;
 sem_t sem_idx;
 sem_t sem_locker;
 sem_t sem_worker;
@@ -91,8 +92,11 @@ int desalojo(worker* w)
     query* q = get_query_by_qid(qid);
     if(q != NULL){
         q->pc = pc;
+        q->sp == STATE_READY;
     }
+    
     w->is_free = 1; //El worker ahora está libre
+    on_changed(on_query_state_changed, q);
     return resp_success;
 }
 

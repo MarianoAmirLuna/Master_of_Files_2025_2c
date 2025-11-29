@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
         dictionary_put(dict_state, state_to_string(i), i==STATE_READY ? queue_create() : list_create());
     }
     sem_init(&sem_idx, 0,1);
+    sem_init(&sem_incoming_client, 0,1);
     sem_init(&sem_locker, 0,1);
     sem_init(&sem_worker, 0,1);
     int sock_server = server_connection(cm.puerto_escucha);
@@ -96,12 +97,12 @@ void* attend_multiple_clients(void* params)
         t_list* l = recv_operation_packet(sock_client);
         op_code_module ocm;
         memcpy(&ocm, list_get(l, 0), sizeof(op_code_module));
-
+        sem_wait(&sem_incoming_client);
         int id = -1;
         if(ocm == MODULE_QUERY_CONTROL){
             char* archive_query= list_get_str(l,1);
             int prioridad = list_get_int(l,2);
-            log_orange(logger, "Recibi el dato de Query Control: Query:%s, Prioridad: %d", archive_query, prioridad);
+            
             query* q = malloc(sizeof(query));
             q->archive_query = malloc(strlen(archive_query)+1);
             strcpy(q->archive_query, archive_query);
@@ -111,6 +112,7 @@ void* attend_multiple_clients(void* params)
             q->sp = STATE_READY;
             q->temp = temporal_create();
             id = q->id;
+            log_orange(logger, "Recibi el dato de Query Control: Query:%s ID=%d, Prioridad: %d", archive_query, q->id, prioridad);
             add_query_on_state(q, q->sp);
             //query_to(q, STATE_READY);
             list_add(queries, q);
@@ -121,6 +123,7 @@ void* attend_multiple_clients(void* params)
                 list_size(workers)
             );
             free(archive_query);
+            print_queries();
             //Deberia hacer una planificación ahora mismo para saber si puede asignar un 
         }
         if(ocm == MODULE_WORKER){
@@ -156,6 +159,7 @@ void* attend_multiple_clients(void* params)
         pthread_t* pth = malloc(sizeof(pthread_t));
         pthread_create(pth, NULL,go_loop_net, parameter);
         pthread_detach(*pth);
+        sem_post(&sem_incoming_client);
     }
 }
 
@@ -209,12 +213,13 @@ void disconnect_callback(void* params){
             if(w == NULL){ //No se encuentra
                 log_warning(logger, "%s","No se encontró el worker en la lista de workers");
             }else{
-                if(desalojo(w))
+                query_to(q, STATE_EXIT);
+                /*if(desalojo(w))
                 {
                     query_to(q, STATE_EXIT);
                 }else{
                     log_warning(logger, "No se pudo desalojar el worker %d que ejecutaba la query %d", w->id, q->id);   
-                }
+                }*/
                 //Me tendra que responder el PC???
                 log_info(logger, "## Se desaloja la Query <%d> (%d) del Worker <%d> - Motivo: DESCONEXION",
                     q->id,

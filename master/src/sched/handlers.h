@@ -24,11 +24,8 @@ void on_query_state_changed(void* elem){
     if(q->sp == STATE_EXIT){
         t_packet* p = create_packet();
         add_int_to_packet(p, REQUEST_KILL); //Según el diagrama algo que está en EXIT nunca pasa a otro estado. IS GONE
-        //TODO NECESITO EL MOTIVO... HOLY SHIT
-        //char* opa = "Motivo... OPA necesito el motivo...";
         add_string_to_packet(p, "Desalojado");
         send_and_free_packet(p, q->fd); //Notifico al Query Control que se
-        //free(opa);
     }
     sem_post(&sem_locker);
 }
@@ -38,6 +35,8 @@ void on_query_priority_changed(void* elem){
     query* q = cast_query(elem);
     log_light_blue(logger, "Un query cambió de prioridad");
     //Comprueba si existe algún query que tenga menor prioridad (número mayor) que este.
+
+    //DANGER: CHECK THIS
     if(!list_exists(queries, is_most_priority, q))
         return;
     sem_wait(&sem_locker);
@@ -82,9 +81,7 @@ void on_query_priority_changed(void* elem){
             w->id
         );*/
         w->id_query = -1; //El worker ya no tiene query asignado    
-        
         execute_this_query_on_this_worker(q, w);
-        
         query_to(q_worker, STATE_READY); //El query que estaba en exec pasa a ready        
     }
     if(q == NULL){

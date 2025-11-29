@@ -129,7 +129,6 @@ void* scheduler(void* params){
             if(!temporal_is_empty(q->temp)){
                 if(temporal_gettime(q->temp) > cm.tiempo_aging)
                     increment_priority(q);
-                //TODO: ME faltan los desalojos cuando hay alguno más prioritario que el que la ejecutó la tiene que desalojar
             }
         }
         //Luego de dormir el subproceso si el algoritmo es de Prioridad debo ir disminuyendo el priority para que este sea más prioritario.
