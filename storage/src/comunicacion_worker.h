@@ -44,7 +44,7 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
             log_error(logger, "Cantidad inválida de argumentos");
         }
         create_file_ops(file, tag, w);
-    }
+    } 
     if(opcode == TRUNCATE_FILE){
         if(real_sz < 3){
             log_error(logger, "Cantidad inválida de argumentos");
