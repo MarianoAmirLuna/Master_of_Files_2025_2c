@@ -216,20 +216,26 @@ void actualizarPrioridadLRU(entrada_tabla_pags *entrada)
         queue_push(tabla_pags_global, entradaRemovida);                                  // Lo vuelvo a agregar al final
     }
 }
-/*
-void actualizar_pagina_en_storage(entrada_tabla_pags *elemento)
-{
-    t_packet* paq = create_packet();
-    add_int_to_packet(paq, WRITE_BLOCK);
-    add_string_to_packet(paq, elemento->file_tag);
-    add_string_to_packet(paq, elemento->pag); //numero de bloque
-    send_and_free_packet(paq, sock_storage);
+
+void mostrar_contenido_memoria() {
+    log_light_green(logger, "Mostrando contenido de la memoria:");
+
+    for (int i = 0; i < cw.tam_memoria; i++) {
+        unsigned char byte = *((unsigned char *)memory + i);
+        log_info(logger, "Byte %d: 0x%02X (%c)", i, byte, (byte >= 32 && byte <= 126) ? byte : '.');
+    }
+
+    log_light_green(logger, "Fin del contenido de la memoria.");
 }
-*/
+
 void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_error)
 {
     char* contenido = malloc(storage_block_size);
     memcpy(contenido, memory + buscar_base_pagina(elemento->file_tag, elemento->pag), storage_block_size);
+
+    log_light_green(logger, "#################################");
+    mostrar_contenido_memoria();
+    log_light_green(logger, "#################################");
 
     log_trace(logger, "Contenido enviado a storage: %s, el bloque lógico es: %d y el archivo es: %s", contenido, elemento->pag, elemento->file_tag);
     

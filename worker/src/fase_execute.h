@@ -23,7 +23,6 @@ void ejecutar_truncate(char *file_y_tag, int tam)
 {
     t_packet* paq = create_packet();
     add_int_to_packet(paq, TRUNCATE_FILE);
-//    add_string_to_packet(paq, file_y_tag);
     char* file = NULL;
     char* tag = NULL;
     char** spl= string_split(file_y_tag, ":");
@@ -31,7 +30,6 @@ void ejecutar_truncate(char *file_y_tag, int tam)
     tag = malloc(strlen(spl[1])+1);
     strcpy(file, spl[0]);
     strcpy(tag, spl[1]);
-    //get_tag_file(file_y_tag, file, tag);
     
     add_string_to_packet(paq, file);
     add_string_to_packet(paq, tag);
