@@ -256,7 +256,7 @@ void inicializar_file_system()
 
     g_block_size = config_get_int_value(c_superblock, "BLOCK_SIZE");
     g_fs_size = config_get_int_value(c_superblock, "FS_SIZE");
-
+    
     if (cs.fresh_start) // si es 1 (true)
     {
         log_pink(logger, "limpio el storage"); //to_do: borrar
@@ -270,6 +270,7 @@ void inicializar_file_system()
     valido_hash(cs.punto_montaje);
     valido_bloques_fisicos(cs.punto_montaje);
     valido_inicial_file(cs.punto_montaje);
+    init_block_locks();
 }
 
 

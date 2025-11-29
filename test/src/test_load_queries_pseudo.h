@@ -12,7 +12,7 @@ void parse_code(instr_code code, char* instr){
     if(code == CREATE){
         char* file = NULL;
         char* tag = NULL;
-        char** spl= string_split(file_y_tag, ":");
+        char** spl= string_split(instr, ":");
         file = malloc(strlen(spl[0])+1);
         tag = malloc(strlen(spl[1])+1);
         strcpy(file, spl[0]);

@@ -52,7 +52,9 @@ void destruir_file_tag_locks() {
 
 void init_block_locks() {
     int cantidad_bloques = g_fs_size / g_block_size;
-    block_locks = malloc(sizeof(pthread_mutex_t) * cantidad_bloques);
+    log_orange(logger, "GFSIZE=%d, GBLOCKSIZE=%d", g_fs_size, g_block_size);
+    log_orange(logger, "CANTIDAD DE BLOQUES en (%s:%d) = %d", __func__, __LINE__, cantidad_bloques);
+    block_locks = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t) * cantidad_bloques);
     for (int i = 0; i < cantidad_bloques; i++) {
         pthread_mutex_init(&block_locks[i], NULL);
     }
