@@ -2,7 +2,9 @@
 #include "readline/readline.h"
 int main(int argc, char* argv[]) {
     itself_ocm = MODULE_MASTER;
-    load_config("master.config");
+    char* config_path = argv[1];
+    load_config(config_path);
+    //load_config("master.config");
     cm =load_config_master();
     create_log("master", cm.log_level);
     log_violet(logger, "%s", "Hola soy MASTER");

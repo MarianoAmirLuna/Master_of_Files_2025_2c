@@ -1,7 +1,9 @@
 #include "main.h"
 #include "commons/crypto.h"
 
-
+bool comparer(void* a, void *b){
+    return (int)a < (int)b;
+}
 
 int main(int argc, char* argv[]) {
     
@@ -9,16 +11,18 @@ int main(int argc, char* argv[]) {
     log_violet(logger, "%s", "Hola soy Test");
     load_config("../storage/storage.config");
     config_storage cs = load_config_storage();
-    int cantidad_bloques = 4096;
-    pthread_mutex_t** block_locks = malloc(sizeof(pthread_mutex_t*) * cantidad_bloques);
-    for (int i = 0; i < cantidad_bloques; i++) {
-        pthread_mutex_init(&block_locks[i], NULL);
-    }
+    t_queue* q = queue_create();
 
-    pthread_mutex_lock(&block_locks[0]);
-    log_info(logger, "LALLAA");
-    pthread_mutex_unlock(&block_locks[0]);
+    queue_push(q, 0);
+    queue_push(q, 1);
+    queue_push(q, 2);
+    queue_push(q, 4);
+    list_sort(q->elements, comparer);
 
+    int v = (int)queue_pop(q);
+    log_pink(logger, "Valor: %d", v);
+    v = (int)queue_pop(q);
+    log_pink(logger, "Valor: %d", v);
 
     return;
 
