@@ -64,7 +64,6 @@ void on_changed(void(*cbMeth)(void*), void* argsMeth);
 
 int desalojo(worker* w)
 {
-    log_pink(logger, "DESALOJO IS INVOKED");
     if(w == NULL){
         log_error(logger, "W es nulo en desalojo (%s:%d)", __func__, __LINE__);
         return;
@@ -73,6 +72,7 @@ int desalojo(worker* w)
     if(w->is_free){
         return;
     }
+    log_pink(logger, "DESALOJO IS INVOKED");
     t_packet* pdes = create_packet();
     add_int_to_packet(pdes, REQUEST_DESALOJO);
     send_and_free_packet(pdes, w->fd); //Envío y espero su respuesta de success

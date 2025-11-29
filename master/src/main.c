@@ -114,7 +114,6 @@ void* attend_multiple_clients(void* params)
             id = q->id;
             log_orange(logger, "Recibi el dato de Query Control: Query:%s ID=%d, Prioridad: %d", archive_query, q->id, prioridad);
             add_query_on_state(q, q->sp);
-            //query_to(q, STATE_READY);
             list_add(queries, q);
             log_info(logger, "## Se conecta un Query Control para ejecutar la Query %s con prioridad %d - Id asignado: %d. Nivel multiprocesamiento: %d",
                 q->archive_query,
@@ -365,7 +364,8 @@ void work_worker(t_list* pack, int id, int sock){
         add_int_to_packet(p, REQUEST_KILL);
         add_string_to_packet(p, opcode == QUERY_END ? "Por fin de query" : get_motivo_error(opcode));
         send_and_free_packet(p, q->fd);
-        query_to(q, STATE_EXIT);
+        q->sp= STATE_EXIT;
+        log_light_blue(logger, "Un query cambió de estado valor: %s", state_to_string(q->sp));
         w->id_query = -1; //Debo especificar que ahora este worker no tiene asignado ningún query.
         w->is_free=1;
     }
