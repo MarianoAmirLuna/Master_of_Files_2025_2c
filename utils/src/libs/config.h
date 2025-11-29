@@ -417,7 +417,7 @@ t_config* get_metadata_from_file_tag(config_storage cs, char* file, char* tag){
     return res;
 }
 t_config* get_block_hash_index(config_storage cs){
-    char* fullpath = string_from_format("%s/block_hash_index.config", cs.punto_montaje);
+    char* fullpath = string_from_format("%s/blocks_hash_index.config", cs.punto_montaje);
     t_config* res= load_config(fullpath);
     free(fullpath);
     return res;
