@@ -365,7 +365,7 @@ void work_worker(t_list* pack, int id, int sock){
         add_string_to_packet(p, opcode == QUERY_END ? "Por fin de query" : get_motivo_error(opcode));
         send_and_free_packet(p, q->fd);
         q->sp= STATE_EXIT;
-        log_light_blue(logger, "Un query cambió de estado valor: %s", state_to_string(q->sp));
+        log_light_blue(logger, "Un query :%d cambió de estado valor: %s", q->id, state_to_string(q->sp));
         w->id_query = -1; //Debo especificar que ahora este worker no tiene asignado ningún query.
         w->is_free=1;
     }

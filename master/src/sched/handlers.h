@@ -17,7 +17,7 @@ void on_query_state_changed(void* elem){
     sem_wait(&sem_locker);
     log_orange(logger, "On query statechanged nowwat");
     query* q = cast_query(elem);
-    log_light_blue(logger, "Un query cambió de estado valor: %s", state_to_string(q->sp));
+    log_light_blue(logger, "Un query %d cambió  de estado valor: %s", q->id, state_to_string(q->sp));
     if(q == NULL){
         log_error(logger, "%s:%d", __func__, __LINE__);
     }
