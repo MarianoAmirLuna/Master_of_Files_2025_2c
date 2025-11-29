@@ -101,9 +101,7 @@ void valido_inicial_file(char* path)
         //crear_config_block_hash_index(string_from_format("%s/%s", path, "files/initial_file/BASE/"), "metadata.config"); todo: borrar despues
         // Armo lista de bloques inicial
         t_list* bloques = list_create();
-        int* b0 = malloc(sizeof(int));
-        *b0 = 0;
-        list_add(bloques, b0);
+        list_add(bloques, 0);
         free(p_path);
         char* meta_path = string_from_format("%s/%s", path, "files/initial_file/BASE/metadata.config");
         crear_metadata_config(meta_path, g_block_size, bloques, COMMITED);

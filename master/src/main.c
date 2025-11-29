@@ -365,6 +365,7 @@ void work_worker(t_list* pack, int id, int sock){
         add_int_to_packet(p, REQUEST_KILL);
         add_string_to_packet(p, opcode == QUERY_END ? "Por fin de query" : get_motivo_error(opcode));
         send_and_free_packet(p, q->fd);
+        query_to(q, STATE_EXIT);
         w->id_query = -1; //Debo especificar que ahora este worker no tiene asignado ningún query.
         w->is_free=1;
     }
