@@ -23,7 +23,7 @@ void inicializar_memoria()
         
         list_add(lista_frames, entrada_frame_table);
     }
-    log_pink(logger, "tamaño de la lista: %d", list_size(lista_frames));
+    log_trace(logger, "tamaño de la lista: %d", list_size(lista_frames));
 }
 
 bool esta_libre(void* element){
@@ -46,11 +46,11 @@ bool hay_espacio_memoria(char *contenido)
     sem_wait(&tabla_pag_en_uso);
     t_list *frames_libres = list_filter(lista_frames, esta_libre);
     sem_post(&tabla_pag_en_uso);
-    log_pink(logger, "cantidad de frames libres: %d, cantidad de páginas: %d", list_size(frames_libres), cant_pags);
+    log_trace(logger, "cantidad de frames libres: %d, cantidad de páginas: %d", list_size(frames_libres), cant_pags);
     bool aux = list_size(frames_libres) >= cant_pags;
     list_destroy(frames_libres);
 
-    log_light_blue(logger, "hay espacio en memoria?????? capaz %d", aux);
+    log_trace(logger, "hay espacio en memoria?????? capaz %d", aux);
 
     return aux;
 }
@@ -94,7 +94,7 @@ int list_index_of(t_list *self, void *data, bool (*comp)(void *, void *))
 bool coincide_tag(void *elem)
 {
     entrada_tabla_pags *entry = (entrada_tabla_pags *)elem;
-    log_orange(logger, "filetag: %s, pag: %d", entry->file_tag, entry->pag);
+    log_trace(logger, "filetag: %s, pag: %d", entry->file_tag, entry->pag);
     return strcmp(entry->file_tag, file_tag_buscado) == 0;
 }
 
@@ -231,7 +231,7 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
     char* contenido = malloc(storage_block_size);
     memcpy(contenido, memory + buscar_base_pagina(elemento->file_tag, elemento->pag), storage_block_size);
 
-    log_info(logger, "Contenido enviado a storage: %s", contenido);
+    log_trace(logger, "Contenido enviado a storage: %s, el bloque lógico es: %d y el archivo es: %s", contenido, elemento->pag, elemento->file_tag);
     
     t_packet* paq = create_packet();
     add_int_to_packet(paq, reportar_error ? WRITE_BLOCK : WRITE_BLOCK_NOT_ERROR);
@@ -242,7 +242,7 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
     add_string_to_packet(paq, tag);
     free(file);
     free(tag);
-    add_int_to_packet(paq, elemento->pag); //numero de bloque // TODO
+    add_int_to_packet(paq, elemento->pag); 
     add_string_to_packet(paq, contenido);
 
     send_and_free_packet(paq, sock_storage);

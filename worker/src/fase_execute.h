@@ -108,14 +108,14 @@ int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
     if (strlen(contenido) > espacio_restante_en_marco) // si no me alcanza con lo que queda de marco, solo copio lo que pueda
     {
         memcpy(base + offset, contenido, espacio_restante_en_marco);
-        log_pink(logger, "escritura devolvio %d", espacio_restante_en_marco);
+        log_trace(logger, "escritura devolvio %d", espacio_restante_en_marco);
         return espacio_restante_en_marco;
         // realizar_escritura(file_tag, dir_logica + espacio_restante_en_marco, contenido + espacio_restante_en_marco); // feo con ganas eh
     }
     else
     {
         memcpy(base + offset, contenido, strlen(contenido));
-        log_pink(logger, "escritura devolvio %d", strlen(contenido));
+        log_trace(logger, "escritura devolvio %d", strlen(contenido));
         return strlen(contenido);
     }
 }
@@ -151,7 +151,7 @@ int realizar_lectura(void *dest, char *file_tag, int dir_logica, int tam)
     }
 
     memcpy(dest, base, bytes_a_leer);
-    log_pink(logger, "lectura devolvio %d", bytes_a_leer);
+    log_trace(logger, "lectura devolvio %d", bytes_a_leer);
     return bytes_a_leer;
 }
 
@@ -191,7 +191,7 @@ void *actualizar_pagina(char *file_tag, int pagina)
 
 void *reservar_frame(char *file_tag, int pagina)
 {
-    log_light_blue(logger, "ENTRE A RESERVAR_FRAME");
+    log_trace(logger, "ENTRE A RESERVAR_FRAME");
     marco *frame_libre = buscar_frame_libre();
     
     frame_libre->libre = false;
@@ -233,7 +233,7 @@ int calcular_pagina(int dir_base)
 
 void ejecutar_write(char *file_tag, int dir_base, char *contenido)
 {
-    log_orange(logger, "FILETAG ES NULL? %d, DIR=%d, CONTENIDO ES NULL?: %d", file_tag == NULL, dir_base, contenido == NULL);
+    log_trace(logger, "FILETAG ES NULL? %d, DIR=%d, CONTENIDO ES NULL?: %d", file_tag == NULL, dir_base, contenido == NULL);
     int pagina = calcular_pagina(dir_base);
     int offset = obtener_offset(file_tag, dir_base);
     int restante_en_pag = block_size - offset;
@@ -242,7 +242,7 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
 
     for (int indice = dir_base; espacio_ya_escrito < strlen(contenido);) //(si lees esto, perdon)
     {
-        log_light_blue(logger, "escribi: %d, tengo que escribir: %d", espacio_ya_escrito, strlen(contenido));
+        log_trace(logger, "escribi: %d, tengo que escribir: %d", espacio_ya_escrito, strlen(contenido));
         pagina = calcular_pagina(indice);
         if (!dl_en_tp(file_tag, pagina))
         {

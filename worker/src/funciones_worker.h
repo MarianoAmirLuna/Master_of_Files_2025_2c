@@ -229,24 +229,24 @@ void loop_atender_queries()
 {
     for (;;) // 1 iteracionn por query atendida
     {
-        log_pink(logger, "Esperando una nueva Query...");
+        log_trace(logger, "Esperando una nueva Query...");
         sem_wait(&sem_query_recibida); 
-        log_pink(logger, "Recibi una QUERYYYYYYYYYYYYYYYYYYYYYY");
+        log_trace(logger, "Recibi una QUERYYYYYYYYYYYYYYYYYYYYYY");
         char* fullpath = string_from_format("%s%s", cw.path_queries, archivo_query_actual);
         actual_query->instructions = obtener_instrucciones_v2(fullpath);
         int sz = list_size(actual_query->instructions);
-        log_pink(logger, "CANTIDAD DE INSTRUCCIONES QUE TIENE EL QUERY PATH: %s ES %d", archivo_query_actual, sz);
+        log_trace(logger, "CANTIDAD DE INSTRUCCIONES QUE TIENE EL QUERY PATH: %s ES %d", archivo_query_actual, sz);
         free(fullpath);
         actual_worker->is_free = false;
 
-        while (!actual_worker->is_free) // 1 iteracion por instruccion
+        while (!actual_worker->is_free)
         {
             //Incrementá el PC negro y con chequeo de out-bound si tenés 10 instrucciones no te podés ir a la instrucción 11 porque se hace percha.
             // Fase Fetch
             
-            if(/*actual_worker->pc >= list_size(actual_query->instructions) || */ need_stop)
+            if(need_stop)
             {
-                log_debug(logger, "Voy a mandar un QUERY_END porque el pc actual: %d supero a la instrs size: %d o porque need_stop es true: %d", actual_worker->pc, list_size(actual_query->instructions), need_stop);
+                log_debug(logger, "Voy a mandar un QUERY_END porque solicitaron un desalojo | need_stop es true: %d", need_stop);
                 //QUERY END Termina esto que te rre fuiste
                 actual_worker->is_free = true;
                 t_packet* p = create_packet();
@@ -254,8 +254,6 @@ void loop_atender_queries()
                 add_int_to_packet(p, actual_query->id);
                 add_int_to_packet(p, actual_query->pc);
                 send_and_free_packet(p, sock_master);
-                
-                //free_query(actual_query);
                 
                 break;
             }

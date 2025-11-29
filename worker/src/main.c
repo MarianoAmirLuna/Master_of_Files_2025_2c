@@ -3,7 +3,7 @@
 int main(int argc, char* argv[]) {
     itself_ocm = MODULE_WORKER;
     create_log("worker", cw.log_level);
-    log_violet(logger, "%s", "Hola soy WORKER");
+    log_trace(logger, "%s", "Hola soy WORKER");
     instance_signal_handler();
     if(argc == 3){
         char* config_path = argv[1];
@@ -18,8 +18,6 @@ int main(int argc, char* argv[]) {
     actual_worker->id = id_worker;
     actual_worker->is_free = true;
     cw = load_config_worker();
-
-
 
     inicializar_worker();
     
@@ -37,7 +35,6 @@ int main(int argc, char* argv[]) {
         void* parameters = malloc(sizeof(int));
         memcpy(parameters, &v, sizeof(int));
         pthread_create(pth, NULL, connect_to_server, parameters);
-        //log_debug(logger, "Res pthread_create: %d", res);
         pthread_detach(*pth);
         pthread_mutex_unlock(&locker);
     }
@@ -77,7 +74,7 @@ void* connect_to_server(void* params){
     if(ocm == MODULE_STORAGE){
         t_list* l = recv_operation_packet(wcl);
         block_size = list_get_int(l, 1); //Véase en main.c de Storage en primer índice envían un ENUM BLOCK_SIZE 
-        log_orange(logger, "TENGO EL BLOCK SIZE DEL STORAGE: %d", block_size);
+        log_trace(logger, "TENGO EL BLOCK SIZE DEL STORAGE: %d", block_size);
         list_destroy_and_destroy_elements(l, free_element);
     }
 
@@ -144,9 +141,9 @@ void packet_callback(void* params){
             }*/
             //qid id_query = list_get_int(packet, 1);
             need_stop=1;
+            
             sem_wait(&sem_need_stop);
             
-            //log_orange(logger, "REQUEST_DESALOJO NOT IMPLEMENTED (%s:%d)", __func__,__LINE__);
             flushear_tabla_paginas(false);
 
             t_packet* p = create_packet();
@@ -154,7 +151,6 @@ void packet_callback(void* params){
             add_int_to_packet(p, actual_query->id);
             add_int_to_packet(p, actual_query->pc);
             
-            //add_worker_to_packet(p, actual_worker);
             send_and_free_packet(p, sock);
             actual_worker->is_free=true;
 
