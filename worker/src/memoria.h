@@ -349,12 +349,12 @@ t_list* obtener_file_tags_unicos(t_list* entradas) {
     return unicos;
 }
 
-void flushear_tabla_paginas(){
+void flushear_tabla_paginas(bool reportar_error){
     
     t_list* file_tags = obtener_file_tags_unicos(tabla_pags_global);
 
     for(int i = 0; i < list_size(file_tags); i++){
-        ejecutar_flush(i);
+        ejecutar_flush(i, reportar_error);
     }
 }
 

@@ -107,7 +107,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==FLUSH)
     {
-        ejecutar_flush(parametro1, false); 
+        ejecutar_flush(parametro1, true); 
     }
     else if(caso==DELETE)
     {

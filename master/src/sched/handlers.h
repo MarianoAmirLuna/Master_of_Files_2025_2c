@@ -25,8 +25,8 @@ void on_query_state_changed(void* elem){
         t_packet* p = create_packet();
         add_int_to_packet(p, REQUEST_KILL); //Según el diagrama algo que está en EXIT nunca pasa a otro estado. IS GONE
         //TODO NECESITO EL MOTIVO... HOLY SHIT
-        char* opa = "Motivo... OPA necesito el motivo...";
-        add_string_to_packet(p, opa);
+        //char* opa = "Motivo... OPA necesito el motivo...";
+        add_string_to_packet(p, "Desalojado");
         send_and_free_packet(p, q->fd); //Notifico al Query Control que se
         //free(opa);
     }

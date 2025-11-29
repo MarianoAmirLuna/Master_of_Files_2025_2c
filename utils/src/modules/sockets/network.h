@@ -213,7 +213,10 @@ int handshake(int sock, int is_server_side){
 	}
 	else{
 		send(sock, &handshake, sizeof(int), 0);
-		recv(sock, &result, sizeof(int), MSG_WAITALL);
+		int rec = recv(sock, &result, sizeof(int), MSG_WAITALL);
+		if(rec == -1){
+			return -1;
+		}
 	}
 	if(result == 0){
 		if(logger == NULL)

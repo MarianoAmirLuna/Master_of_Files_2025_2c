@@ -140,7 +140,7 @@ void packet_callback(void* params){
             
             //log_orange(logger, "REQUEST_DESALOJO NOT IMPLEMENTED (%s:%d)", __func__,__LINE__);
 
-            flushear_tabla_paginas();
+            flushear_tabla_paginas(false);
 
             t_packet* p = create_packet();
             add_int_to_packet(p, SUCCESS);
@@ -152,7 +152,6 @@ void packet_callback(void* params){
             actual_worker->id_query = id_query;
 
             log_info(logger, "## Query %d: Desalojado por pedido del Master", id_query);
-            
             need_stop=0;
         }
         if(op_code == REQUEST_KNOW)
