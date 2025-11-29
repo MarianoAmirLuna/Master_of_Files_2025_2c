@@ -112,7 +112,7 @@ void packet_callback(void* params){
     log_info(logger, "Recibi mensaje de %s cantidad del packet: %d", ocm_to_string(ocm), list_size(packet));
     
     int op_code = list_get_int(packet, 0); //si del otro lado se usa el add_int_to_packet(...) entonces es recomendable utilizar el list_get_int(...) si por alguna razón da malos valores intentar con casteo (int)...
-    log_pink(logger,"OPCODE: %d", op_code);
+    log_pink(logger,"OPCODE: %s", get_opcode_as_string(op_code));
     if(ocm == MODULE_MASTER){
         //ACA RECIBIS UN PAQUETE PROVENIENTE DE MASTER
         if(op_code == REQUEST_EXECUTE_QUERY){

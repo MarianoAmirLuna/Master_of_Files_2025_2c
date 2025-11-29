@@ -246,7 +246,7 @@ void valido_bloques_fisicos(char* path)
 
 void inicializar_file_system()
 {
-    //TODO: Por defecto debe crear "superblock.config", "bitmap.bin", "block_hash_index.config"
+    //TODO: Por defecto debe crear "superblock.config", "bitmap.bin", "blocks_hash_index.config"
     //y crear directorio desde punto de montaje el "physical_blocks" y "files" y si no me equivoco también el "initial_file" dentro del "files"
     
     

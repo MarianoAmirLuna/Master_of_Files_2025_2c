@@ -17,7 +17,7 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     }
 
     int opcode = list_get_int(pack, 0);
-    log_pink(logger, "OPCODE RECIBIDO EN STORAGE: %d", opcode);
+    log_pink(logger, "OPCODE RECIBIDO EN STORAGE: %s", get_opcode_as_string(opcode));
     int real_sz = list_size(pack)-1;
     /*char* params = NULL;
     if(list_size(pack) > 1)

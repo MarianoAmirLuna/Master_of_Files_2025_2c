@@ -27,6 +27,142 @@ int cast_state_metadata(char* state){
     return -1;
 }
 
+char* get_opcode_as_string(int opcode){
+    if(opcode == SUCCESS){
+        return "SUCCESS";
+    }
+    if(opcode == ENDOFLINE){
+        return "ENDOFLINE";
+    }
+    if(opcode == END_OF_IO){
+        return "END_OF_IO";
+    }
+    if(opcode == INTERRUPT){
+        return "INTERRUPT";
+    }
+    if(opcode == SEGMENTATION_FAULT){
+        return "SEGMENTATION_FAULT";
+    }
+    if(opcode == PROCESS_CANT_INITIALIZED){
+        return "PROCESS_CANT_INITIALIZED";
+    }
+    if(opcode == ACTUAL_STATUS){
+        return "ACTUAL_STATUS";
+    }
+    if(opcode == NOTEXISTS){
+        return "NOTEXISTS";
+    }
+    if(opcode == RESCHEDULE){
+        return "RESCHEDULE";
+    }
+    if(opcode == QUERY_ID){
+        return "QUERY_ID";
+    }
+    if(opcode == PROCESS_FINISHED){
+        return "PROCESS_FINISHED";
+    }
+    if(opcode == ERROR){
+        return "ERROR";
+    }
+    if(opcode == REQUEST_EXECUTE_QUERY){
+        return "REQUEST_EXECUTE_QUERY";
+    }
+    if(opcode == REQUEST_END_QUERY){
+        return "REQUEST_END_QUERY";
+    }
+    if(opcode == REQUEST_CONTEXT_EXECUTION){
+        return "REQUEST_CONTEXT_EXECUTION";
+    }
+    if(opcode == REQUEST_LIST_INSTRUCTIONS){
+        return "REQUEST_LIST_INSTRUCTIONS";
+    }
+    if(opcode == REQUEST_CHECK_SPACE_MEMORY){
+        return "REQUEST_CHECK_SPACE_MEMORY";
+    }
+	if(opcode == REQUEST_INSTRUCTIONS_MEMORY){
+        return "REQUEST_INSTRUCTIONS_MEMORY";
+    }
+    if(opcode == REQUEST_DESALOJO){
+        return "REQUEST_DESALOJO";
+    }
+    if(opcode == REQUEST_KILL){
+        return "REQUEST_KILL";
+    }
+    if(opcode == REQUEST_WRITE){
+        return "REQUEST_WRITE";
+    }
+    if(opcode == REQUEST_READ){
+        return "REQUEST_READ";
+    }
+	if(opcode == REQUEST_INFO){
+        return "REQUEST_INFO";
+    }
+	if(opcode == REQUEST_ACTION){
+        return "REQUEST_ACTION";
+    }
+	if(opcode == REQUEST_KNOW){
+        return "REQUEST_KNOW";
+    }
+    if(opcode == EJECUTAR_QUERY){
+        return "EJECUTAR_QUERY";
+    }
+    if(opcode == CREATE_FILE){
+        return "CREATE_FILE";
+    }
+    if(opcode == TRUNCATE_FILE){
+        return "TRUNCATE_FILE";
+    }
+    if(opcode == TAG_FILE){
+        return "TAG_FILE";
+    }
+    if(opcode == COMMIT_TAG){
+        return "COMMIT_TAG";
+    }
+    if(opcode == WRITE_BLOCK){
+        return "WRITE_BLOCK";
+    }
+    if(opcode == READ_BLOCK){
+        return "READ_BLOCK";
+    }
+    if(opcode == DELETE_TAG){
+        return "DELETE_TAG";
+    }
+    if(opcode == WRITE_BLOCK_NOT_ERROR){
+        return "WRITE_BLOCK_NOT_ERROR";
+    }
+    if(opcode == TAG_NOT_FOUND){
+        return "TAG_NOT_FOUND";
+    }
+    if(opcode == INSUFFICIENT_SPACE){
+        return "INSUFFICIENT_SPACE";
+    }
+    if(opcode == WRITE_NO_PERMISSION){
+        return "WRITE_NO_PERMISSION";
+    }
+    if(opcode == READ_WRITE_OVERFLOW){
+        return "READ_WRITE_OVERFLOW";
+    }
+    if(opcode == QUERY_END){
+        return "QUERY_END";
+    }
+    if(opcode == BLOCK_SIZE){
+        return "BLOCK_SIZE";
+    }
+    if(opcode == GET_BLOCK_DATA){
+        return "GET_BLOCK_DATA";
+    }
+    if(opcode == INSTRUCTION_ERROR){
+        return "INSTRUCTION_ERROR";
+    }
+    if(opcode == RETURN_BLOCK_DATA){
+        return "RETURN_BLOCK_DATA";
+    }
+    if(opcode == QUERY_DESALOJADA){
+        return "QUERY_DESALOJADA";
+    }
+    return NULL;
+}
+
 instr_code cast_code(char* code){
     if(string_equals_ignore_case(code,"CREATE")){
         return CREATE;
