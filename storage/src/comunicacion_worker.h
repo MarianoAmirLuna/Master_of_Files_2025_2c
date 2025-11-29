@@ -53,11 +53,11 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
         truncate_file_ops(file,tag,sz, w);
     }
     if(opcode == TAG_FILE){
-//        char* tag_destino = list_get_str(pack, 3);
+        char* file_destino = list_get_str(pack, 3);
         char* tag_destino = list_get_str(pack, 4);
 
         //Tiene 3 argumentos el TAG_FILE??? Con el args[3]??? Investigar.
-        tag_file_ops(file, tag, tag_destino,w);
+        tag_file_ops(file, tag, file_destino, tag_destino,w);
         free(tag_destino);
     }
     if(opcode == COMMIT_TAG){

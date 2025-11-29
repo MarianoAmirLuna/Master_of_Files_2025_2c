@@ -402,6 +402,9 @@ state_metadata get_state_metadata(t_config* metadata){
 char* get_filetag_path(config_storage cs, char* file, char* tag){
     return string_from_format("%s/files/%s/%s", cs.punto_montaje, file, tag);
 }
+char* get_file_path(config_storage cs, char* file){
+    return string_from_format("%s/files/%s", cs.punto_montaje, file);
+}
 
 char* get_metadata_fullpath(config_storage cs, char* file, char* tag){
     char* filetag =get_filetag_path(cs, file, tag);

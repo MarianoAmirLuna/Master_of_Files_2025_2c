@@ -9,20 +9,26 @@
 #include "../control_accesos.h"
 #endif
 
-void tag_file_ops(char* file, char* tag_origen, char* tag_destino, worker* w){
+void tag_file_ops(char* file, char* tag_origen, char* file_destino, char* tag_destino, worker* w){
 
     //Control de que no se reciban cosas nulas
-    if(file == NULL || tag_origen == NULL || tag_destino == NULL){
-        log_error(logger, "FILE, TAG_ORIGEN o TAG_DESTINO son nulos");
+    if(file == NULL || tag_origen == NULL || file_destino == NULL || tag_destino == NULL){
+        log_error(logger, "FILE, TAG_ORIGEN, file_destino o TAG_DESTINO son nulos");
         return;
     }
-        
+
     if(!file_tag_exist_or_not(file, tag_origen, w)){
         return; //Ya se envió el error al worker
     }
     log_orange(logger, "[TAG_FILE] Iniciando operacion TAG para %s:%s -> %s:%s", file, tag_origen, file, tag_destino);
-    
-    char* path_tag_destino =get_filetag_path(cs, file, tag_destino);
+
+    char* path_file_destino =  get_file_path(cs, file_destino);
+
+    if (!control_existencia(path_file_destino)){
+        create_nested_directories(path_file_destino);
+    }
+
+    char* path_tag_destino = get_filetag_path(cs, file, tag_destino);
     char* path_tag_origen = get_filetag_path(cs, file, tag_origen);
 
     if (control_existencia(path_tag_destino)){
@@ -41,7 +47,7 @@ void tag_file_ops(char* file, char* tag_origen, char* tag_destino, worker* w){
         free(path_metadata_origen);
         return;
     }
-    
+
     int tamanio_origen =get_size_from_metadata(metadata_origen);
     t_list* bloques_origen = get_array_blocks_as_list_from_metadata(metadata_origen);
 
