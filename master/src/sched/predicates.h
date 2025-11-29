@@ -114,8 +114,9 @@ worker* get_first_worker_free()
         
     void* w = list_find(workers, by_worker_free);
     if(w == NULL){
-
-        log_error(logger, "Ohhh es nulo el elemento wtf");
+        log_warning(logger, "No hay workers libres");
+        return NULL;
+        //log_error(logger, "Ohhh es nulo el elemento wtf");
     }
     return cast_worker(w);
 }

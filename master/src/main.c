@@ -333,20 +333,23 @@ void work_worker(t_list* pack, int id, int sock){
     }*/
     if(opcode == QUERY_END || opcode==INSTRUCTION_ERROR || opcode==FILE_NOT_FOUND || opcode==TAG_NOT_FOUND || opcode==INSUFFICIENT_SPACE || opcode==WRITE_NO_PERMISSION || opcode==READ_WRITE_OVERFLOW)
     {
+        int qid;
         if(opcode == QUERY_END){
+            qid = list_get_int(pack, 1);
             log_info(logger, "## Se terminó la Query: %d en el Worker %d",
-                w->id_query, id
+                qid, id
             );
         }else{
+            qid = w->id_query;
             log_orange(logger, "El Worker %d reporta un ERROR en la Query %d - OPCODE ERROR: %d",
                 id,
-                w->id_query,
+                qid,
                 opcode
             );
         }
-        query* q = get_query_by_qid(w->id_query);
-        if(q == NULL || w->id_query == -1){
-            log_error(logger, "La query %d es NULL (%s:%d)", w->id_query, __func__,__LINE__);
+        query* q = get_query_by_qid(qid);
+        if(q == NULL || qid == -1){
+            log_error(logger, "La query %d es NULL (%s:%d)", qid, __func__,__LINE__);
             w->id_query = -1; //Debo especificar que ahora este worker no tiene asignado ningún query.
             w->is_free=1;
             return;

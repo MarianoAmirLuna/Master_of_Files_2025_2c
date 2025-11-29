@@ -101,8 +101,12 @@ int increment_priority(query* q){
     //Ejemplo, Prioridad =0 es máxima, Prioridad = 4 es baja, etc.
     int old_priority = q->priority;
     q->priority--;
+    if(old_priority == 0 && q->priority==0)
+        return q->priority; //No hubo cambio, es lo mismo
     if(q->priority <= 0)
         q->priority = 0;
+    if(old_priority == 0 && q->priority==0)
+        return q->priority; //No hubo cambio, es lo mismo
     log_info(logger, "## %d Cambio de prioridad: %d - %d", q->id, old_priority, q->priority);
     on_changed(on_query_priority_changed, q);
     return q->priority;

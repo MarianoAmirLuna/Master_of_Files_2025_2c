@@ -383,6 +383,8 @@ void ejecutar_end()
 {
     t_packet *paq = create_packet();
     add_int_to_packet(paq, QUERY_END);
+    add_int_to_packet(paq, actual_query->id);
+    add_int_to_packet(paq, actual_query->pc);
     send_and_free_packet(paq, sock_master);
 }
 
