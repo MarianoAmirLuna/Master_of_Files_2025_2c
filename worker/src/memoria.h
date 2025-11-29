@@ -232,6 +232,7 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
 {
     char* contenido = malloc(storage_block_size);
     int base = buscar_base_pagina(elemento->file_tag, elemento->pag);
+    log_pink(logger,"base: %d" ,base);
     if (base < 0 || base + storage_block_size > cw.tam_memoria) {
         log_error(logger, "Acceso fuera de límites en memoria: base=%d, tamaño=%d", base, storage_block_size);
         free(contenido);
@@ -243,9 +244,17 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
     mostrar_contenido_memoria();
     log_light_green(logger, "#################################");
 
-    log_trace(logger, "Contenido enviado a storage: %.*s, el bloque lógico es: %d y el archivo es: %s",
-          storage_block_size, contenido, elemento->pag, elemento->file_tag);
-          
+    log_trace(logger, "Contenido enviado a storage: %s, el bloque lógico es: %d y el archivo es: %s",
+          contenido, elemento->pag, elemento->file_tag);
+
+    log_pink(logger, "#################################");
+    log_pink(logger,"base: %d" ,base);
+    char* cont2 = malloc(storage_block_size)
+    memcpy(cont2, memory, storage_block_size);
+    log_pink(logger,"contenido: %s" ,cont2);
+
+    log_pink(logger, "#################################");
+
     t_packet* paq = create_packet();
     add_int_to_packet(paq, reportar_error ? WRITE_BLOCK : WRITE_BLOCK_NOT_ERROR);
     char* file=string_new();
@@ -262,6 +271,64 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
     free(tag);
     free(contenido);
 }
+/*
+void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_error)
+{
+    char* contenido = malloc(storage_block_size);
+
+    int base = buscar_base_pagina(elemento->file_tag, elemento->pag);
+    if (base < 0 || base + storage_block_size > cw.tam_memoria) {
+        log_error(logger, "Acceso fuera de límites en memoria: base=%d, tamaño=%d",
+                  base, storage_block_size);
+        free(contenido);
+        return;
+    }
+
+    memcpy(contenido, memory + base, storage_block_size);
+
+    // ==========================
+    // LOGS ÚTILES
+    // ==========================
+    log_pink(logger, "es aca bobooooo, el envio a el poderosisimo storage lcdtm tapia");
+    log_info(logger,
+        "[WORKER → STORAGE] Enviando %d bytes del FileTag=%s bloque=%d",
+        storage_block_size,
+        elemento->file_tag,
+        elemento->pag
+    );
+
+    char* hex = mem_hexstring_plain(contenido, storage_block_size);
+    log_debug(logger, "[WORKER → STORAGE] HEX completo: %s", hex);
+    free(hex);
+
+    // ==========================
+    // ARMADO DEL PAQUETE REAL
+    // ==========================
+
+    t_packet* paq = create_packet();
+    add_int_to_packet(paq, reportar_error ? WRITE_BLOCK : WRITE_BLOCK_NOT_ERROR);
+
+    char* file = string_new();
+    char* tag  = string_new();
+    get_tag_file(elemento->file_tag, file, tag);
+
+    add_string_to_packet(paq, file);
+    add_string_to_packet(paq, tag);
+    add_int_to_packet(paq, elemento->pag);
+
+    // 👇 **IMPORTANTE: BLOQUE BINARIO COMPLETO**
+    add_int_to_packet(paq, storage_block_size);
+    add_buffer_to_packet(paq, contenido, storage_block_size);
+
+    send_and_free_packet(paq, sock_storage);
+
+    free(file);
+    free(tag);
+    free(contenido);
+}
+*/
+
+
 
 void liberar_entrada_TPG(entrada_tabla_pags *elemento)
 {
