@@ -175,11 +175,12 @@ void *actualizar_pagina(char *file_tag, int pagina)
         log_error(logger, "Ehh que pasó acá esto no es RETURN_BLOCK_DATA");
     }
     else{
-        char* data = list_get_int(recv_pack, 1);
+        char* data = list_getstr(recv_pack, 1);
         memcpy(data_bloque, data, storage_block_size);
     }
 
     int base = buscar_base_pagina(file_tag, pagina);
+    log_pink(logger, "StorageBlockSize: %d base=%d", storage_block_size, base);
     //DANGER: NUNCA SE INVOCO ESTE MÉTODO, NUNCA SE ESCRIBE EN LA MEMORIA INTERNA memory
     memcpy(memory + base, data_bloque, storage_block_size);
 

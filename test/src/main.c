@@ -11,18 +11,14 @@ int main(int argc, char* argv[]) {
     log_violet(logger, "%s", "Hola soy Test");
     load_config("../storage/storage.config");
     config_storage cs = load_config_storage();
-    t_queue* q = queue_create();
-
-    queue_push(q, 0);
-    queue_push(q, 1);
-    queue_push(q, 2);
-    queue_push(q, 4);
-    list_sort(q->elements, comparer);
-
-    int v = (int)queue_pop(q);
-    log_pink(logger, "Valor: %d", v);
-    v = (int)queue_pop(q);
-    log_pink(logger, "Valor: %d", v);
+    char* data_bloque = malloc(16);
+    char* primerdato = "Hola mundo";
+    memcpy(data_bloque, primerdato, 16);
+    log_orange(logger, "Resultado: %s", data_bloque);
+    char* segundodato = "Bueno";
+    memcpy(data_bloque, segundodato, 16);
+    log_orange(logger, "Resultado: %s", data_bloque);
+    
 
     return;
 
