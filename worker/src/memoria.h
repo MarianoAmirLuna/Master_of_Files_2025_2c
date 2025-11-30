@@ -245,11 +245,17 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
         free(contenido);
         return;
     }
+//_RESIDENT_EVIL:_ // deberia llegar esto (16 caracteres)
 
+//_RESIDENT_EVIL:_io 1 // me llega esto (20 caracteres ??? )
     memcpy(contenido, memory + base, storage_block_size);
 
-    log_trace(logger, "Contenido enviado a storage: %s, el bloque lógico es: %d y el archivo es: %s", 
-        contenido, elemento->pag, elemento->file_tag
+    char* contenido2 = string_substring(contenido, 0, storage_block_size);
+
+    log_pink(logger, "contenido: %s, tamaño = %d", contenido2, strlen(contenido2));
+
+    log_trace(logger, "contenido enviado a storage: %s, el bloque lógico es: %d y el archivo es: %s", 
+        contenido2, elemento->pag, elemento->file_tag
     );
 
     t_packet* paq = create_packet();
@@ -267,14 +273,14 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
     add_string_to_packet(paq, file);
     add_string_to_packet(paq, tag);
     add_int_to_packet(paq, elemento->pag); 
-    add_string_to_packet(paq, contenido);
+    add_string_to_packet(paq, contenido2);
     
     send_and_free_packet(paq, sock_storage);
     log_trace(logger, "FILE: %s, TAG:%s a enviar al storage", file, tag);
     free(file);
     free(tag);
     string_array_destroy(spl);
-    free(contenido);
+    free(contenido2);
 }
 
 void liberar_entrada_TPG(entrada_tabla_pags *elemento)
