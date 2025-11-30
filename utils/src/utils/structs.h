@@ -77,6 +77,12 @@ typedef struct{
 }query;
 
 typedef struct{
+    int status;
+    int id_query;
+    int pc;
+}response_desalojo;
+
+typedef struct{
     wid id;
     qid id_query;
     /// @brief Esto me sirve dede Master al Worker para enviar específicamente a ese Worker y no a otros
@@ -84,6 +90,7 @@ typedef struct{
     int is_free;
     /// @brief Se puede usar como campo interno en Worker, si Master pide desalojo el Worker le puede pasarle este valor.
     int pc;
+    response_desalojo resp_desalojo;
 }worker;
 
 /// @brief Estructuras para manejo de memoria principal

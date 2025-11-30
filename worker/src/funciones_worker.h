@@ -218,7 +218,12 @@ void loop_atender_queries()
         {
             //Incrementá el PC negro y con chequeo de out-bound si tenés 10 instrucciones no te podés ir a la instrucción 11 porque se hace percha.
             // Fase Fetch
-            
+            if(need_desalojo){
+                actual_worker->is_free=true;
+                sem_post(&sem_need_desalojo);
+                need_desalojo=0;
+                break;
+            }
             if(need_stop)
             {
                 log_debug(logger, "Voy a mandar un QUERY_END porque solicitaron un desalojo | need_stop es true: %d", need_stop);

@@ -13,9 +13,9 @@ void on_changed(void(*cbMeth)(void*), void* argsMeth){
 }
 
 void on_query_state_changed(void* elem){
-    log_orange(logger, "On query statechanged wait");
+    /*log_orange(logger, "On query statechanged wait");
     sem_wait(&sem_locker);
-    log_orange(logger, "On query statechanged nowwat");
+    log_orange(logger, "On query statechanged nowwat");*/
     query* q = cast_query(elem);
     log_light_blue(logger, "Un query (ID=%d,Archivo=%s) cambió de estado valor: %s", q->id, q->archive_query, state_to_string(q->sp));
     //log_light_blue(logger, "Un query %d cambió  de estado valor: %s", q->id, state_to_string(q->sp));
@@ -28,7 +28,7 @@ void on_query_state_changed(void* elem){
         add_string_to_packet(p, "Desalojado");
         send_and_free_packet(p, q->fd); //Notifico al Query Control que se
     }
-    sem_post(&sem_locker);
+    //sem_post(&sem_locker);
 }
 
 void on_query_priority_changed(void* elem){
@@ -40,11 +40,11 @@ void on_query_priority_changed(void* elem){
     //DANGER: CHECK THIS
     if(!list_exists(queries, is_most_priority, q))
         return;
-    sem_wait(&sem_locker);
+    //sem_wait(&sem_locker);
     //Desalojar un worker que tenga un query de menor prioridad (número mayor)
     for(int i=0;i<list_size(workers);i++){
         worker* w = cast_worker(list_get(workers, i));
-        log_orange(logger, "Existe worker y su id_query es %d", w->id_query);
+        log_orange(logger, "Existe worker ID=%d y ID_QUERY=%d",w->id, w->id_query);
         query* q_worker = get_query_by_qid(w->id_query);
         if(w == NULL || q_worker == NULL){
             //Holy shit
@@ -54,21 +54,9 @@ void on_query_priority_changed(void* elem){
             continue;
         log_debug(logger, "Voy a desalojarlo");
         desalojo(w);
-        /*t_packet* p = create_packet();
-        add_int_to_packet(p, REQUEST_DESALOJO);
-        add_int_to_packet(p, q->id);
-        send_and_free_packet(p, w->fd); //Envío y espero su respuesta de success
-
-        t_list* re = recv_operation_packet(w->fd);
-        if(list_get_int(re,0) != SUCCESS)
-        {
-            log_error(logger, "No se pudo desalojar el worker %d retorno un valor distinto de SUCCESS", w->id);
-            continue; //Debería hacer continue???
-        }else{
-            log_pink(logger, "Desalojó satisfactoriamente el worker %d", w->id);
-        }*/
-
+    
         w->is_free = 1; //El worker ahora está libre
+        w->id_query = -1; //El worker ya no tiene query asignado    
         log_info(logger, "## Se desaloja la Query <%d> (%d) del Worker <%d> - Motivo: PRIORIDAD",
             q_worker->id,
             q_worker->priority,
@@ -81,14 +69,15 @@ void on_query_priority_changed(void* elem){
             q->priority,
             w->id
         );*/
-        w->id_query = -1; //El worker ya no tiene query asignado    
+        
         execute_this_query_on_this_worker(q, w);
         query_to(q_worker, STATE_READY); //El query que estaba en exec pasa a ready        
+        break;
     }
     if(q == NULL){
         log_error(logger, "%s:%d", __func__, __LINE__);
     }
-    sem_post(&sem_locker);
+    //sem_post(&sem_locker);
 }
 
 

@@ -24,6 +24,7 @@ void* memory;
 int id_worker;
 config_worker cw;
 int block_size;
+int need_desalojo;
 int need_stop;
 int storage_block_size;
 
@@ -33,6 +34,7 @@ t_list* archivos_cargados;
 t_queue* tabla_pags_global;
 
 sem_t sem_need_stop;
+sem_t sem_need_desalojo;
 sem_t sem_query_recibida;
 sem_t tabla_pag_en_uso;
 sem_t tabla_frame_en_uso;

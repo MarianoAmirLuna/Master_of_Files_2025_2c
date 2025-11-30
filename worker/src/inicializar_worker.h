@@ -9,6 +9,7 @@
 void inicializar_semaforos()
 {
     sem_init(&sem_need_stop, 0, 0);
+    sem_init(&sem_need_desalojo, 0, 0);
     sem_init(&sem_query_recibida, 0, 0);
     sem_init(&tabla_pag_en_uso, 0, 1);
     sem_init(&tabla_frame_en_uso, 0, 1);

@@ -38,6 +38,7 @@ void execute_this_query_on_this_worker(query* q, worker* w){
     add_int_to_packet(p, q->id); //enviar el id_query
     add_int_to_packet(p, q->pc);
     add_string_to_packet(p,  q->archive_query); //enviarle el nombre del query a ejecutar
+    log_pink(logger, "Se manda la query (ID=%d, PC=%d) a ejecutar en Worker=%d", q->id, q->pc, w->id);
     log_pink(logger, "Tamaño quer: %d", strlen(q->archive_query));
     send_and_free_packet(p, w->fd);
     //free(dupli);
@@ -70,11 +71,11 @@ void execute_this_query_on_this_worker(query* q, worker* w){
 }
 
 void execute_worker(){
-    //log_light_blue(logger, "%s", "On ExecuteWorker");
+    log_light_blue(logger, "%s", "On ExecuteWorker");
     
     //TODO: Debo comprobar entre todas las queries tanto EXEC como en READY si existe alguno más prioritario que los que ya se ejecutan en worker para que este la desaloje
     sem_wait(&sem_worker);
-    //log_light_blue(logger, "%s", "Finish waiting ExecuteWorker");
+    log_light_blue(logger, "%s", "Finish waiting ExecuteWorker");
 
     pthread_mutex_lock(&mutex_sched);
     //TODO: Tengo que agarrar un worker libre (si lo hay) y si existe algún query a ejecutar en ready tengo que agarrar ese y mandarlo a EXEC
@@ -90,12 +91,14 @@ void execute_worker(){
     //Necesito comprobar si hay worker libre antes de hacer pop al queue ready sino se  pone fea la cosa.
     query* q= get_query_available();
     if(q == NULL){
-        log_warning(logger, "WTF (%s:%d) exit(1) IS INVOKED",__func__,__LINE__);
-        exit(EXIT_FAILURE);
+        log_warning(logger, "No hay queries en READY");
+        /*log_warning(logger, "WTF (%s:%d) exit(1) IS INVOKED",__func__,__LINE__);
+        exit(EXIT_FAILURE);*/
     }
 
     execute_this_query_on_this_worker(q, w);
-
+    print_queries();
+    print_workers();
     sem_post(&sem_worker);
 }
 
@@ -112,7 +115,6 @@ void* scheduler(void* params){
     //Debería usar semáforo acá sólo para habilitar este thread cuando se esté corriendo sino habrá desplazamiento de tiempo aging?
     for(;;){
         execute_worker();
-        
         //log_pink(logger, "%s", "ON AGING sleep");
 
         int ts = cm.tiempo_aging <= 0 ? 250 : cm.tiempo_aging/4;

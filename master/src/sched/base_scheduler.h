@@ -14,6 +14,9 @@
 
 pthread_mutex_t mutex_sched;
 
+
+//response_desalojo resp_desalojo= {-1, -1, -1};
+
 config_master cm;
 //TODO: t_queue* of this queries
 /// @brief struct de query
@@ -27,6 +30,7 @@ t_dictionary* dict_state;
 qid query_idx=0;
 int degree_multiprocess;
 sem_t sem_incoming_client;
+sem_t sem_desalojo;
 sem_t sem_idx;
 sem_t sem_locker;
 sem_t sem_worker;
@@ -66,18 +70,28 @@ int desalojo(worker* w)
 {
     if(w == NULL){
         log_error(logger, "W es nulo en desalojo (%s:%d)", __func__, __LINE__);
-        return;
+        return 0;
     }
     
     if(w->is_free){
-        return;
+        return 0;
     }
     log_pink(logger, "DESALOJO IS INVOKED");
     t_packet* pdes = create_packet();
     add_int_to_packet(pdes, REQUEST_DESALOJO);
     send_and_free_packet(pdes, w->fd); //Envío y espero su respuesta de success
 
-    t_list* re = recv_operation_packet(w->fd);
+    log_light_blue(logger, "Esperando respuesta de desalojo del worker %d", w->id);
+    sem_wait(&sem_desalojo); //MMM me da medio miedo porque como tiene que flushear la tabla el worker, debe esperar hasta que termine de flushearla el pete.
+    log_light_blue(logger, "Termine de esperar respuesta de desalojo del worker %d", w->id);
+    if(w->resp_desalojo.status != SUCCESS){
+        log_warning(logger, "No se pudo desalojar el worker %d retorno un valor distinto de SUCCESS", w->id);
+        return w->resp_desalojo.status;
+    }
+    else{
+        log_pink(logger, "Desalojó satisfactoriamente el worker %d", w->id);
+    }
+    /*t_list* re = recv_operation_packet(w->fd);
     int resp_success = list_get_int(re,0) == SUCCESS;
     if(!resp_success)
     {
@@ -85,19 +99,21 @@ int desalojo(worker* w)
         return;
     }else{
         log_pink(logger, "Desalojó satisfactoriamente el worker %d", w->id);
-    }
+    }*/
 
-    qid qid = list_get_int(re, 1);
-    int pc = list_get_int(re, 2);
+    qid qid = w->resp_desalojo.id_query;
+    int pc = w->resp_desalojo.pc;
+    log_pink(logger, "Respuesta desalojo: %d, %d, %d", w->resp_desalojo.status, w->resp_desalojo.id_query, w->resp_desalojo.pc);
     query* q = get_query_by_qid(qid);
     if(q != NULL){
         q->pc = pc;
-        q->sp == STATE_READY;
+        q->sp = STATE_READY;
     }
     
     w->is_free = 1; //El worker ahora está libre
     on_changed(on_query_state_changed, q);
-    return resp_success;
+    execute_worker(); //Ya que desalojé algo y debería asignarle algún trabajo
+    return w->resp_desalojo.status;
 }
 
 int increment_priority(query* q){
@@ -136,10 +152,15 @@ void query_to(query* q, state_process to){
         //exit(EXIT_FAILURE);
     }
     if(to == STATE_EXEC){
-        q->temp = temporal_create();
+        if(q->temp == NULL){
+            q->temp = temporal_create();
+        }
+        else{
+            temporal_restart(q->temp);
+        }
         //MANDAR AL WORKER PARA QUE LO EJECUTE
     }
-    if(is_list_sp(q->sp))
+    if(is_list_sp(q->sp) && q->sp != STATE_EXIT)
     {
         t_list* l= get_list_by_sp(q->sp); 
         list_remove_by_condition_by(l, by_query_qid, (void*)q->id); //remove from this 
@@ -152,6 +173,9 @@ void query_to(query* q, state_process to){
 void print_query(query* q){
     log_orange(logger, "ID: %d, State Process: %s, Priority: %d", q->id, state_to_string(q->sp), q->priority);
 }
+void print_worker(worker* w){
+    log_orange(logger, "ID=%d, ID_QUERY=%d, ISFree: %d", w->id, w->id_query, w->is_free);
+}
 
 void print_queries(){
     log_light_blue(logger, "Start print queries");
@@ -162,4 +186,13 @@ void print_queries(){
     log_light_blue(logger, "End print queries");
 }
     
+
+void print_workers(){
+    log_light_blue(logger, "Start print workers");
+    int sz = list_size(workers);
+    for(int i=0;i<sz;i++){
+        print_worker(cast_worker(list_get(workers, i)));
+    }
+    log_light_blue(logger, "End print workers");
+}
 #endif

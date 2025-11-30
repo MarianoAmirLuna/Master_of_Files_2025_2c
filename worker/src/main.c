@@ -143,24 +143,26 @@ void packet_callback(void* params){
                 return;
             }*/
             //qid id_query = list_get_int(packet, 1);
-            need_stop=1;
+            need_desalojo=1;
+            log_light_blue(logger, "En Semwait need stop");
+            sem_wait(&sem_need_desalojo);
+            log_light_blue(logger, "Termine Semwait need stop");
             
-            sem_wait(&sem_need_stop);
-            
-            flushear_tabla_paginas(false);
-
             t_packet* p = create_packet();
+            add_int_to_packet(p, op_code);
             add_int_to_packet(p, SUCCESS);
             add_int_to_packet(p, actual_query->id);
             add_int_to_packet(p, actual_query->pc);
-            
             send_and_free_packet(p, sock);
+            log_light_blue(logger, "Enviando respuesta del desalojo al Master ID=%d, PC=%d", actual_query->id, actual_query->pc);
             actual_worker->is_free=true;
-
+            
             log_info(logger, "## Query %d: Desalojado por pedido del Master", actual_query->id);
             actual_worker->id_query = -1;
             free(actual_query);
-            need_stop=0;
+            //need_desalojo=0;
+            flushear_tabla_paginas(false);
+            log_light_blue(logger, "Termine de flushear");
         }
     }
     if(ocm == MODULE_STORAGE){
