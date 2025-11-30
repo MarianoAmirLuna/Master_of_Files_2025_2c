@@ -155,6 +155,7 @@ int realizar_lectura(void *dest, char *file_tag, int dir_logica, int tam)
 
 void *actualizar_pagina(char *file_tag, int pagina)
 {
+    log_light_green(logger, "ENTRE A ACTUALIZAR PAGINA");
     msleep(cw.retardo_memoria);
     t_packet *paq = create_packet();
     char *file = strtok(file_tag, ":");
@@ -277,13 +278,12 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
                 }
                 n_frame = entrada_con_frame->marco;
             }
-
-            //string_array_destroy(spl); // libera el array de punteros
+            
             free(copia);
 
-            // Trae el contenido del bloque de storage
-            //TODO: descomentar para que funcione storage
-            //actualizar_pagina(file_tag, pagina);
+            log_light_green(logger, "ANTES DE ACTUALIZAR PAGINA");
+            actualizar_pagina(file_tag, pagina);
+            log_light_green(logger, "DESPUES DE ACTUALIZAR PAGINA");
 
         }
         // Apartir de acá existe la DL en memoria
@@ -330,9 +330,7 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
                 n_frame = entrada_con_frame->marco;
             }
 
-            // Trae el contenido del bloque de storage
-            //TODO: descomentar para que funcione storage
-            //actualizar_pagina(file_tag, pagina);
+            actualizar_pagina(file_tag, pagina);
         }
         // Apartir de acá existe la DL en memoria
         int bytes_leidos = realizar_lectura(leido + espacio_ya_leido, file_tag, indice, tam - espacio_ya_leido);
@@ -366,6 +364,9 @@ void ejecutar_flush(char *file_tag, bool reportar_error)
     {
         entrada_tabla_pags *entrada = list_get(tabla, i);
         actualizar_pagina_en_storage(entrada, reportar_error);
+        if(entrada ->modificada){
+            list_replace(tabla_pags_global, list_index_of(tabla_pags_global, entrada, entrada_compare_completa), entrada);
+        }
     }
 }
 

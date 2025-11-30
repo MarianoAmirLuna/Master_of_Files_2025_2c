@@ -132,31 +132,6 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     log_info(logger, "## Query: %d: - Instrucción realizada: %s", actual_query->id, instr_to_string(caso));
 }
 
-/*
-CREATE <NOMBRE_FILE>:<TAG>
-TRUNCATE <NOMBRE_FILE>:<TAG> <TAMAÑO>
-WRITE <NOMBRE_FILE>:<TAG> <DIRECCIÓN BASE> <CONTENIDO>
-READ <NOMBRE_FILE>:<TAG> <DIRECCIÓN BASE> <TAMAÑO>
-TAG <NOMBRE_FILE_ORIGEN>:<TAG_ORIGEN> <NOMBRE_FILE_DESTINO>:<TAG_DESTINO>
-COMMIT <NOMBRE_FILE>:<TAG>
-FLUSH <NOMBRE_FILE>:<TAG>
-DELETE <NOMBRE_FILE>:<TAG>
-END
-*/
-
-// FASE DECODE //
-/*void decode_y_execute_v2(char *linea_de_instruccion)
-{
-    char* instr = string_new();
-    char* case_str = string_new();
-    get_space_instr(linea_de_instruccion, instr, case_str);
-    instr_code caso = cast_code(case_str);
-
-    ejecutar_instruccion_v2(caso, instr);
-    free(instr);
-    free(case_str);
-}*/
-
 void decode_y_execute(char *linea_de_instruccion)
 {
 

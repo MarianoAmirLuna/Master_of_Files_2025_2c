@@ -37,13 +37,6 @@ bool hay_espacio_memoria(char *contenido)
     int length = string_length(contenido);
     int cant_pags = (length + block_size - 1) / block_size;
 
-    for(int i = 0; i < list_size(lista_frames); i++){
-        marco* aux = (list_get(lista_frames, i));
-        log_info(logger, "frame: %d", aux->inicio);
-        //log_info(logger, "frame v2: %s", (char*)aux->inicio);*/
-
-    }
-
     sem_wait(&tabla_pag_en_uso);
     t_list *frames_libres = list_filter(lista_frames, esta_libre);
     sem_post(&tabla_pag_en_uso);
@@ -68,6 +61,17 @@ bool hay_n_bytes_en_memoria(int n)
     list_destroy(frames_libres);
 
     return aux;
+}
+
+bool entrada_compare_completa(void* a, void* b) {
+    entrada_tabla_pags* e1 = (entrada_tabla_pags*)a;
+    entrada_tabla_pags* e2 = (entrada_tabla_pags*)b;
+
+    return string_equals_ignore_case(e1->file_tag, e2->file_tag) &&
+           e1->marco == e2->marco &&
+           e1->pag == e2->pag &&
+           e1->modificada == e2->modificada &&
+           e1->uso == e2->uso;
 }
 
 bool comparar_marcos(void* a, void* b) {
@@ -215,27 +219,27 @@ void actualizarPrioridadLRU(entrada_tabla_pags *entrada)
     if (index != -1){                                                                         // Verifica que el elemento esté en la lista
         entrada_tabla_pags* entradaRemovida = list_remove(tabla_pags_global->elements, index); // Lo borro
         queue_push(tabla_pags_global, entradaRemovida);                                  // Lo vuelvo a agregar al final
+        log_light_green(logger, "Query <%d>: Se actualiza la prioridad LRU de la página <%d> del - File:Tag : <%s>",
+            actual_worker->id_query, entrada->pag, entrada->file_tag);
     }
 }
 
 void mostrar_contenido_memoria() {
-    log_light_green(logger, "Mostrando contenido de la memoria:");
+    log_trace(logger, "Mostrando contenido de la memoria:");
 
     for (int i = 0; i < cw.tam_memoria; i++) {
         unsigned char byte = *((unsigned char *)memory + i);
         log_info(logger, "Byte %d: 0x%02X (%c)", i, byte, (byte >= 32 && byte <= 126) ? byte : '.');
-        //unsigned char* byte = (unsigned char *)memory + i;
-        //log_info(logger, "Byte %d: 0x%02X (%s)", i, byte, byte);
     }
 
-    log_light_green(logger, "Fin del contenido de la memoria.");
+    log_trace(logger, "Fin del contenido de la memoria.");
 }
 
 void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_error)
 {
     char* contenido = malloc(storage_block_size);
     int base = buscar_base_pagina(elemento->file_tag, elemento->pag);
-    log_pink(logger,"base: %d, storage_block_size=%d" ,base, storage_block_size);
+    log_trace(logger,"base: %d, storage_block_size=%d" ,base, storage_block_size);
     if (base < 0 || base + storage_block_size > cw.tam_memoria) {
         log_error(logger, "Acceso fuera de límites en memoria: base=%d, tamaño=%d", base, storage_block_size);
         free(contenido);
@@ -244,27 +248,14 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
 
     memcpy(contenido, memory + base, storage_block_size);
 
-    /*log_light_green(logger, "#################################");
-    mostrar_contenido_memoria();
-    log_light_green(logger, "#################################");*/
-
     log_trace(logger, "Contenido enviado a storage: %s, el bloque lógico es: %d y el archivo es: %s", 
         contenido, elemento->pag, elemento->file_tag
     );
 
-    /*log_pink(logger, "#################################");
-    log_pink(logger,"base: %d" ,base);
-    char* cont2 = malloc(storage_block_size);
-    memcpy(cont2, memory, storage_block_size);
-    log_pink(logger,"contenido: %s" ,cont2);
-
-    log_pink(logger, "#################################");*/
-
     t_packet* paq = create_packet();
     add_int_to_packet(paq, reportar_error ? WRITE_BLOCK : WRITE_BLOCK_NOT_ERROR);
-    /*char* file=string_new();
-    char* tag= string_new();*/
-    log_light_green(logger, "FileTag del elemento: %s", elemento->file_tag);
+
+    log_trace(logger, "FileTag del elemento: %s", elemento->file_tag);
     char* file = NULL;
     char* tag = NULL;
     char** spl= string_split(elemento->file_tag, ":");
@@ -279,70 +270,12 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
     add_string_to_packet(paq, contenido);
     
     send_and_free_packet(paq, sock_storage);
-    log_light_blue(logger, "FILE: %s, TAG:%s a enviar al storage", file, tag);
+    log_trace(logger, "FILE: %s, TAG:%s a enviar al storage", file, tag);
     free(file);
     free(tag);
     string_array_destroy(spl);
     free(contenido);
 }
-/*
-void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_error)
-{
-    char* contenido = malloc(storage_block_size);
-
-    int base = buscar_base_pagina(elemento->file_tag, elemento->pag);
-    if (base < 0 || base + storage_block_size > cw.tam_memoria) {
-        log_error(logger, "Acceso fuera de límites en memoria: base=%d, tamaño=%d",
-                  base, storage_block_size);
-        free(contenido);
-        return;
-    }
-
-    memcpy(contenido, memory + base, storage_block_size);
-
-    // ==========================
-    // LOGS ÚTILES
-    // ==========================
-    log_pink(logger, "es aca bobooooo, el envio a el poderosisimo storage lcdtm tapia");
-    log_info(logger,
-        "[WORKER → STORAGE] Enviando %d bytes del FileTag=%s bloque=%d",
-        storage_block_size,
-        elemento->file_tag,
-        elemento->pag
-    );
-
-    char* hex = mem_hexstring_plain(contenido, storage_block_size);
-    log_debug(logger, "[WORKER → STORAGE] HEX completo: %s", hex);
-    free(hex);
-
-    // ==========================
-    // ARMADO DEL PAQUETE REAL
-    // ==========================
-
-    t_packet* paq = create_packet();
-    add_int_to_packet(paq, reportar_error ? WRITE_BLOCK : WRITE_BLOCK_NOT_ERROR);
-
-    char* file = string_new();
-    char* tag  = string_new();
-    get_tag_file(elemento->file_tag, file, tag);
-
-    add_string_to_packet(paq, file);
-    add_string_to_packet(paq, tag);
-    add_int_to_packet(paq, elemento->pag);
-
-    // 👇 **IMPORTANTE: BLOQUE BINARIO COMPLETO**
-    add_int_to_packet(paq, storage_block_size);
-    add_buffer_to_packet(paq, contenido, storage_block_size);
-
-    send_and_free_packet(paq, sock_storage);
-
-    free(file);
-    free(tag);
-    free(contenido);
-}
-*/
-
-
 
 void liberar_entrada_TPG(entrada_tabla_pags *elemento)
 {
@@ -360,7 +293,6 @@ void liberar_entrada_TPG(entrada_tabla_pags *elemento)
 
     free(elemento->file_tag);
     free(elemento);
-    //log_info(logger, "Pagina nismeada");
     return;
 }
 
@@ -369,9 +301,11 @@ entrada_tabla_pags* buscar_victima_lru(){
     //Al actualizar las prioridades de la tabla de paginas global siempre
     //que se acceda a la misma provoca que al hacer pop(tabla_pags_global)
     //se saque el de Least Recently Used
-    return queue_pop(tabla_pags_global);
-    
-    //liberar_entrada_TPG(muerta);
+    entrada_tabla_pags* aux = queue_pop(tabla_pags_global);
+    log_light_green(logger, "Query <%d>: Se selecciona como víctima la pagina <%d> del - File:Tag : <%s>",
+        actual_worker->id_query, aux->pag, aux->file_tag);
+
+    return aux;
 }
 
 entrada_tabla_pags* buscar_victima_clock_modificado(){
@@ -405,17 +339,20 @@ entrada_tabla_pags* buscar_victima_clock_modificado(){
     }
     buscar_victima_clock_modificado();
 }
-
 entrada_tabla_pags* seleccionar_victima()
 {
     entrada_tabla_pags* victima;
+    log_warning(logger, "Algoritmo de reemplazo seleccionado: %d",
+        cw.algoritmo_reemplazo);
 
     if (R_LRU == cw.algoritmo_reemplazo)
     {
+        log_warning(logger, "Usando LRU para seleccionar víctima");
         victima = buscar_victima_lru();
     }
     else
     {
+        log_warning(logger, "Usando CLOCK MODIFICADO para seleccionar víctima");
         victima =buscar_victima_clock_modificado();
     }
 
