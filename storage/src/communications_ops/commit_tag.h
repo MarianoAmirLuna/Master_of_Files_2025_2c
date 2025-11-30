@@ -7,6 +7,34 @@
 #ifndef CRYPTO_H_
 #include "commons/crypto.h"
 #endif
+
+
+void set_blocks_in_metadata(t_config* metadata, t_list* blocks) {
+    // Construir string tipo "[1,2,3]"
+    char* blocks_str = string_new();
+    string_append(&blocks_str, "[");
+
+    int size = list_size(blocks);
+    for(int i = 0; i < size; i++){
+        int numero = (int) list_get(blocks, i);
+
+        char* num_str = string_from_format("%d", numero);
+        string_append(&blocks_str, num_str);
+        free(num_str);
+
+        if(i < size - 1)
+            string_append(&blocks_str, ",");
+    }
+    string_append(&blocks_str, "]");
+
+    // Guardar en el metadata
+    config_set_value(metadata, "BLOCKS", blocks_str);
+
+    free(blocks_str);
+}
+
+
+
 void commit_tag_ops(char* file, char* tag, worker* w){
 
     //Control de que no se reciban cosas nulas
@@ -23,7 +51,7 @@ void commit_tag_ops(char* file, char* tag, worker* w){
         config_destroy(metadata);
         return;
     }
-    
+
     //Según la condiciión si no está comiteado debo especificarlo como comiteado
     set_state_metadata_from_config(metadata, COMMITED);
 
@@ -120,6 +148,10 @@ void commit_tag_ops(char* file, char* tag, worker* w){
                         log_info(logger, "## %d - Bloque Físico Liberado - Número de Bloque: %d", w->id_query, bloque_fisico_actual);
                     }
                 }
+
+                list_replace(bloques_fisicos, i, (void*) bloque_fisico_existente);
+                set_blocks_in_metadata(metadata, bloques_fisicos);
+                config_save(metadata);
 
                 free(physical_block_old_path);
                 free(physical_block_new_path);
