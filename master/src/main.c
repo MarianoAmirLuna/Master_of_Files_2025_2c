@@ -100,12 +100,13 @@ void* attend_multiple_clients(void* params)
         sem_wait(&sem_incoming_client);
         int id = -1;
         if(ocm == MODULE_QUERY_CONTROL){
-            char* archive_query= list_get_str(l,1);
-            int prioridad = list_get_int(l,2);
-            
+            int prioridad = list_get_int(l,1);
+            char* archive_query= list_get_str(l,2);
+            //log_pink(logger, "Tamaño del archive_query = %d", strlen(archive_query));
             query* q = malloc(sizeof(query));
-            q->archive_query = malloc(strlen(archive_query)+1);
-            strcpy(q->archive_query, archive_query);
+            q->archive_query = string_duplicate(archive_query);
+            /*q->archive_query = (char*)malloc(strlen(archive_query)+1);
+            strcpy(q->archive_query, archive_query);*/
             q->priority = prioridad;
             q->fd = sock_client;
             q->id = increment_idx();
@@ -122,7 +123,7 @@ void* attend_multiple_clients(void* params)
                 list_size(workers)
             );
             free(archive_query);
-            print_queries();
+            //print_queries();
             //Deberia hacer una planificación ahora mismo para saber si puede asignar un 
         }
         if(ocm == MODULE_WORKER){

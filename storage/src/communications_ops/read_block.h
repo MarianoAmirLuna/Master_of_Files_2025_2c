@@ -51,15 +51,18 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
         free(block_path);
         return;
     }
-    int sz = get_size_file(f);
-    char* buffer = malloc(sz+1);
+    int sz = get_size_file(f)+1;
+    char* buffer = (char*)malloc(sz);
+    memset(buffer, 0, sz);
     fgets(buffer, sz, f);
 
+    log_pink(logger, "BUFFER=%s", buffer);
+    
     // Aplicar retardo de acceso a bloque
     msleep(cs.retardo_acceso_bloque);
-
+    log_light_blue(logger, "Enviando GETDATA al worker...");    
     t_packet* p = create_packet();
-    add_int_to_packet(p, READ_BLOCK);
+    add_int_to_packet(p, GET_DATA);
     add_string_to_packet(p, buffer);
     send_and_free_packet(p, w->fd);
 

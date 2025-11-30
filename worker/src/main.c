@@ -113,16 +113,17 @@ void packet_callback(void* params){
     log_info(logger, "Recibi mensaje de %s cantidad del packet: %d", ocm_to_string(ocm), list_size(packet));
     
     int op_code = list_get_int(packet, 0); //si del otro lado se usa el add_int_to_packet(...) entonces es recomendable utilizar el list_get_int(...) si por alguna razón da malos valores intentar con casteo (int)...
-    log_pink(logger,"OPCODE: %s", get_opcode_as_string(op_code));
+    log_pink(logger,"OPCODE: %d = %s", op_code, get_opcode_as_string(op_code));
     if(ocm == MODULE_MASTER){
         //ACA RECIBIS UN PAQUETE PROVENIENTE DE MASTER
         if(op_code == REQUEST_EXECUTE_QUERY){
             qid id_query =list_get_int(packet, 1);
-            char* str =list_get_str(packet, 2);
+            int pc = list_get_int(packet, 2);
+            char* str =list_get_str(packet, 3);
             archivo_query_actual = malloc(strlen(str)+1);
             strcpy(archivo_query_actual, str);
             
-            int pc = list_get_int(packet, 3);
+            
             actual_worker->is_free=false;
             actual_worker->id_query = id_query;
             log_pink(logger, "Por re-setear el actual_query");
@@ -161,21 +162,24 @@ void packet_callback(void* params){
             free(actual_query);
             need_stop=0;
         }
-        if(op_code == REQUEST_KNOW)
-        {
-            int v = list_get_int(packet, 1);
-            if(v == ACTUAL_STATUS)
-            {
-                t_packet* p = create_packet();
-                add_int_to_packet(p, ACTUAL_STATUS);
-                add_int_to_packet(p, actual_worker->is_free);
-                add_int_to_packet(p, actual_worker->id_query);
-                add_int_to_packet(p, actual_worker->pc);
-                send_and_free_packet(p, sock);
-            }
-        }
     }
     if(ocm == MODULE_STORAGE){
+        if(op_code == GET_DATA){
+       
+            log_light_blue(logger, "Tamaño del paquete: %d", list_size(packet));
+            int returned = list_get_int(packet, 0);
+            if(returned != GET_DATA)
+            {
+                log_error(logger, "Ehh que pasó acá esto no es GET_DATA esto es: %d exit 1 is invoked", returned);
+                exit(1);
+            }
+            else{
+                log_orange(logger, "Estoy en get data");
+                char* data = list_get_str(packet, 1);
+                memcpy(data_bloque, data, storage_block_size);
+                sem_post(&sem_get_data);
+            }
+        }
         //ACA RECIBIS UN PAQUETE PROVENIENTE DE STORAGE
         /*if(op_code == BLOCK_SIZE)
         {

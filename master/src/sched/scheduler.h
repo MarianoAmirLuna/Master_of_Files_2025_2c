@@ -31,16 +31,16 @@ void execute_this_query_on_this_worker(query* q, worker* w){
     //sem_wait(&sem_locker);
 
     desalojo(w);
-    t_packet* p = create_packet();
-    //log_debug(logger, "Estoy por enviar query id:%d, Archivo: %s, PC: %d", q->id, q->archive_query, q->pc);
-    add_int_to_packet(p, REQUEST_EXECUTE_QUERY);
-    add_int_to_packet(p, q->id); //enviar el id_query
-    add_string_to_packet(p, q->archive_query); //enviarle el nombre del query a ejecutar
-    add_int_to_packet(p, q->pc);
-    
     w->id_query = q->id;
     log_info(logger, "## Se envía la Query %d al Worker %d", q->id, w->id);
+    t_packet* p = create_packet();
+    add_int_to_packet(p, REQUEST_EXECUTE_QUERY);
+    add_int_to_packet(p, q->id); //enviar el id_query
+    add_int_to_packet(p, q->pc);
+    add_string_to_packet(p,  q->archive_query); //enviarle el nombre del query a ejecutar
+    log_pink(logger, "Tamaño quer: %d", strlen(q->archive_query));
     send_and_free_packet(p, w->fd);
+    //free(dupli);
 
     //Le hago saber al query que mandé algo a ejecutar
     t_packet* pq = create_packet();

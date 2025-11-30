@@ -189,6 +189,7 @@ typedef enum{
     BLOCK_SIZE = QUERY_END+1,
     GET_BLOCK_DATA,
     INSTRUCTION_ERROR,
+    GET_DATA,
     RETURN_BLOCK_DATA,
 }storage_worker_data;
 

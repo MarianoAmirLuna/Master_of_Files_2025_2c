@@ -23,22 +23,23 @@ void ejecutar_truncate(char *file_y_tag, int tam)
 {
     t_packet* paq = create_packet();
     add_int_to_packet(paq, TRUNCATE_FILE);
-    char* file = NULL;
+    /*char* file = NULL;
     char* tag = NULL;
     char** spl= string_split(file_y_tag, ":");
     file = malloc(strlen(spl[0]));
     tag = malloc(strlen(spl[1]));
     strcpy(file, spl[0]);
     strcpy(tag, spl[1]);
-    
     add_string_to_packet(paq, file);
-    add_string_to_packet(paq, tag);
+    add_string_to_packet(paq, tag);*/
 
+    add_file_tag_to_packet(paq, file_y_tag);
+    
     add_int_to_packet(paq, tam);
     send_and_free_packet(paq, sock_storage);
-    free(file);
+    /*free(file);
     free(tag);
-    string_array_destroy(spl);
+    string_array_destroy(spl);*/
 }
 
 /*
@@ -157,14 +158,14 @@ void *actualizar_pagina(char *file_tag, int pagina)
 {
     log_light_green(logger, "ENTRE A ACTUALIZAR PAGINA");
     msleep(cw.retardo_memoria);
-    t_packet *paq = create_packet();
+    
     //char* copia = string_duplicate(file_tag);
     char** spl = string_split(file_tag, ":");
     char* file = spl[0];
     char* tag = spl[1];
     /*char *file = strtok(file_tag, ":");
     char *tag = strtok(NULL, "");*/
-
+    t_packet *paq = create_packet();
     add_int_to_packet(paq, READ_BLOCK);
     add_string_to_packet(paq, file);
     add_string_to_packet(paq, tag);
@@ -172,17 +173,23 @@ void *actualizar_pagina(char *file_tag, int pagina)
     send_and_free_packet(paq, sock_storage);
 
     //Podés no usar semáforo de la siguiente forma
-    t_list* recv_pack = recv_operation_packet(sock_storage); 
-    int cod = list_get_int(recv_pack, 0); 
-    if( cod != READ_BLOCK)
+    /*log_light_blue(logger, "Esperando respuesta de Storage para GET_DATA...");
+    t_list* recv_pack = recv_operation_packet(sock_storage);
+    log_light_blue(logger, "Tamaño del paquete: %d", list_size(recv_pack));
+    int returned = list_get_int(recv_pack, 0);
+    if(returned != GET_DATA)
     {
-        log_error(logger, "Ehh que pasó acá esto no es READ_BLOCK");
+        log_error(logger, "Ehh que pasó acá esto no es GET_DATA esto es: %d exit 1 is invoked", returned);
+        exit(1);
     }
     else{
+        log_orange(logger, "Estoy en get data");
         char* data = list_get_str(recv_pack, 1);
         memcpy(data_bloque, data, storage_block_size);
-    }
-
+    }*/
+    log_light_blue(logger, "Esperando respuesta de Storage para GET_DATA...");
+    sem_wait(&sem_get_data);
+    log_light_blue(logger, "Fin espera respuesta de Storage para GET_DATA...");
     int base = buscar_base_pagina(file_tag, pagina);
     log_pink(logger, "StorageBlockSize: %d base=%d", storage_block_size, base);
     
@@ -192,6 +199,7 @@ void *actualizar_pagina(char *file_tag, int pagina)
     
     //free(copia);
     log_info(logger, "Query <%d>: - Memoria Add - File: <%s> - Tag: <%s> - Pagina: <%d> - Marco: <%d>", actual_worker->id_query, file, tag, pagina, marco);
+    
     string_array_destroy(spl);
 }
 
@@ -345,6 +353,7 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
         indice += bytes_leidos;
         espacio_ya_leido += bytes_leidos;
     }
+    
     ((char *)leido)[tam] = '\0';
     log_info(logger, "Query <%d>: Acción: <LEER> - Dirección Física: <%d> - Valor: <%s>", actual_worker->id_query, n_frame * storage_block_size + offset, leido);
 }

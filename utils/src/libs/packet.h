@@ -89,9 +89,15 @@ void add_packet(t_packet* packet, void* value, int size){
 void add_string_to_packet(t_packet* packet, char* str){
     int sz = strlen(str)+1;
     void* buf = malloc(sz);
+    memset(buf, 0, sz);
     memcpy(buf, str, sz);
-    /*int sz = 0;
-    void* buf = string_to_buffersize(str, &sz);*/
+    add_packet(packet, buf, sz);
+    free(buf);
+}
+
+void add_raw_string_to_packet(t_packet* packet, char* str, int sz){
+    void* buf = malloc(sz);
+    memcpy(buf, str, sz);
     add_packet(packet, buf, sz);
     free(buf);
 }
@@ -102,22 +108,38 @@ void add_int_to_packet(t_packet* packet, int v){
     add_packet(packet, &v, sizeof(int));
 }
 
+void add_execute_query_to_packet(t_packet* packet, qid id_query, char* path_query, int pc){
+    packet->buffer->size = sizeof(int)*2+strlen(path_query)+1;
+    packet->buffer = malloc(packet->buffer->size);
+    memcpy(packet->buffer->stream, &id_query, sizeof(int));
+    memcpy(packet->buffer->stream+sizeof(int), &id_query, sizeof(int));
+    memcpy(packet->buffer->stream+sizeof(int)*2, path_query, strlen(path_query));
+    add_int_to_packet(packet, id_query);
+    add_string_to_packet(packet, path_query);
+    add_int_to_packet(packet, pc);
+}
+
 void set_opcode_to_packet(t_packet* packet, int opcode){
     packet->opcode = opcode;
 }
 
 void add_file_tag_to_packet(t_packet* packet, char* instr){
-     char* file = NULL;
-    char* tag = NULL;
     char** spl= string_split(instr, ":");
-    file = malloc(strlen(spl[0]));
-    tag = malloc(strlen(spl[1]));
+    /*char* file = malloc(strlen(spl[0]));
+    char* tag = malloc(strlen(spl[1]));
     strcpy(file, spl[0]);
-    strcpy(tag, spl[1]);
-    add_string_to_packet(packet, file);
-    add_string_to_packet(packet, tag);
-    free(file);
-    free(tag);
+    strcpy(tag, spl[1]);*/
+    int sz = string_array_size(spl);
+    if( sz< 2 || sz > 2){
+        log_error(logger, "Error al parsear el file:tag %s cantidad del array: %d", instr, sz);
+        string_array_destroy(spl);
+        return;
+    }
+    add_string_to_packet(packet, spl[0]);
+    add_string_to_packet(packet, spl[1]);
+    /*free(file);
+    free(tag);*/
+    string_array_destroy(spl);
 }
 
 void add_worker_to_packet(t_packet* packet, worker* w){

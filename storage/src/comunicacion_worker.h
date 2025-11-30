@@ -40,7 +40,7 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     //opcode = convert_instr_code_to_storage_operation(opcode);
     char* file = list_get_str(pack,1);
     char* tag = list_get_str(pack, 2);
-    if(opcode == GET_BLOCK_DATA){ // devuelve el tamaño del bloque porque ? no se, pero lo hace atte: lseijas
+    /*if(opcode == GET_BLOCK_DATA){ // devuelve el tamaño del bloque porque ? no se, pero lo hace atte: lseijas
         t_packet* pdata = create_packet();
         add_int_to_packet(pdata, RETURN_BLOCK_DATA);
         //NO CONFUNDAS CON EL PUTO TAMAÑO DEL BLOQUE PORQUE ESO LO OBTIENE 
@@ -49,7 +49,7 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
         //add_int_to_packet(pdata, g_block_size);
         send_and_free_packet(pdata, sock_client);
         return;
-    }
+    }*/
     if(opcode == CREATE_FILE){
         if(real_sz < 2){
             log_error(logger, "Cantidad inválida de argumentos");
@@ -91,6 +91,9 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     free(file);
     free(tag);
     // esto es una respuesta barata, despues le agrego a cada uno su respuesta personalizada
+    /*t_packet* response = create_packet();
+    add_int_to_packet(response, SUCCESS);
+    send_and_free_packet(response, w->fd);*/
 }
 
 

@@ -42,10 +42,10 @@ int main(int argc, char* argv[]) {
 
     t_packet* packet = create_packet();
     add_int_to_packet(packet, itself_ocm);
-    add_string_to_packet(packet, archive_query);
     add_int_to_packet(packet, priority);
+    add_string_to_packet(packet, archive_query);
     send_and_free_packet(packet, fd_master);
-
+    log_pink(logger, "Tamaño del archive_query = %d", strlen(archive_query));
     for(;;){
         t_list* l = recv_operation_packet(fd_master);
         log_debug(logger, "Recibi: %d cantidad de elementos", list_size(l));
