@@ -158,6 +158,7 @@ void *actualizar_pagina(char *file_tag, int pagina)
     log_light_green(logger, "ENTRE A ACTUALIZAR PAGINA");
     msleep(cw.retardo_memoria);
     t_packet *paq = create_packet();
+    char* copia = string_duplicate(file_tag);
     char *file = strtok(file_tag, ":");
     char *tag = strtok(NULL, "");
 
@@ -179,12 +180,14 @@ void *actualizar_pagina(char *file_tag, int pagina)
         memcpy(data_bloque, data, storage_block_size);
     }
 
-    int base = buscar_base_pagina(file_tag, pagina);
+    int base = buscar_base_pagina(copia, pagina);
     log_pink(logger, "StorageBlockSize: %d base=%d", storage_block_size, base);
     //DANGER: NUNCA SE INVOCO ESTE MÉTODO, NUNCA SE ESCRIBE EN LA MEMORIA INTERNA memory
     memcpy(memory + base, data_bloque, storage_block_size);
 
     int marco = base / storage_block_size;
+    
+    free(copia);
 
     log_info(logger, "Query <%d>: - Memoria Add - File: <%s> - Tag: <%s> - Pagina: <%d> - Marco: <%d>", actual_worker->id_query, file, tag, pagina, marco);
 }
