@@ -11,7 +11,7 @@
 
 void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     /*Dado un File:Tag y número de bloque lógico, la operación de lectura obtendrá y devolverá el contenido del mismo.*/
-    
+
     /* EXCEPCIONES A TENER EN CUENTA EN ESTE PROCEDIMIENTO
         Lectura fuera de limite faltaria
     */

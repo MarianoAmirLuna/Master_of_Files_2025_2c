@@ -19,11 +19,11 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     int opcode = list_get_int(pack, 0);
     log_pink(logger, "OPCODE RECIBIDO EN STORAGE: %s", get_opcode_as_string(opcode));
     int real_sz = list_size(pack)-1;
-    if(opcode == GET_BLOCK_DATA){
+    if(opcode == GET_BLOCK_DATA){ // devuelve el tamaño del bloque porque ? no se, pero lo hace atte: lseijas
         //TODO: IMPLEMENT DATA
         t_packet* pdata = create_packet();
         add_int_to_packet(pdata, RETURN_BLOCK_DATA);
-        add_string_to_packet(pdata, "TE DOY LA DATAAAAA");
+        add_int_to_packet(pdata, g_block_size);
         send_and_free_packet(pdata, sock_client);
         return;
     }
