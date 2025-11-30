@@ -54,6 +54,7 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     int sz = get_size_file(f);
     char* buffer = malloc(sz+1);
     fgets(buffer, sz, f);
+
     // Aplicar retardo de acceso a bloque
     msleep(cs.retardo_acceso_bloque);
 

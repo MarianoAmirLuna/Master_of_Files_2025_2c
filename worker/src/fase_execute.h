@@ -158,37 +158,39 @@ void *actualizar_pagina(char *file_tag, int pagina)
     log_light_green(logger, "ENTRE A ACTUALIZAR PAGINA");
     msleep(cw.retardo_memoria);
     t_packet *paq = create_packet();
-    char* copia = string_duplicate(file_tag);
-    char *file = strtok(file_tag, ":");
-    char *tag = strtok(NULL, "");
+    //char* copia = string_duplicate(file_tag);
+    char** spl = string_split(file_tag, ":");
+    char* file = spl[0];
+    char* tag = spl[1];
+    /*char *file = strtok(file_tag, ":");
+    char *tag = strtok(NULL, "");*/
 
-    add_int_to_packet(paq, GET_BLOCK_DATA);
+    add_int_to_packet(paq, READ_BLOCK);
     add_string_to_packet(paq, file);
     add_string_to_packet(paq, tag);
     add_int_to_packet(paq, pagina);
-
     send_and_free_packet(paq, sock_storage);
 
     //Podés no usar semáforo de la siguiente forma
     t_list* recv_pack = recv_operation_packet(sock_storage); 
-    if(list_get_int(recv_pack, 0) != RETURN_BLOCK_DATA)
+    if(list_get_int(recv_pack, 0) != READ_BLOCK)
     {
-        log_error(logger, "Ehh que pasó acá esto no es RETURN_BLOCK_DATA");
+        log_error(logger, "Ehh que pasó acá esto no es READ_BLOCK");
     }
     else{
         char* data = list_get_str(recv_pack, 1);
         memcpy(data_bloque, data, storage_block_size);
     }
 
-    int base = buscar_base_pagina(copia, pagina);
+    int base = buscar_base_pagina(file_tag, pagina);
     log_pink(logger, "StorageBlockSize: %d base=%d", storage_block_size, base);
-    //DANGER: NUNCA SE INVOCO ESTE MÉTODO, NUNCA SE ESCRIBE EN LA MEMORIA INTERNA memory
+    
     memcpy(memory + base, data_bloque, storage_block_size);
 
     int marco = base / storage_block_size;
     
-    free(copia);
-
+    //free(copia);
+    string_array_destroy(spl);
     log_info(logger, "Query <%d>: - Memoria Add - File: <%s> - Tag: <%s> - Pagina: <%d> - Marco: <%d>", actual_worker->id_query, file, tag, pagina, marco);
 }
 

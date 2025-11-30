@@ -19,14 +19,7 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     int opcode = list_get_int(pack, 0);
     log_pink(logger, "OPCODE RECIBIDO EN STORAGE: %s", get_opcode_as_string(opcode));
     int real_sz = list_size(pack)-1;
-    if(opcode == GET_BLOCK_DATA){ // devuelve el tamaño del bloque porque ? no se, pero lo hace atte: lseijas
-        //TODO: IMPLEMENT DATA
-        t_packet* pdata = create_packet();
-        add_int_to_packet(pdata, RETURN_BLOCK_DATA);
-        add_int_to_packet(pdata, g_block_size);
-        send_and_free_packet(pdata, sock_client);
-        return;
-    }
+   
     /*char* params = NULL;
     if(list_size(pack) > 1)
     {
@@ -47,6 +40,16 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     //opcode = convert_instr_code_to_storage_operation(opcode);
     char* file = list_get_str(pack,1);
     char* tag = list_get_str(pack, 2);
+    if(opcode == GET_BLOCK_DATA){ // devuelve el tamaño del bloque porque ? no se, pero lo hace atte: lseijas
+        t_packet* pdata = create_packet();
+        add_int_to_packet(pdata, RETURN_BLOCK_DATA);
+        //NO CONFUNDAS CON EL PUTO TAMAÑO DEL BLOQUE PORQUE ESO LO OBTIENE 
+        //EL WORKER LA PRIMERA VZE QUE SE CONECTA CON STORAGE
+        // SORETE
+        //add_int_to_packet(pdata, g_block_size);
+        send_and_free_packet(pdata, sock_client);
+        return;
+    }
     if(opcode == CREATE_FILE){
         if(real_sz < 2){
             log_error(logger, "Cantidad inválida de argumentos");
