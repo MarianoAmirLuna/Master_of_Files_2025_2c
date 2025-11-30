@@ -281,6 +281,8 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
     free(tag);
     string_array_destroy(spl);
     free(contenido2);
+    free(contenido);
+
 }
 
 void liberar_entrada_TPG(entrada_tabla_pags *elemento)
