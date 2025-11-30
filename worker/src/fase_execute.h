@@ -175,7 +175,7 @@ void *actualizar_pagina(char *file_tag, int pagina)
         log_error(logger, "Ehh que pasó acá esto no es RETURN_BLOCK_DATA");
     }
     else{
-        char* data = list_getstr(recv_pack, 1);
+        char* data = list_get_str(recv_pack, 1);
         memcpy(data_bloque, data, storage_block_size);
     }
 

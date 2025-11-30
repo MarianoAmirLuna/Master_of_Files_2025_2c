@@ -69,7 +69,7 @@
 // FASE EXECUTE //
 void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, char *parametro3)
 {
-    log_debug(logger, "EJECUTAR_INSTRUCCION %s | %s | %s", parametro1, parametro2, parametro3);
+    log_debug(logger, "EJECUTAR_INSTRUCCION: (%s) | %s | %s | %s", instr_to_string(caso), parametro1, parametro2, parametro3);
     if (caso == CREATE)
     {
         //El tamaño del archivo debe ser 0
