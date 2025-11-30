@@ -173,7 +173,8 @@ void *actualizar_pagina(char *file_tag, int pagina)
 
     //Podés no usar semáforo de la siguiente forma
     t_list* recv_pack = recv_operation_packet(sock_storage); 
-    if(list_get_int(recv_pack, 0) != READ_BLOCK)
+    int cod = list_get_int(recv_pack, 0); 
+    if( cod != READ_BLOCK)
     {
         log_error(logger, "Ehh que pasó acá esto no es READ_BLOCK");
     }
@@ -190,8 +191,8 @@ void *actualizar_pagina(char *file_tag, int pagina)
     int marco = base / storage_block_size;
     
     //free(copia);
-    string_array_destroy(spl);
     log_info(logger, "Query <%d>: - Memoria Add - File: <%s> - Tag: <%s> - Pagina: <%d> - Marco: <%d>", actual_worker->id_query, file, tag, pagina, marco);
+    string_array_destroy(spl);
 }
 
 void *reservar_frame(char *file_tag, int pagina)

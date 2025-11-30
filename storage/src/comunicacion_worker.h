@@ -70,6 +70,7 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
         //Tiene 3 argumentos el TAG_FILE??? Con el args[3]??? Investigar.
         tag_file_ops(file, tag, file_destino, tag_destino,w);
         free(tag_destino);
+        free(file_destino);
     }
     if(opcode == COMMIT_TAG){
         commit_tag_ops(file, tag, w);
@@ -90,9 +91,6 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     free(file);
     free(tag);
     // esto es una respuesta barata, despues le agrego a cada uno su respuesta personalizada
-    t_packet* response = create_packet();
-    add_int_to_packet(response, SUCCESS);
-    send_and_free_packet(response, sock_client);
 }
 
 
