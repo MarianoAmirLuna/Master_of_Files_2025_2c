@@ -102,6 +102,7 @@ void valido_inicial_file(char* path)
         // Armo lista de bloques inicial
         t_list* bloques = list_create();
         list_add(bloques, 0);
+        ocupar_bloque(g_bitmap, 0, g_bitmap_size); // agregue que se bloquee el bloque 0 porque lo usa alguien 
         free(p_path); 
         char* meta_path = string_from_format("%s/%s", path, "files/initial_file/BASE/metadata.config");
         crear_metadata_config(meta_path, g_block_size, bloques, COMMITED);
@@ -123,6 +124,7 @@ void valido_inicial_file(char* path)
         free(p2_path);
     }
 }
+
 
 void inicializar_bitmap(const char* punto_montaje) {
     size_t num_blocks = g_fs_size / g_block_size;
