@@ -80,6 +80,16 @@ int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
 {
     msleep(cw.retardo_memoria);
     entrada_tabla_pags *entrada_con_frame = obtener_frame(file_tag, dir_logica);
+    if(entrada_con_frame == NULL){
+        log_error(logger, "No se encontro la entrada de la tabla de paginas para el file_tag=%s y dir_logica=%d", file_tag, dir_logica);
+        return -1;
+    }
+
+    //entrada_con_frame->modificada = true;
+    
+    log_trace(logger, "realizar_escritura: dir_logica=%d contenido=%s", dir_logica, contenido);
+    log_trace(logger, "Entrada de la TPG: file_tag=%s, pag=%d, marco=%d, modificada=%d, uso=%d", entrada_con_frame->file_tag, entrada_con_frame->pag, entrada_con_frame->marco, entrada_con_frame->modificada, entrada_con_frame->uso);
+    
     actualizarPrioridadLRU(entrada_con_frame);
 
     int frame = entrada_con_frame->marco;
@@ -149,8 +159,7 @@ void *actualizar_pagina(char *file_tag, int pagina)
     char** spl = string_split(file_tag, ":");
     char* file = spl[0];
     char* tag = spl[1];
-    /*char *file = strtok(file_tag, ":");
-    char *tag = strtok(NULL, "");*/
+
     t_packet *paq = create_packet();
     add_int_to_packet(paq, READ_BLOCK);
     add_string_to_packet(paq, file);
@@ -158,21 +167,6 @@ void *actualizar_pagina(char *file_tag, int pagina)
     add_int_to_packet(paq, pagina);
     send_and_free_packet(paq, sock_storage);
 
-    //Podés no usar semáforo de la siguiente forma
-    /*log_light_blue(logger, "Esperando respuesta de Storage para GET_DATA...");
-    t_list* recv_pack = recv_operation_packet(sock_storage);
-    log_light_blue(logger, "Tamaño del paquete: %d", list_size(recv_pack));
-    int returned = list_get_int(recv_pack, 0);
-    if(returned != GET_DATA)
-    {
-        log_error(logger, "Ehh que pasó acá esto no es GET_DATA esto es: %d exit 1 is invoked", returned);
-        exit(1);
-    }
-    else{
-        log_orange(logger, "Estoy en get data");
-        char* data = list_get_str(recv_pack, 1);
-        memcpy(data_bloque, data, storage_block_size);
-    }*/
     log_light_blue(logger, "Esperando respuesta de Storage para GET_DATA...");
     sem_wait(&sem_get_data);
     log_light_blue(logger, "Fin espera respuesta de Storage para GET_DATA...");
@@ -183,13 +177,12 @@ void *actualizar_pagina(char *file_tag, int pagina)
 
     int marco = base / storage_block_size;
     
-    //free(copia);
     log_info(logger, "Query <%d>: - Memoria Add - File: <%s> - Tag: <%s> - Pagina: <%d> - Marco: <%d>", actual_worker->id_query, file, tag, pagina, marco);
     
     string_array_destroy(spl);
 }
 
-void *reservar_frame(char *file_tag, int pagina)
+entrada_tabla_pags *reservar_frame(char *file_tag, int pagina)
 {
     log_trace(logger, "ENTRE A RESERVAR_FRAME");
     marco *frame_libre = buscar_frame_libre();
@@ -204,16 +197,14 @@ void *reservar_frame(char *file_tag, int pagina)
 
     entrada_tabla_pags *nueva = nueva_entrada(file_tag, pagina, indice_frame_table);
 
-    // Si el algoritmo es LRU acá se esta añadiendo una nueva entrada con la referencia más reciente
-    queue_push(tabla_pags_global, nueva);
-
     char *copia_ft = strdup(file_tag);
     char *file = strtok(copia_ft, ":");
     char *tag = strtok(NULL, ":");
     log_info(logger, "Query <%d>: Se asigna el Marco: <%d> a la Página: <%d> perteneciente al - File: <%s> - Tag: <%s>", actual_worker->id_query, indice_frame_table, pagina, file, tag);
     free(copia_ft);
 
-    return frame_libre->inicio;
+    //return frame_libre->inicio;
+    return nueva;
 }
 
 bool dl_en_tp(char *file_tag, int pagina)
@@ -261,12 +252,16 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
             if (!hay_n_bytes_en_memoria(block_size))
             {
                 entrada_tabla_pags *victima = seleccionar_victima(); // selecciona una victima
-                log_info(logger, "## Query <%d>: Se reemplaza la página <%s>/<%d> por la <%s>/<%d>", actual_worker->id_query, victima->file_tag, victima->pag, file_tag, pagina);
+                log_info(logger, "## Query <%d>: Para <%s> se reemplaza la página <%d> por la pagina <%d> del archivo <%s>", actual_worker->id_query, victima->file_tag, victima->pag, pagina, file_tag);
                 liberar_entrada_TPG(victima);
             }
 
             // Apartir de acá hay espacio
-            reservar_frame(file_tag, pagina);
+            entrada_tabla_pags* nueva_entrada_TPG = reservar_frame(file_tag, pagina);
+            nueva_entrada_TPG->modificada = true;
+            
+            // Si el algoritmo es LRU acá se esta añadiendo una nueva entrada con la referencia más reciente
+            queue_push(tabla_pags_global, nueva_entrada_TPG);
 
             if(espacio_ya_escrito == 0) //pura y exclusivamente para el log hago esto
             {
@@ -317,7 +312,10 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
             }
 
             // Apartir de acá hay espacio
-            reservar_frame(file_tag, pagina);
+            entrada_tabla_pags* nueva_entrada_TPG = reservar_frame(file_tag, pagina);
+            
+            // Si el algoritmo es LRU acá se esta añadiendo una nueva entrada con la referencia más reciente
+            queue_push(tabla_pags_global, nueva_entrada_TPG);
 
             if(espacio_ya_leido == 0) //pura y exclusivamente para el log hago esto
             {
