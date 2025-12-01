@@ -274,7 +274,8 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
             log_debug(logger, "IDQUERY=%d", actual_worker->id_query);
             log_info(logger, "Query <%d>: - Memoria Miss - File: <%s> - Tag: <%s> - Pagina: <%d>", actual_worker->id_query, file, tag, pagina);
 
-            if (!hay_espacio_memoria(contenido))
+            //if (!hay_espacio_memoria(contenido))
+            if (!hay_n_bytes_en_memoria(block_size))
             {
                 entrada_tabla_pags *victima = seleccionar_victima(); // selecciona una victima
                 log_info(logger, "## Query <%d>: Se reemplaza la página <%s>/<%d> por la <%s>/<%d>", actual_worker->id_query, victima->file_tag, victima->pag, file_tag, pagina);
@@ -289,7 +290,7 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
                 entrada_tabla_pags *entrada_con_frame = obtener_frame(file_tag, dir_base);
                 if (entrada_con_frame == NULL)
                 {
-                    log_error(logger, "ENTRADA CON FRAME ES NULL");
+                    log_error(logger, "ENTRADA DE TABLA DE PAGINAS ES NULL");
                 }
                 n_frame = entrada_con_frame->marco;
             }
@@ -381,7 +382,10 @@ void ejecutar_flush(char *file_tag, bool reportar_error)
         entrada_tabla_pags *entrada = list_get(tabla, i);
         actualizar_pagina_en_storage(entrada, reportar_error);
         if(entrada ->modificada){
-            list_replace(tabla_pags_global, list_index_of(tabla_pags_global, entrada, entrada_compare_completa), entrada);
+            int indice = list_index_of(tabla_pags_global, entrada, entrada_compare_completa);
+            log_trace(logger, "indice a actualizar en tabla global: %d", indice);
+            entrada->modificada = false;
+            list_replace(tabla_pags_global->elements, indice, entrada);
         }
     }
 }

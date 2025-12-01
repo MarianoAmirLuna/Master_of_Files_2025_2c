@@ -126,7 +126,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/bin/${workspaceFolderBasename}",
-      "args": ["memoria_worker.config", "MEMORIA_WORKER_2", "0"],
+      "args": ["memoria_worker.config", "MEMORIA_WORKER", "0"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],

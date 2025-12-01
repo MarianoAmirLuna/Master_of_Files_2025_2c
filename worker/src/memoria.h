@@ -153,11 +153,10 @@ int buscar_base_marco(int n)
 t_list* obtener_tabla_paginas(char *file_y_tag)
 {
     log_debug(logger, "FILEYTAG: %s (%s:%d)", file_y_tag, __func__,__LINE__);
-    //file_tag_buscado=file_y_tag;
     file_tag_buscado=strdup(file_y_tag);
     t_list* ret = list_filter(tabla_pags_global->elements, coincide_tag);
     free(file_tag_buscado);
-    log_debug(logger, "LISTA ES NULL???: %d (%s:%d)", ret == NULL, __func__,__LINE__);
+    log_debug(logger, "LISTA ES NULL?: %d (%s:%d)", ret == NULL, __func__,__LINE__);
     return ret;
 }
 
@@ -198,8 +197,38 @@ entrada_tabla_pags* nueva_entrada(char* file_tag, int pagina, int marco)
     ret->marco=marco;
     ret->modificada=false;
     ret->pag=pagina;
-    ret->uso=false;
+    ret->uso=true;
     return ret;
+}
+
+void loguear_tabla_paginas_global() {
+    log_warning(logger, "");
+    log_warning(logger, "=== Tabla de Páginas Global ===");
+
+    if (queue_size(tabla_pags_global) == 0) {
+        log_info(logger, "La tabla de páginas global está vacía.");
+        return;
+    }
+
+    for (int i = 0; i < queue_size(tabla_pags_global); i++) {
+        entrada_tabla_pags* entrada = list_get(tabla_pags_global->elements, i);
+
+        if (entrada == NULL) {
+            log_error(logger, "Entrada nula en la tabla de páginas global en el índice %d", i);
+            continue;
+        }
+
+        log_info(logger, "Entrada %d: File:Tag = <%s>, Página = <%d>, Marco = <%d>, Uso = <%d>, Modificada = <%d>",
+                 i,
+                 entrada->file_tag,
+                 entrada->pag,
+                 entrada->marco,
+                 entrada->uso,
+                 entrada->modificada);
+    }
+
+    log_warning(logger, "=== Fin de la Tabla de Páginas Global ===");
+    log_warning(logger, "");
 }
 
 /*
@@ -316,6 +345,10 @@ entrada_tabla_pags* buscar_victima_lru(){
 }
 
 entrada_tabla_pags* buscar_victima_clock_modificado(){
+    if (queue_size(tabla_pags_global) == 0) {
+        log_error(logger, "CLOCK-M: tabla_pags_global vacía, no hay víctima para seleccionar");
+        return NULL;
+    }
     //  Primera pasada: Buscar (0,0) 
     for (int i = 0; i < queue_size(tabla_pags_global); i++) {
         entrada_tabla_pags* elemento = queue_pop(tabla_pags_global);
@@ -346,11 +379,15 @@ entrada_tabla_pags* buscar_victima_clock_modificado(){
     }
     buscar_victima_clock_modificado();
 }
+
 entrada_tabla_pags* seleccionar_victima()
 {
     entrada_tabla_pags* victima;
     log_warning(logger, "Algoritmo de reemplazo seleccionado: %d",
         cw.algoritmo_reemplazo);
+
+    log_trace(logger, "Estado actual de la tabla de páginas global ANTES de seleccionar víctima:");
+    loguear_tabla_paginas_global();
 
     if (R_LRU == cw.algoritmo_reemplazo)
     {
@@ -362,6 +399,8 @@ entrada_tabla_pags* seleccionar_victima()
         log_warning(logger, "Usando CLOCK MODIFICADO para seleccionar víctima");
         victima =buscar_victima_clock_modificado();
     }
+    log_trace(logger, "Estado actual de la tabla de páginas global DESPUES de seleccionar víctima:");
+    loguear_tabla_paginas_global();
 
     return victima;
 }
@@ -392,7 +431,7 @@ t_list* obtener_file_tags_unicos(t_list* entradas) {
 
 void flushear_tabla_paginas(bool reportar_error){
     
-    t_list* file_tags = obtener_file_tags_unicos(tabla_pags_global);
+    t_list* file_tags = obtener_file_tags_unicos(tabla_pags_global->elements);
 
     for(int i = 0; i < list_size(file_tags); i++){
         ejecutar_flush(i, reportar_error);
