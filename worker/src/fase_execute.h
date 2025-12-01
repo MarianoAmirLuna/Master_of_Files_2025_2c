@@ -152,10 +152,9 @@ int realizar_lectura(void *dest, char *file_tag, int dir_logica, int tam)
 
 void *actualizar_pagina(char *file_tag, int pagina)
 {
-    log_light_green(logger, "ENTRE A ACTUALIZAR PAGINA el CW:RetardoMemoria es: %d", cw.retardo_memoria);
+    log_trace(logger, "ENTRE A ACTUALIZAR PAGINA el CW:RetardoMemoria es: %d", cw.retardo_memoria);
     msleep(cw.retardo_memoria);
     
-    //char* copia = string_duplicate(file_tag);
     char** spl = string_split(file_tag, ":");
     char* file = spl[0];
     char* tag = spl[1];
@@ -167,7 +166,7 @@ void *actualizar_pagina(char *file_tag, int pagina)
     add_int_to_packet(paq, pagina);
     send_and_free_packet(paq, sock_storage);
 
-    log_light_blue(logger, "Esperando respuesta de Storage para GET_DATA...");
+    log_trace(logger, "Esperando respuesta de Storage para GET_DATA...");
     sem_wait(&sem_get_data);
     int base = buscar_base_pagina(file_tag, pagina, -1);
     log_trace(logger, "StorageBlockSize: %d base=%d", storage_block_size, base);
@@ -276,8 +275,6 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
 
             log_light_green(logger, "ANTES DE ACTUALIZAR PAGINA");
             actualizar_pagina(file_tag, pagina);
-            log_light_green(logger, "DESPUES DE ACTUALIZAR PAGINA");
-
         }
         // Apartir de acá existe la DL en memoria
         int bytes_escritos = realizar_escritura(file_tag, indice, contenido + espacio_ya_escrito); // espacio_ya_escrito funciona como un offset para el contenido
@@ -304,7 +301,7 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
         pagina = calcular_pagina(indice);
         if (!dl_en_tp(file_tag, pagina))
         {
-            if (!hay_n_bytes_en_memoria(tam))
+            if (!hay_n_bytes_en_memoria(block_size))
             {
                 entrada_tabla_pags *victima = seleccionar_victima(); // selecciona una victima
                 log_info(logger, "## Query <%d>: Se reemplaza la página <%s>/<%d> por la <%s>/<%d>", actual_worker->id_query, victima->file_tag, victima->pag, file_tag, pagina);
@@ -327,10 +324,8 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
                 n_frame = entrada_con_frame->marco;
             }
 
-            log_light_green(logger, "ANTES DE ACTUALIZAR PAGINA");
+            log_trace(logger, "ANTES DE ACTUALIZAR PAGINA");
             actualizar_pagina(file_tag, pagina);
-            log_light_green(logger, "DESPUES DE ACTUALIZAR PAGINA");
-
         }
         // Apartir de acá existe la DL en memoria
         int bytes_leidos = realizar_lectura(leido + espacio_ya_leido, file_tag, indice, tam - espacio_ya_leido);
