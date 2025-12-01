@@ -183,19 +183,12 @@ void packet_callback(void* params){
                 exit(1);
             }
             else{
-                log_orange(logger, "Estoy en get data");
+                log_trace(logger, "Estoy en get data");
                 char* data = list_get_str(packet, 1);
                 memcpy(data_bloque, data, storage_block_size);
                 sem_post(&sem_get_data);
             }
         }
-        //ACA RECIBIS UN PAQUETE PROVENIENTE DE STORAGE
-        /*if(op_code == BLOCK_SIZE)
-        {
-            storage_block_size = list_get_int(packet, 1);
-            
-            data_bloque = malloc(storage_block_size);
-        }*/
         if(op_code==INSTRUCTION_ERROR || op_code==FILE_NOT_FOUND || op_code==TAG_NOT_FOUND || op_code==INSUFFICIENT_SPACE || op_code==WRITE_NO_PERMISSION || op_code==READ_WRITE_OVERFLOW)
         {
             t_packet* paq=create_packet();

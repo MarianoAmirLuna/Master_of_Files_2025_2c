@@ -169,9 +169,8 @@ void *actualizar_pagina(char *file_tag, int pagina)
 
     log_light_blue(logger, "Esperando respuesta de Storage para GET_DATA...");
     sem_wait(&sem_get_data);
-    log_light_blue(logger, "Fin espera respuesta de Storage para GET_DATA...");
-    int base = buscar_base_pagina(file_tag, pagina);
-    log_pink(logger, "StorageBlockSize: %d base=%d", storage_block_size, base);
+    int base = buscar_base_pagina(file_tag, pagina, -1);
+    log_trace(logger, "StorageBlockSize: %d base=%d", storage_block_size, base);
     
     memcpy(memory + base, data_bloque, storage_block_size);
 
@@ -281,12 +280,13 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
 
         }
         // Apartir de acá existe la DL en memoria
-
         int bytes_escritos = realizar_escritura(file_tag, indice, contenido + espacio_ya_escrito); // espacio_ya_escrito funciona como un offset para el contenido
 
         indice += bytes_escritos;
         espacio_ya_escrito += bytes_escritos;
     }
+
+    log_trace(logger, "frame usado para la escritura: %d, tamaño de bloque: %d, offset: %d", n_frame, storage_block_size, offset);
     
     log_info(logger, "Query <%d>: Acción: <ESCRIBIR> - Dirección Física: <%d> - Valor: <%s>", actual_worker->id_query, n_frame * storage_block_size + offset, contenido);
 }
@@ -327,7 +327,10 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
                 n_frame = entrada_con_frame->marco;
             }
 
+            log_light_green(logger, "ANTES DE ACTUALIZAR PAGINA");
             actualizar_pagina(file_tag, pagina);
+            log_light_green(logger, "DESPUES DE ACTUALIZAR PAGINA");
+
         }
         // Apartir de acá existe la DL en memoria
         int bytes_leidos = realizar_lectura(leido + espacio_ya_leido, file_tag, indice, tam - espacio_ya_leido);
@@ -337,6 +340,7 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
     }
     
     ((char *)leido)[tam] = '\0';
+    log_trace(logger, "frame usado para la LEER: %d, tamaño de bloque: %d, offset: %d", n_frame, storage_block_size, offset);
     log_info(logger, "Query <%d>: Acción: <LEER> - Dirección Física: <%d> - Valor: <%s>", actual_worker->id_query, n_frame * storage_block_size + offset, leido);
 }
 
@@ -373,6 +377,8 @@ void ejecutar_flush(char *file_tag, bool reportar_error)
             }
         }
     }
+    loguear_tabla_paginas_global();
+    list_destroy(tabla);
 }
 
 void ejecutar_delete(char *file, char *tag)

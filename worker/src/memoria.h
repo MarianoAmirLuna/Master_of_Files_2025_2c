@@ -215,9 +215,15 @@ int buscar_marco_en_tabla(char *file_y_tag, int n_pag)
 }
 
 /// @brief Retorna el desplazamiento en la memoria real necesario para llegar al inicio de una pagina
-int buscar_base_pagina(char *file_y_tag, int pag)
+int buscar_base_pagina(char *file_y_tag, int pag, int marco)
 {
-    int n_marco = buscar_marco_en_tabla(file_y_tag, pag);
+    int n_marco;
+    if(marco==-1){
+        n_marco = buscar_marco_en_tabla(file_y_tag, pag); //No se tiene acceso al marco
+    }
+    else{
+        n_marco = marco;
+    }
     int df = buscar_base_marco(n_marco);
     return df;
 }
@@ -269,8 +275,10 @@ void mostrar_contenido_memoria() {
 void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_error)
 {
     char* contenido = malloc(storage_block_size);
-    int base = buscar_base_pagina(elemento->file_tag, elemento->pag);
+
+    int base = buscar_base_pagina(elemento->file_tag, elemento->pag, elemento->marco);
     log_trace(logger,"base: %d, storage_block_size=%d" ,base, storage_block_size);
+
     if (base < 0 || base + storage_block_size > cw.tam_memoria) {
         log_error(logger, "Acceso fuera de límites en memoria: base=%d, tamaño=%d", base, storage_block_size);
         free(contenido);
@@ -283,7 +291,7 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
 
     char* contenido2 = string_substring(contenido, 0, storage_block_size);
 
-    log_pink(logger, "contenido: %s, tamaño = %d", contenido2, strlen(contenido2));
+    log_trace(logger, "contenido: %s, tamaño = %d", contenido2, strlen(contenido2));
 
     log_trace(logger, "contenido enviado a storage: %s, el bloque lógico es: %d y el archivo es: %s", 
         contenido2, elemento->pag, elemento->file_tag
@@ -356,7 +364,6 @@ entrada_tabla_pags* buscar_victima_clock_modificado(){
     for (int i = 0; i < queue_size(tabla_pags_global); i++) {
         entrada_tabla_pags* elemento = queue_pop(tabla_pags_global);
         if (elemento->uso == false && elemento->modificada == false) {
-            //liberar_entrada_TPG(elemento);
             return elemento;
         }
         queue_push(tabla_pags_global, elemento);
@@ -367,10 +374,8 @@ entrada_tabla_pags* buscar_victima_clock_modificado(){
     for (int i = 0; i < queue_size(tabla_pags_global); i++) {
         
         entrada_tabla_pags* elemento = queue_pop(tabla_pags_global);
-        //DIMA: Recuerden que si la lista del queue tabla_pags_global es vacía posiblemente les retorne NULL y explote
         if (elemento->uso == false && elemento->modificada == true) {
             // Encontramos la víctima (0,1). La liberamos y salimos.
-            //liberar_entrada_TPG(elemento);
             return elemento;
         }
         
