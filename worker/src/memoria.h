@@ -154,8 +154,12 @@ t_list* obtener_tabla_paginas(char *file_y_tag)
 {
     log_debug(logger, "FILEYTAG: %s (%s:%d)", file_y_tag, __func__,__LINE__);
     file_tag_buscado=strdup(file_y_tag);
+
+    loguear_tabla_paginas_global();
     t_list* ret = list_filter(tabla_pags_global->elements, coincide_tag);
+
     free(file_tag_buscado);
+    
     log_debug(logger, "LISTA ES NULL?: %d (%s:%d)", ret == NULL, __func__,__LINE__);
     return ret;
 }
@@ -173,7 +177,6 @@ int buscar_marco_en_tabla(char *file_y_tag, int n_pag)
         if (entrada->pag == n_pag)
         {
             list_destroy(tabla);
-            // creo que acá iría if(R_LRU == cw.algoritmo_reemplazo){actualizarPrioridadLRU(entrada)}
             return entrada->marco;
         }
     }

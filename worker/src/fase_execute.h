@@ -23,30 +23,16 @@ void ejecutar_truncate(char *file_y_tag, int tam)
 {
     t_packet* paq = create_packet();
     add_int_to_packet(paq, TRUNCATE_FILE);
-    /*char* file = NULL;
-    char* tag = NULL;
-    char** spl= string_split(file_y_tag, ":");
-    file = malloc(strlen(spl[0]));
-    tag = malloc(strlen(spl[1]));
-    strcpy(file, spl[0]);
-    strcpy(tag, spl[1]);
-    add_string_to_packet(paq, file);
-    add_string_to_packet(paq, tag);*/
-
     add_file_tag_to_packet(paq, file_y_tag);
-    
     add_int_to_packet(paq, tam);
     send_and_free_packet(paq, sock_storage);
-    /*free(file);
-    free(tag);
-    string_array_destroy(spl);*/
 }
 
-/*
-    caso 1: tabla de paginas tiene la pagina
-    caso 2: tabla de paginas tiene la pagina en memoria virtual
-    caso 3: tabla de paginas no tiene la pagina
-*/
+int calcular_pagina(int dir_base)
+{
+    return dir_base / block_size; // En teoría como son enteros la division redondea al entero inferior siempre
+}
+
 /// @brief dado un archivo y una posicion en el mismo, busca la pagina correspondiente (si está cargada) y devuelve el n° de marco
 /// @param archivo
 /// @param donde_comenzar
@@ -107,14 +93,14 @@ int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
     if (strlen(contenido) > espacio_restante_en_marco) // si no me alcanza con lo que queda de marco, solo copio lo que pueda
     {
         memcpy(base + offset, contenido, espacio_restante_en_marco);
-        log_trace(logger, "escritura devolvio %d", espacio_restante_en_marco);
+        log_trace(logger, "Se realizó una escritura %d", espacio_restante_en_marco);
         return espacio_restante_en_marco;
         // realizar_escritura(file_tag, dir_logica + espacio_restante_en_marco, contenido + espacio_restante_en_marco); // feo con ganas eh
     }
     else
     {
         memcpy(base + offset, contenido, strlen(contenido));
-        log_trace(logger, "escritura devolvio %d", strlen(contenido));
+        log_trace(logger, "Se realizó una escritura %d", strlen(contenido));
         return strlen(contenido);
     }
 }
@@ -240,10 +226,7 @@ bool dl_en_tp(char *file_tag, int pagina)
     return aux;
 }
 
-int calcular_pagina(int dir_base)
-{
-    return dir_base / block_size; // En teoría como son enteros la division redondea al entero inferior siempre
-}
+
 
 void ejecutar_write(char *file_tag, int dir_base, char *contenido)
 {
@@ -382,10 +365,14 @@ void ejecutar_flush(char *file_tag, bool reportar_error)
         entrada_tabla_pags *entrada = list_get(tabla, i);
         actualizar_pagina_en_storage(entrada, reportar_error);
         if(entrada ->modificada){
-            int indice = list_index_of(tabla_pags_global, entrada, entrada_compare_completa);
+            int indice = list_index_of(tabla_pags_global->elements, entrada, entrada_compare_completa);
             log_trace(logger, "indice a actualizar en tabla global: %d", indice);
             entrada->modificada = false;
-            list_replace(tabla_pags_global->elements, indice, entrada);
+            if (indice >= 0) {
+                list_replace(tabla_pags_global->elements, indice, entrada);
+            } else {
+                log_error(logger, "No se encontró la entrada en la tabla global para actualizar.");
+            }
         }
     }
 }
