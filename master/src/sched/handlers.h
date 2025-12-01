@@ -70,8 +70,8 @@ void on_query_priority_changed(void* elem){
             w->id
         );*/
         
-        execute_this_query_on_this_worker(q, w);
         query_to(q_worker, STATE_READY); //El query que estaba en exec pasa a ready        
+        execute_this_query_on_this_worker(q, w);
         break;
     }
     if(q == NULL){

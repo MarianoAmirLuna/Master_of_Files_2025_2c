@@ -30,7 +30,7 @@ t_dictionary* dict_state;
 qid query_idx=0;
 int degree_multiprocess;
 sem_t sem_incoming_client;
-sem_t sem_desalojo;
+//sem_t sem_desalojo;
 sem_t sem_idx;
 sem_t sem_locker;
 sem_t sem_worker;
@@ -82,7 +82,7 @@ int desalojo(worker* w)
     send_and_free_packet(pdes, w->fd); //Envío y espero su respuesta de success
 
     log_light_blue(logger, "Esperando respuesta de desalojo del worker %d", w->id);
-    sem_wait(&sem_desalojo); //MMM me da medio miedo porque como tiene que flushear la tabla el worker, debe esperar hasta que termine de flushearla el pete.
+    sem_wait(&w->sem_desalojo); //MMM me da medio miedo porque como tiene que flushear la tabla el worker, debe esperar hasta que termine de flushearla el pete.
     log_light_blue(logger, "Termine de esperar respuesta de desalojo del worker %d", w->id);
     if(w->resp_desalojo.status != SUCCESS){
         log_warning(logger, "No se pudo desalojar el worker %d retorno un valor distinto de SUCCESS", w->id);
@@ -171,7 +171,7 @@ void query_to(query* q, state_process to){
 }
 
 void print_query(query* q){
-    log_orange(logger, "ID: %d, State Process: %s, Priority: %d", q->id, state_to_string(q->sp), q->priority);
+    log_orange(logger, "ID: %d, State Process: %s, Priority: %d, PC=%d", q->id, state_to_string(q->sp), q->priority, q->pc);
 }
 void print_worker(worker* w){
     log_orange(logger, "ID=%d, ID_QUERY=%d, ISFree: %d", w->id, w->id_query, w->is_free);

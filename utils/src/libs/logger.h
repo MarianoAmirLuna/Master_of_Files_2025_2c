@@ -9,7 +9,7 @@
 
 t_log* logger = NULL;
 
-#define DELETE_LOG_EVERY_RUN
+#undef DELETE_LOG_EVERY_RUN
 
 /// @brief Crea el loc de variable global
 /// @param name Nombre del Log

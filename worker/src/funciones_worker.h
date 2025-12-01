@@ -250,6 +250,7 @@ void loop_atender_queries()
                 log_error(logger, "ACTUAL QUERY INSTRUCTIONS NO TIENE ELEMENTOS %s:%d", __func__, __LINE__);
                 break;
             }
+            log_light_blue(logger, "Query ID=%d PC=%d", actual_query->id, actual_query->pc);
             char *instruccion = list_get(actual_query->instructions, actual_query->pc); //Nótese que incrementa el pc
             log_debug(logger, "QID=%d, PC=%d, Instrucción que va a ejecutar: %s", 
                 actual_query->id, 

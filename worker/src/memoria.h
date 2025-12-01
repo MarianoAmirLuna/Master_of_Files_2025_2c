@@ -287,27 +287,28 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
         contenido2, elemento->pag, elemento->file_tag
     );
 
-    t_packet* paq = create_packet();
-    add_int_to_packet(paq, reportar_error ? WRITE_BLOCK : WRITE_BLOCK_NOT_ERROR);
+    
 
     log_trace(logger, "FileTag del elemento: %s", elemento->file_tag);
-    char* file = NULL;
-    char* tag = NULL;
+
     char** spl= string_split(elemento->file_tag, ":");
-    file = malloc(strlen(spl[0]));
+    char* file = spl[0];
+    char* tag = spl[1];
+    /*file = malloc(strlen(spl[0]));
     tag = malloc(strlen(spl[1]));
     strcpy(file, spl[0]);
-    strcpy(tag, spl[1]);
+    strcpy(tag, spl[1]);*/
     
+    t_packet* paq = create_packet();
+    add_int_to_packet(paq, reportar_error ? WRITE_BLOCK : WRITE_BLOCK_NOT_ERROR);
     add_string_to_packet(paq, file);
     add_string_to_packet(paq, tag);
     add_int_to_packet(paq, elemento->pag); 
-    add_string_to_packet(paq, contenido2);
-    
+    add_string_to_packet(paq, contenido2);    
     send_and_free_packet(paq, sock_storage);
     log_trace(logger, "FILE: %s, TAG:%s a enviar al storage", file, tag);
-    free(file);
-    free(tag);
+    /*free(file);
+    free(tag);*/
     string_array_destroy(spl);
     free(contenido2);
     free(contenido);

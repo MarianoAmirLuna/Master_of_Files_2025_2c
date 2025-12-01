@@ -11,6 +11,7 @@
 #include "commons/collections/queue.h"
 #include "commons/bitarray.h"
 #include "commons/temporal.h"
+#include <semaphore.h>
 //#include "exts/temporal_ext.h"
 #define MAX_INPUT 255
 
@@ -91,6 +92,7 @@ typedef struct{
     /// @brief Se puede usar como campo interno en Worker, si Master pide desalojo el Worker le puede pasarle este valor.
     int pc;
     response_desalojo resp_desalojo;
+    sem_t sem_desalojo;
 }worker;
 
 /// @brief Estructuras para manejo de memoria principal

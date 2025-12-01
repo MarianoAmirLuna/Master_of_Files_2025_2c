@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
     sem_init(&sem_incoming_client, 0,1);
     sem_init(&sem_locker, 0,1);
     sem_init(&sem_worker, 0,1);
-    sem_init(&sem_desalojo, 0,0);
+    //sem_init(&sem_desalojo, 0,0);
     int sock_server = server_connection(cm.puerto_escucha);
     
     void* param = malloc(sizeof(int)*2);
@@ -136,6 +136,7 @@ void* attend_multiple_clients(void* params)
             w->fd = sock_client;
             w->is_free = 1; //Al conectarse el worker está libre
             w->resp_desalojo = (response_desalojo){-1, -1, -1};
+            sem_init(&w->sem_desalojo, 0, 0);
             id = id_worker;
 
             list_add(workers, w);
@@ -354,7 +355,7 @@ void work_worker(t_list* pack, int id, int sock){
         w->resp_desalojo.id_query = qid;
         w->resp_desalojo.pc = pc;
         
-        sem_post(&sem_desalojo);
+        sem_post(&w->sem_desalojo);
     }
     if(opcode == QUERY_END || opcode==INSTRUCTION_ERROR || opcode==FILE_NOT_FOUND || opcode==TAG_NOT_FOUND || opcode==INSUFFICIENT_SPACE || opcode==WRITE_NO_PERMISSION || opcode==READ_WRITE_OVERFLOW)
     {

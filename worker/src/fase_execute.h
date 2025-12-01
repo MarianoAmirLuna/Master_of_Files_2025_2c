@@ -156,7 +156,7 @@ int realizar_lectura(void *dest, char *file_tag, int dir_logica, int tam)
 
 void *actualizar_pagina(char *file_tag, int pagina)
 {
-    log_light_green(logger, "ENTRE A ACTUALIZAR PAGINA");
+    log_light_green(logger, "ENTRE A ACTUALIZAR PAGINA el CW:RetardoMemoria es: %d", cw.retardo_memoria);
     msleep(cw.retardo_memoria);
     
     //char* copia = string_duplicate(file_tag);

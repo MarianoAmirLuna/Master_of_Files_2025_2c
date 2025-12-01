@@ -30,6 +30,7 @@
 #ifndef CRYPTO_H_
 #include "commons/crypto.h"
 #endif
+
 t_config* config;
 
 typedef struct{
@@ -191,6 +192,21 @@ t_config* load_config(char* path){
         exit(1);*/
     }
     return config;
+}
+/// @brief Carga el archivo en variable global config
+/// @param path Ruta del .config
+/// @return retorna la variable  global config
+t_config* load_config_itself(char* path){
+    t_config* res = config_create(path);
+    if(res == NULL){
+        printf("No se encontro el config %s asi que se creo uno nuevo\n", path);
+        res = malloc(sizeof(t_config));
+        res->path = strdup(path);
+        res->properties = dictionary_create();
+        /*printf("ERROR no se pudo cargar el config");
+        exit(1);*/
+    }
+    return res;
 }
 
 
@@ -416,13 +432,13 @@ char* get_metadata_fullpath(config_storage cs, char* file, char* tag){
 t_config* get_metadata_from_file_tag(config_storage cs, char* file, char* tag){
     
     char* fullpath = get_metadata_fullpath(cs,file,tag);
-    t_config* res= load_config(fullpath);
+    t_config* res= load_config_itself(fullpath);
     free(fullpath);
     return res;
 }
 t_config* get_block_hash_index(config_storage cs){
     char* fullpath = string_from_format("%s/blocks_hash_index.config", cs.punto_montaje);
-    t_config* res= load_config(fullpath);
+    t_config* res= load_config_itself(fullpath);
     free(fullpath);
     return res;
 }

@@ -2,9 +2,6 @@
 
 int main(int argc, char* argv[]) {
     itself_ocm = MODULE_WORKER;
-    create_log("worker", cw.log_level);
-    log_trace(logger, "%s", "Hola soy WORKER");
-    instance_signal_handler();
     if(argc == 3){
         char* config_path = argv[1];
         id_worker = atoi(argv[2]);
@@ -13,11 +10,18 @@ int main(int argc, char* argv[]) {
         log_error(logger, "Cantidad inválida de argumentos: %d", argc);
         id_worker = 0;
         load_config("worker.config");
+        exit(1);
     }
+    cw = load_config_worker();
+    create_log("worker", cw.log_level);
+    log_light_blue(logger, "RETARDO MEMORIA CONFIGURADO EN WORKER: %d", cw.retardo_memoria);
+    log_trace(logger, "%s", "Hola soy WORKER");
+    instance_signal_handler();
+    
     actual_worker = malloc(sizeof(worker));
     actual_worker->id = id_worker;
     actual_worker->is_free = true;
-    cw = load_config_worker();
+    
 
     inicializar_worker();
     
@@ -127,9 +131,12 @@ void packet_callback(void* params){
             actual_worker->is_free=false;
             actual_worker->id_query = id_query;
             log_pink(logger, "Por re-setear el actual_query");
-            
+            if(actual_query != NULL){
+                free(actual_query);
+            }
             actual_query = create_basic_query(id_query, archivo_query_actual, pc);
 
+            log_light_blue(logger, "Worker asignado a la Query %d PC=%d", actual_query->id, actual_query->pc);
             log_info(logger, "## Query %d: Se recibe la Query. El path de operaciones es: %s", id_query, archivo_query_actual); 
             sem_post(&sem_query_recibida); //Aviso que ya tengo una query para ejecutar
             free(str);
