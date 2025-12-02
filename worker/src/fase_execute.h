@@ -310,6 +310,10 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
         pagina = calcular_pagina(indice);
         if (!dl_en_tp(file_tag, pagina))
         {
+            char *copia = strdup(file_tag);
+            char *file = strtok(copia, ":");
+            char *tag = strtok(NULL, ":");
+            log_info(logger, "Query <%d>: - Memoria Miss - File: <%s> - Tag: <%s> - Pagina: <%d>", actual_worker->id_query, file, tag, pagina);
             if (!hay_n_bytes_en_memoria(block_size))
             {
                 entrada_tabla_pags *victima = seleccionar_victima(); // selecciona una victima
@@ -340,6 +344,7 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
 
             log_trace(logger, "ANTES DE ACTUALIZAR PAGINA");
             actualizar_pagina(file_tag, pagina);
+            free(copia);
         }
         else
         {
