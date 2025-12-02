@@ -200,17 +200,12 @@ entrada_tabla_pags *reservar_frame(char *file_tag, int pagina)
 
     entrada_tabla_pags *nueva = nueva_entrada(file_tag, pagina, indice_frame_table);
 
-    //char* copia_ft=string_split(file_tag, ":");
-    //char *file = copia_ft[0];
-    //char *tag = copia_ft[1];
-    char* copia_ft = strdup(file_tag); 
-    char* file = strtok(copia_ft, ":");
-    char* tag = strtok(NULL, ":");
+    char** copia_ft=string_split(file_tag, ":");
+    char *file = copia_ft[0];
+    char *tag = copia_ft[1];
     log_info(logger, "Query <%d>: Se asigna el Marco: <%d> a la Página: <%d> perteneciente al - File: <%s> - Tag: <%s>", actual_worker->id_query, indice_frame_table, pagina, file, tag);
-    //string_array_destroy(copia_ft);
-    free(copia_ft);
+    string_array_destroy(copia_ft);
 
-    //return frame_libre->inicio;
     return nueva;
 }
 

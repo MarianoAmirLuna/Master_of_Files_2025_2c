@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     pthread_mutex_t locker;
     pthread_mutex_init(&locker, NULL);
     
-    int arr[] = {MODULE_MASTER, MODULE_STORAGE};
+    int arr[] = {MODULE_STORAGE, MODULE_MASTER};
     for(int i=0;i<2;i++){
         //Como el ciclo va tan rápido necesito bloquear el subproceso principal
         pthread_mutex_lock(&locker);
@@ -57,12 +57,14 @@ void* connect_to_server(void* params){
     log_debug(logger, "Connectando al servidor: %s", ocm_to_string(ocm)); 
     int wcl = 0; 
     if(ocm == MODULE_MASTER){
+        sem_wait(&sem_storage_conectado); //Espero a que el storage esté conectado para conectarme al master
         wcl = client_connection(cw.ip_master,cw.puerto_master);
         sock_master = wcl;
     }
     if(ocm == MODULE_STORAGE){
         wcl = client_connection(cw.ip_storage,cw.puerto_storage);
         sock_storage = wcl;
+        sem_post(&sem_storage_conectado); //Aviso que ya estoy conectado al storage
     }
     if(handshake(wcl, 0) != 0)
     {
