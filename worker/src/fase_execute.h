@@ -63,6 +63,11 @@ entrada_tabla_pags *obtener_frame(char *archivo, int donde_comenzar)
         }
     }
     list_destroy(tabla);
+
+    if(ret->marco > 2)
+    {
+        log_pink(logger, "pasaron cosas");
+    }
     return ret;
 }
 
@@ -276,6 +281,10 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
             log_light_green(logger, "ANTES DE ACTUALIZAR PAGINA");
             actualizar_pagina(file_tag, pagina);
         }
+        else
+        {
+            n_frame = obtener_frame(file_tag, dir_base);
+        }
         // Apartir de acá existe la DL en memoria
         int bytes_escritos = realizar_escritura(file_tag, indice, contenido + espacio_ya_escrito); // espacio_ya_escrito funciona como un offset para el contenido
 
@@ -321,11 +330,20 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
                 {
                     log_error(logger, "ENTRADA CON FRAME ES NULL");
                 }
+
+                if (entrada_con_frame->marco > 2)
+                {
+                    log_pink(logger, "pasaron cosas");
+                }
                 n_frame = entrada_con_frame->marco;
             }
 
             log_trace(logger, "ANTES DE ACTUALIZAR PAGINA");
             actualizar_pagina(file_tag, pagina);
+        }
+        else
+        {
+            n_frame = obtener_frame(file_tag, dir_base);
         }
         // Apartir de acá existe la DL en memoria
         int bytes_leidos = realizar_lectura(leido + espacio_ya_leido, file_tag, indice, tam - espacio_ya_leido);
