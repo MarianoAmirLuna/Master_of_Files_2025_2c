@@ -41,6 +41,7 @@ sem_t tabla_frame_en_uso;
 sem_t sem_file_tag_buscado;
 sem_t sem_bloque_recibido;
 sem_t sem_get_data;
+sem_t sem_storage_conectado;
 
 /*/// @brief Cuando el worker está libre para una nueva ejecución que quiera hacer el Master
 int is_free;*/

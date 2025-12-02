@@ -16,6 +16,7 @@ void inicializar_semaforos()
     sem_init(&sem_file_tag_buscado, 0, 0);
     sem_init(&sem_bloque_recibido, 0, 0);
     sem_init(&sem_get_data, 0, 0);
+    sem_init(&sem_storage_conectado, 0, 0);
 }
 
 void inicializar_variables()
