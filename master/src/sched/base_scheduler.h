@@ -161,7 +161,8 @@ void* desalojo_worker_query(void* params)
     query_to(q_worker, STATE_READY); //El query que estaba en exec pasa a ready        
     execute_this_query_on_this_worker(q_changed, w);
     list_destroy(par);
-    return w->resp_desalojo.status;
+    //return w->resp_desalojo.status;
+    return NULL;
 }
 
 

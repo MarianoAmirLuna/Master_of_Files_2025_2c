@@ -56,7 +56,7 @@ void execute_this_query_on_this_worker(query* q, worker* w){
 }
 
 
-void execute_this_query_on_this_worker_v2_thread(void* elem){
+void* execute_this_query_on_this_worker_v2_thread(void* elem){
     t_list* params = (t_list*)elem;
     worker* w = cast_worker(list_get(params,0));
     query* q = cast_query(list_get(params,1));
@@ -126,7 +126,7 @@ void execute_worker(){
     list_add(params, w);
     list_add(params, q);
     //execute_this_query_on_this_worker(q,w);
-    pthread_create(pth, NULL, execute_this_query_on_this_worker_v2_thread, params);
+    pthread_create(pth, NULL, execute_this_query_on_this_worker_v2_thread, (void*)params);
     pthread_detach(*pth);
     
     sem_post(&sem_worker);
