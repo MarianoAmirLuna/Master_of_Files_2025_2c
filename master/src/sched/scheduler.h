@@ -92,6 +92,7 @@ void execute_this_query_on_this_worker_v2_thread(void* elem){
     w->is_free=0;
     print_queries();
     print_workers();
+    list_destroy(params);
     pthread_mutex_unlock(&mutex_sched);
 }
 
