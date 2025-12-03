@@ -67,7 +67,7 @@ bool hay_espacio_memoria(char *contenido)
 {
     int length = string_length(contenido);
     int cant_pags = (length + block_size - 1) / block_size;
-
+    log_orange(logger, "Esperando pag en uso");
     sem_wait(&tabla_pag_en_uso);
     t_list *frames_libres = list_filter(lista_frames, esta_libre);
     sem_post(&tabla_pag_en_uso);
@@ -83,7 +83,7 @@ bool hay_espacio_memoria(char *contenido)
 bool hay_n_bytes_en_memoria(int n)
 {
     int cant_pags = (n + block_size - 1) / block_size;
-
+    log_orange(logger, "Esperando pag en uso 1");
     sem_wait(&tabla_pag_en_uso);
     t_list *frames_libres = list_filter(lista_frames, esta_libre);
     sem_post(&tabla_pag_en_uso);

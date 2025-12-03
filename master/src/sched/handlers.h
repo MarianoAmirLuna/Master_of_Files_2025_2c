@@ -53,25 +53,16 @@ void on_query_priority_changed(void* elem){
         if(q_worker->priority <= q->priority)
             continue;
         log_debug(logger, "Voy a desalojarlo");
-        desalojo(w);
+        pthread_t* pth = malloc(sizeof(pthread_t));
+        t_list* params = list_create();
+        list_add(params, w);
+        list_add(params, q_worker);
+        list_add(params, q);
+        pthread_create(pth, NULL, desalojo_worker_query, params);
+        pthread_detach(*pth);
+        //desalojo(w);
     
-        w->is_free = 1; //El worker ahora está libre
-        w->id_query = -1; //El worker ya no tiene query asignado    
-        log_info(logger, "## Se desaloja la Query <%d> (%d) del Worker <%d> - Motivo: PRIORIDAD",
-            q_worker->id,
-            q_worker->priority,
-            w->id
-        );
-        /*log_info(logger, "## Se desaloja la Query %d (%d) y comienza a ejecutar la Query %d (%d) en el Worker %d",
-            q_worker->id,
-            q_worker->priority,
-            q->id,
-            q->priority,
-            w->id
-        );*/
         
-        query_to(q_worker, STATE_READY); //El query que estaba en exec pasa a ready        
-        execute_this_query_on_this_worker(q, w);
         break;
     }
     if(q == NULL){

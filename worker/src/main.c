@@ -44,8 +44,10 @@ int main(int argc, char* argv[]) {
     }
     pthread_mutex_destroy(&locker);
 
-
-    loop_atender_queries();
+    pthread_t* pth_que = malloc(sizeof(pthread_t));
+    pthread_create(pth_que, NULL, (void*)loop_atender_queries, NULL);
+    pthread_join(*pth_que, NULL);
+    //loop_atender_queries();
 
     return 0;
 }

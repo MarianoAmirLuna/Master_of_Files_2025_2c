@@ -107,6 +107,64 @@ int desalojo(worker* w)
     return w->resp_desalojo.status;
 }
 
+void* desalojo_worker_query(void* params)
+{
+    log_orange(logger, "Desalojo worker query is invoked");
+    t_list* par = (t_list*)params;
+    worker* w = (worker*)list_get(par, 0);
+    query* q_worker = (query*)list_get(par, 1);
+    query* q_changed = (query*)list_get(par, 2);
+    if(w == NULL){
+        log_error(logger, "W es nulo en desalojo (%s:%d)", __func__, __LINE__);
+        return NULL;
+    }
+    
+    if(w->is_free){
+        return NULL;
+    }
+    log_pink(logger, "DESALOJO IS INVOKED");
+    t_packet* pdes = create_packet();
+    add_int_to_packet(pdes, REQUEST_DESALOJO);
+    send_and_free_packet(pdes, w->fd); //Envío y espero su respuesta de success
+
+    log_light_blue(logger, "Esperando respuesta de desalojo del worker %d", w->id);
+    sem_wait(&w->sem_desalojo); //MMM me da medio miedo porque como tiene que flushear la tabla el worker, debe esperar hasta que termine de flushearla el pete.
+    log_light_blue(logger, "Termine de esperar respuesta de desalojo del worker %d", w->id);
+    if(w->resp_desalojo.status != SUCCESS){
+        log_warning(logger, "No se pudo desalojar el worker %d retorno un valor distinto de SUCCESS", w->id);
+        return w->resp_desalojo.status;
+    }
+    else{
+        log_pink(logger, "Desalojó satisfactoriamente el worker %d", w->id);
+    }
+
+    qid qid = w->resp_desalojo.id_query;
+    int pc = w->resp_desalojo.pc;
+    log_pink(logger, "Respuesta desalojo: %d, %d, %d", w->resp_desalojo.status, w->resp_desalojo.id_query, w->resp_desalojo.pc);
+    query* q = get_query_by_qid(qid);
+    if(q != NULL){
+        q->pc = pc;
+        q->sp = STATE_READY;
+    }
+    
+    //w->is_free = 1; //El worker ahora está libre
+    on_changed(on_query_state_changed, q);
+    //execute_worker(); //Ya que desalojé algo y debería asignarle algún trabajo
+
+    w->is_free = 1; //El worker ahora está libre
+    w->id_query = -1; //El worker ya no tiene query asignado    
+    log_info(logger, "## Se desaloja la Query <%d> (%d) del Worker <%d> - Motivo: PRIORIDAD",
+        q_worker->id,
+        q_worker->priority,
+        w->id
+    );
+    query_to(q_worker, STATE_READY); //El query que estaba en exec pasa a ready        
+    execute_this_query_on_this_worker(q_changed, w);
+    list_destroy(par);
+    return w->resp_desalojo.status;
+}
+
+
 int increment_priority(query* q){
     //Recordar que cuanto menor es el número mayor es su prioridad. No confundir.
     //Ejemplo, Prioridad =0 es máxima, Prioridad = 4 es baja, etc.

@@ -29,8 +29,12 @@ void execute_this_query_on_this_worker(query* q, worker* w){
     }
     pthread_mutex_lock(&mutex_sched);
     //sem_wait(&sem_locker);
-
-    desalojo(w);
+    if(!w->is_free){
+        /*pthread_t* pth = malloc(sizeof(pthread_t));
+        pthread_create(pth, NULL, desalojo, w);
+        pthread_detach(*pth);*/
+        desalojo(w);
+    }
     w->id_query = q->id;
     log_info(logger, "## Se envía la Query %d al Worker %d", q->id, w->id);
     t_packet* p = create_packet();
@@ -38,10 +42,8 @@ void execute_this_query_on_this_worker(query* q, worker* w){
     add_int_to_packet(p, q->id); //enviar el id_query
     add_int_to_packet(p, q->pc);
     add_string_to_packet(p,  q->archive_query); //enviarle el nombre del query a ejecutar
-    log_pink(logger, "Se manda la query (ID=%d, PC=%d) a ejecutar en Worker=%d", q->id, q->pc, w->id);
-    log_pink(logger, "Tamaño quer: %d", strlen(q->archive_query));
     send_and_free_packet(p, w->fd);
-    //free(dupli);
+    log_pink(logger, "Se manda la query (ID=%d, PC=%d) a ejecutar en Worker=%d", q->id, q->pc, w->id);
 
     //Le hago saber al query que mandé algo a ejecutar
     t_packet* pq = create_packet();
@@ -51,23 +53,46 @@ void execute_this_query_on_this_worker(query* q, worker* w){
     query_to(q, STATE_EXEC);
     w->is_free=0;
     pthread_mutex_unlock(&mutex_sched);
-    /*t_list* pack = recv_operation_packet_control(w->fd); //Debería primero recibir después de esto para saber si fue SUCCESS el ejecutar query?? antes de setear como libre el worker.
-    if(pack == NULL){
-        log_error(logger, "Parece que algo se desconectó por lo que voy a decir que este worker está libre");
-        for(int i=0;i<list_size(workers);i++){
-            if(cast_worker(list_get(workers, i))->id == w->id){
-                list_remove(workers, i);
-                break;
-            }
-        }
-        query_to(q, STATE_READY);
-    }else{
-        if(list_get_int(pack, 0) == SUCCESS){
-            query_to(q, STATE_EXEC);
-            w->is_free=0;
-        }
-    }*/
-    //sem_post(&sem_locker);
+}
+
+
+void execute_this_query_on_this_worker_v2_thread(void* elem){
+    t_list* params = (t_list*)elem;
+    worker* w = cast_worker(list_get(params,0));
+    query* q = cast_query(list_get(params,1));
+    //TODO: Bloquear este subproceso para prevenir condiciones de carrera
+    if(q == NULL || w == NULL){
+        log_error(logger, "THE FUCK (%s:%d)",__func__,__LINE__);
+        return;
+    }
+    pthread_mutex_lock(&mutex_sched);
+    //sem_wait(&sem_locker);
+    if(!w->is_free){
+        /*pthread_t* pth = malloc(sizeof(pthread_t));
+        pthread_create(pth, NULL, desalojo, w);
+        pthread_detach(*pth);*/
+        desalojo(w);
+    }
+    w->id_query = q->id;
+    log_info(logger, "## Se envía la Query %d al Worker %d", q->id, w->id);
+    t_packet* p = create_packet();
+    add_int_to_packet(p, REQUEST_EXECUTE_QUERY);
+    add_int_to_packet(p, q->id); //enviar el id_query
+    add_int_to_packet(p, q->pc);
+    add_string_to_packet(p,  q->archive_query); //enviarle el nombre del query a ejecutar
+    send_and_free_packet(p, w->fd);
+    log_pink(logger, "Se manda la query (ID=%d, PC=%d) a ejecutar en Worker=%d", q->id, q->pc, w->id);
+
+    //Le hago saber al query que mandé algo a ejecutar
+    t_packet* pq = create_packet();
+    add_int_to_packet(pq, REQUEST_EXECUTE_QUERY);
+    send_and_free_packet(pq, q->fd);  //Debido al TP imprime en Query Control la solicitud de ejec. Creería que debo notificarlo
+    
+    query_to(q, STATE_EXEC);
+    w->is_free=0;
+    print_queries();
+    print_workers();
+    pthread_mutex_unlock(&mutex_sched);
 }
 
 void execute_worker(){
@@ -95,10 +120,14 @@ void execute_worker(){
         /*log_warning(logger, "WTF (%s:%d) exit(1) IS INVOKED",__func__,__LINE__);
         exit(EXIT_FAILURE);*/
     }
-
-    execute_this_query_on_this_worker(q, w);
-    print_queries();
-    print_workers();
+    pthread_t* pth = malloc(sizeof(pthread_t));
+    t_list* params = list_create();
+    list_add(params, w);
+    list_add(params, q);
+    //execute_this_query_on_this_worker(q,w);
+    pthread_create(pth, NULL, execute_this_query_on_this_worker_v2_thread, params);
+    pthread_detach(*pth);
+    
     sem_post(&sem_worker);
 }
 

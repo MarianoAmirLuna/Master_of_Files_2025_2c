@@ -160,6 +160,26 @@ char* get_opcode_as_string(int opcode){
     if(opcode == QUERY_DESALOJADA){
         return "QUERY_DESALOJADA";
     }
+    if(opcode == BLOCK_SIZE)
+    {
+        return "BLOCK_SIZE";
+    }
+    if(opcode == GET_BLOCK_DATA)
+    {
+        return "GET_BLOCK_DATA";
+    }
+    if(opcode == INSTRUCTION_ERROR)
+    {
+        return "INSTRUCTION_ERROR";
+    }
+    if(opcode == GET_DATA)
+    {
+        return "GET_DATA";
+    }
+    if(opcode == RETURN_BLOCK_DATA)
+    {
+        return "RETURN_BLOCK_DATA";
+    }
     return NULL;
 }
 

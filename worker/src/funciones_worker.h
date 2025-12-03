@@ -137,32 +137,19 @@ void decode_y_execute(char *linea_de_instruccion)
 
     char *instruccion = NULL, *parametro1 = NULL, *parametro2 = NULL, *parametro3 = NULL;
     remove_new_line(linea_de_instruccion);
-
-    char *token = strtok(linea_de_instruccion, " "); // agarra desde el inicio hasta el primer espacio
-    instruccion = token;
-
-    token = strtok(NULL, " ");
-    if (token != NULL)
-    {
-        parametro1 = token; // agarra desde el primer espacio hasta el segundo
-    }
-
-    token = strtok(NULL, " ");
-    if (token != NULL)
-    {
-        parametro2 = token; // agarra desde el segundo espacio hasta el fin
-    }
-
-    token = strtok(NULL, " ");
-    if (token != NULL)
-    {
-        parametro3 = token; // agarra desde el tercer espacio hasta el fin
-    }
-
+    char** spl = string_split(linea_de_instruccion, " ");
+    instruccion = spl[0];
+    if (spl[1] != NULL && string_array_size(spl) > 1)
+        parametro1 = spl[1];
+    if (spl[2] != NULL && string_array_size(spl) > 2)
+        parametro2 = spl[2];
+    if (spl[3] != NULL && string_array_size(spl) > 3)
+        parametro3 = spl[3];
+    
     instr_code caso = cast_code(instruccion);
-    //NOTE: Se podría crear un campo en actual_worker para el PROGRAM_COUNTER
     log_info(logger, "## Query: %d: -FETCH - Program Counter: %d - %s", actual_query->id, actual_query->pc, instruccion);
     ejecutar_instruccion(caso, parametro1, parametro2, parametro3);
+    string_array_destroy(spl);
 }
 
 // FASE DECODE //
@@ -226,6 +213,10 @@ void loop_atender_queries()
             }
             if(need_stop)
             {
+                if(need_desalojo)
+                {
+                    sem_post(&sem_need_desalojo); //por si las moscas
+                }
                 log_debug(logger, "Voy a mandar un QUERY_END porque solicitaron un desalojo | need_stop es true: %d", need_stop);
                 //QUERY END Termina esto que te rre fuiste
                 actual_worker->is_free = true;
@@ -258,7 +249,9 @@ void loop_atender_queries()
                 instruccion
             );
             decode_y_execute(instruccion);
+            log_pink(logger, "SE TERMINO LA EJECUCION DE: %s", instruccion);
             actual_query->pc++;
+            
         }
     }
 }
