@@ -153,9 +153,9 @@ void packet_callback(void* params){
             }*/
             //qid id_query = list_get_int(packet, 1);
             need_desalojo=1;
-            log_light_blue(logger, "En Semwait need stop");
+            log_light_blue(logger, "En Semwait need desalojo");
             sem_wait(&sem_need_desalojo);
-            log_light_blue(logger, "Termine Semwait need stop");
+            log_light_blue(logger, "Termine Semwait need desalojo");
             
             t_packet* p = create_packet();
             add_int_to_packet(p, op_code);
@@ -163,12 +163,12 @@ void packet_callback(void* params){
             add_int_to_packet(p, actual_query->id);
             add_int_to_packet(p, actual_query->pc);
             send_and_free_packet(p, sock);
-            log_light_blue(logger, "Enviando respuesta del desalojo al Master ID=%d, PC=%d", actual_query->id, actual_query->pc);
-            actual_worker->is_free=true;
+            log_light_blue(logger, "Se envio respuesta del desalojo al Master ID=%d, PC=%d", actual_query->id, actual_query->pc);
             
             log_info(logger, "## Query %d: Desalojado por pedido del Master", actual_query->id);
+            actual_worker->is_free=true;
             actual_worker->id_query = -1;
-            free(actual_query);
+            free_query(actual_query);
             //need_desalojo=0;
             flushear_tabla_paginas(false);
             log_light_blue(logger, "Termine de flushear");

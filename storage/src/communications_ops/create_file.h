@@ -8,13 +8,12 @@
 void create_file_ops(char* file, char* tag, worker* w){
     if(file == NULL || tag == NULL){
         log_error(logger, "Hubo un problema file o tag son nulos en (%s:%d)", __func__,__LINE__);
-//        log_error(logger, "FILE es NULL? %d TAG IS NULL? %d", file, tag);
         return;
     }
     //La única comprobación que importa en CREATE es la de si el TAG existe, no el FILE.
     if(file_tag_exist_or_not(file, tag, w) == 1){
         log_error(logger, "Existe el FILE con el TAG indicado");
-    // send_basic_packet(w->fd, READ_WRITE_OVERFLOW); //  agregar si decidimos mandar error
+        // send_basic_packet(w->fd, READ_WRITE_OVERFLOW); //  agregar si decidimos mandar error
         return;
     }
 

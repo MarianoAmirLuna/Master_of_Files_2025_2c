@@ -35,7 +35,6 @@ t_queue* get_queue_by_sp(state_process sp){
         return NULL;
     }
     return (t_queue*)dictionary_get(dict_state, state_to_string(sp));
-    // debido al FIFO
 }
 
 void add_query_on_state(query* q, state_process sp){

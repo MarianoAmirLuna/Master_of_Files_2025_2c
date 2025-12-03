@@ -234,7 +234,7 @@ void loop_atender_queries()
                 add_int_to_packet(p, actual_query->id);
                 add_int_to_packet(p, actual_query->pc);
                 send_and_free_packet(p, sock_master);
-                
+                free_query(actual_query)
                 break;
             }
             if(actual_query == NULL){

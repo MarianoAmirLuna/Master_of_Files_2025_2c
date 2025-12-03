@@ -150,6 +150,7 @@ void commit_tag_ops(char* file, char* tag, worker* w){
                 }
 
                 list_replace(bloques_fisicos, i, (void*) bloque_fisico_existente);
+                
                 set_blocks_in_metadata(metadata, bloques_fisicos);
                 config_save(metadata);
 

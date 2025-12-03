@@ -9,10 +9,8 @@ int main(int argc, char* argv[]) {
 
     if(argc <= 3)
     {
-        load_config("query_control.config");
-        archive_query = "PEPE";
-
-        log_pink(logger,"%s, cant: %d", "Cantidad de argumentos inválida", argc);
+        log_pink(logger,"%s, cant: %d", "Cantidad de argumentos inválida exit(1) IS INVOKED", argc);
+        exit(1);
     }
     else if(argc == 4){
         //El primer argumento (es decir el argv[0]) es el path del programa en sí o el nombre del program.

@@ -125,10 +125,6 @@ void set_opcode_to_packet(t_packet* packet, int opcode){
 
 void add_file_tag_to_packet(t_packet* packet, char* instr){
     char** spl= string_split(instr, ":");
-    /*char* file = malloc(strlen(spl[0]));
-    char* tag = malloc(strlen(spl[1]));
-    strcpy(file, spl[0]);
-    strcpy(tag, spl[1]);*/
     int sz = string_array_size(spl);
     if( sz< 2 || sz > 2){
         log_error(logger, "Error al parsear el file:tag %s cantidad del array: %d", instr, sz);
@@ -137,8 +133,6 @@ void add_file_tag_to_packet(t_packet* packet, char* instr){
     }
     add_string_to_packet(packet, spl[0]);
     add_string_to_packet(packet, spl[1]);
-    /*free(file);
-    free(tag);*/
     string_array_destroy(spl);
 }
 

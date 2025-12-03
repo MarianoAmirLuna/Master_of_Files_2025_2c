@@ -63,7 +63,10 @@ entrada_tabla_pags *obtener_frame(char *archivo, int donde_comenzar)
         }
     }
     list_destroy(tabla);
-
+    //Yo comprobaría si el ret es NULL, porque si es NULL la cosa se puso fea y nunca encontró la página.
+    if(ret == NULL){
+        log_error(logger, "EL RET ES NULL DEBERIA SER ASI???? (%s:%d)", __func__, __LINE__);
+    }
     if(ret->marco > 2)
     {
         log_pink(logger, "pasaron cosas");
@@ -98,7 +101,8 @@ int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
     actualizarPrioridadLRU(entrada_con_frame);
 
     int frame = entrada_con_frame->marco;
-    int offset = obtener_offset(file_tag, dir_logica);
+    //Usar este método con primera argumento file_tag es un desperdicio porque no usa esa variable en la función obtener_offset
+    int offset = obtener_offset(file_tag, dir_logica); 
 
     marco *el_marco = list_get(lista_frames, frame);
     void *base = el_marco->inicio;
@@ -133,6 +137,7 @@ int realizar_lectura(void *dest, char *file_tag, int dir_logica, int tam)
     actualizarPrioridadLRU(entrada_con_frame);
 
     int frame = entrada_con_frame->marco;
+    //Usar este método con primera argumento file_tag es un desperdicio porque no usa esa variable en la función obtener_offset
     int offset = obtener_offset(file_tag, dir_logica);
     marco *el_marco = list_get(lista_frames, frame);
     void *base = el_marco->inicio + offset;
@@ -236,9 +241,11 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
         pagina = calcular_pagina(indice);
         if (!dl_en_tp(file_tag, pagina))
         {
-            char *copia = strdup(file_tag);
-            char *file = strtok(copia, ":");
-            char *tag = strtok(NULL, ":");
+            char** spl = string_split(file_tag, ":");
+            //char *copia = strdup(file_tag);
+
+            char *file = spl[0];
+            char *tag = spl[1];
 
             log_debug(logger, "PAGINA= %d", pagina);
             log_debug(logger, "ACTUAL WORKER ES NULL? %d", actual_worker == NULL);
@@ -275,8 +282,8 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
                 n_frame = entrada_con_frame->marco;
             }
             
-            free(copia);
-
+            string_array_destroy(spl);
+         
             log_light_green(logger, "ANTES DE ACTUALIZAR PAGINA");
             actualizar_pagina(file_tag, pagina);
         }
@@ -301,6 +308,7 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
     void *leido = malloc(tam + 1);
     int pagina = calcular_pagina(dir_base);
     int espacio_ya_leido = 0;
+    //El primer argumento es al pedo porque no lo usan.
     int offset = obtener_offset(file_tag, dir_base);
     int n_frame;
 
@@ -309,9 +317,12 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
         pagina = calcular_pagina(indice);
         if (!dl_en_tp(file_tag, pagina))
         {
-            char *copia = strdup(file_tag);
+            char** spl = string_split(file_tag, ":");
+            /*char *copia = strdup(file_tag);
             char *file = strtok(copia, ":");
-            char *tag = strtok(NULL, ":");
+            char *tag = strtok(NULL, ":");*/
+            char* file = spl[0];
+            char* tag = spl[1];
             log_info(logger, "Query <%d>: - Memoria Miss - File: <%s> - Tag: <%s> - Pagina: <%d>", actual_worker->id_query, file, tag, pagina);
             if (!hay_n_bytes_en_memoria(block_size))
             {
@@ -343,7 +354,7 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
 
             log_trace(logger, "ANTES DE ACTUALIZAR PAGINA");
             actualizar_pagina(file_tag, pagina);
-            free(copia);
+            string_array_destroy(spl);
         }
         else
         {

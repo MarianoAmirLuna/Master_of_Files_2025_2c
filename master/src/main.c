@@ -259,9 +259,9 @@ void disconnect_callback(void* params){
                 add_int_to_packet(p, ERROR);
                 send_and_free_packet(p, q->fd);
                 log_light_blue(logger, "HERE 4: sending to %d", q->fd);
-                q->sp = STATE_EXIT;
-                on_changed(on_query_state_changed,   q);
-                
+                query_to(q, STATE_EXIT);
+                /*q->sp = STATE_EXIT;
+                on_changed(on_query_state_changed, q);*/
             }else{
                 log_warning(logger, "No se encontró la query que estaba ejecutando el worker %d", w->id);
             }
@@ -308,6 +308,7 @@ void packet_callback(void* params){
     }
     
     if(ocm == MODULE_QUERY_CONTROL) {
+        //El master nunca recibe datos del query control
         log_pink(logger, "RECIBI DATOS DEL QUERY_CONTROL");
         work_query_control(pack, id, sock_client);
     }
@@ -326,21 +327,7 @@ void work_query_control(t_list* packet, int id, int sock){
 void work_worker(t_list* pack, int id, int sock){
     int opcode = list_get_int(pack, 0);
     worker* w = get_worker_by_wid(id);
-    /*if(opcode == REPORT_ERROR){
-        log_error(logger, "## El Worker %d reporta un ERROR en la Query %d",
-            id,
-            w->id_query
-        );
-        query* q = get_query_by_qid(w->id_query);
-        if(q == NULL){
-            log_error(logger, "La query es NULL (%s:%d)", __func__,__LINE__);
-        }
-        t_packet* p = create_packet();
-        add_int_to_packet(p, ERROR);
-        send_and_free_packet(p, q->fd);
-        w->id_query = -1; //Debo especificar que ahora este worker no tiene asignado ningún query.
-        w->is_free=1;
-    }*/
+  
    if(opcode == REQUEST_DESALOJO){
         log_light_blue(logger, "Respuesta del worker desalojo %d", id);
         int status = list_get_int(pack, 1);

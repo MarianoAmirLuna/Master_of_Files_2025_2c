@@ -91,15 +91,6 @@ int desalojo(worker* w)
     else{
         log_pink(logger, "Desalojó satisfactoriamente el worker %d", w->id);
     }
-    /*t_list* re = recv_operation_packet(w->fd);
-    int resp_success = list_get_int(re,0) == SUCCESS;
-    if(!resp_success)
-    {
-        log_warning(logger, "No se pudo desalojar el worker %d retorno un valor distinto de SUCCESS", w->id);
-        return;
-    }else{
-        log_pink(logger, "Desalojó satisfactoriamente el worker %d", w->id);
-    }*/
 
     qid qid = w->resp_desalojo.id_query;
     int pc = w->resp_desalojo.pc;

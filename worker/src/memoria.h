@@ -304,10 +304,6 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
     char** spl= string_split(elemento->file_tag, ":");
     char* file = spl[0];
     char* tag = spl[1];
-    /*file = malloc(strlen(spl[0]));
-    tag = malloc(strlen(spl[1]));
-    strcpy(file, spl[0]);
-    strcpy(tag, spl[1]);*/
     
     t_packet* paq = create_packet();
     add_int_to_packet(paq, reportar_error ? WRITE_BLOCK : WRITE_BLOCK_NOT_ERROR);
@@ -317,8 +313,6 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
     add_string_to_packet(paq, contenido2);    
     send_and_free_packet(paq, sock_storage);
     log_trace(logger, "FILE: %s, TAG:%s a enviar al storage", file, tag);
-    /*free(file);
-    free(tag);*/
     string_array_destroy(spl);
     free(contenido2);
     free(contenido);
@@ -332,14 +326,21 @@ void liberar_entrada_TPG(entrada_tabla_pags *elemento)
     }
 
     marco* el_frame = list_get(lista_frames, elemento->marco);
+    if(el_frame == NULL){
+        log_error(logger, "EL FRAME ES NULL ESTO NO DEBERIA PASAR (%s:%d)", __func__, __LINE__);
+        //return;
+    }
     el_frame->libre=true;
+    char** spl = string_split(elemento->file_tag, ":");
+    char* file = spl[0];
+    char* tag = spl[1];
 
-    char* file = strtok(elemento->file_tag, ":");
-    char* tag = strtok(NULL, ":");
+    /*char* file = strtok(elemento->file_tag, ":");
+    char* tag = strtok(NULL, ":");*/
     log_info(logger, "Query <%d>: Se libera el Marco: <%d> perteneciente al - File: <%s> - Tag: <%s>", actual_worker->id_query, elemento->marco, file, tag);
-
     free(elemento->file_tag);
     free(elemento);
+    string_array_destroy(spl);
     return;
 }
 
@@ -374,6 +375,10 @@ entrada_tabla_pags* buscar_victima_clock_modificado(){
     for (int i = 0; i < queue_size(tabla_pags_global); i++) {
         
         entrada_tabla_pags* elemento = queue_pop(tabla_pags_global);
+        if(elemento == NULL){
+            log_error(logger, "ELEMENTO ES NULL ESTO NO DEBERIA PASAR (%s:%d)", __func__, __LINE__);
+            //continue;
+        }
         if (elemento->uso == false && elemento->modificada == true) {
             // Encontramos la víctima (0,1). La liberamos y salimos.
             return elemento;
@@ -390,10 +395,10 @@ entrada_tabla_pags* buscar_victima_clock_modificado(){
 
 entrada_tabla_pags* seleccionar_victima()
 {
-    entrada_tabla_pags* victima;
+    entrada_tabla_pags* victima=NULL;
 
     log_trace(logger, "Estado actual de la tabla de páginas global ANTES de seleccionar víctima:");
-    loguear_tabla_paginas_global();
+    loguear_tabla_paginas_global(); 
 
     if (R_LRU == cw.algoritmo_reemplazo)
     {
@@ -406,7 +411,7 @@ entrada_tabla_pags* seleccionar_victima()
         victima =buscar_victima_clock_modificado();
     }
     log_trace(logger, "Estado actual de la tabla de páginas global DESPUES de seleccionar víctima:");
-    loguear_tabla_paginas_global();
+    loguear_tabla_paginas_global(); //Recuerden que están llamando 2 veces este método. Véase L401 y Este; L414
 
     return victima;
 }
@@ -423,10 +428,8 @@ bool contiene_string(t_list* lista, char* valor) {
 
 t_list* obtener_file_tags_unicos(t_list* entradas) {
     t_list* unicos = list_create();
-
     for (int i = 0; i < list_size(entradas); i++) {
         entrada_tabla_pags* entry = list_get(entradas, i);
-
         if (!contiene_string(unicos, entry->file_tag)) {
             list_add(unicos, entry->file_tag);   // agrego el puntero original
         }
@@ -440,8 +443,15 @@ void flushear_tabla_paginas(bool reportar_error){
     t_list* file_tags = obtener_file_tags_unicos(tabla_pags_global->elements);
 
     for(int i = 0; i < list_size(file_tags); i++){
-        ejecutar_flush(i, reportar_error);
+        //ejecutar_flush(i, reportar_error);
+        char* file_tag = (char*)list_get(file_tags, i);
+        ejecutar_flush(file_tag, reportar_error);
+        //OJO CON LIBERAR EL FILE_TAG O SE PIERDE REFERENCIA DEL CHAR EN LA entrada_tabla_pags*
+        //Liberenlo sólo si saben que lo tienen que liberar y que no importe que se pierda la referencia en la entrada_tabla_pags* pero creo yo que nunca borran esas entradas, 
+        //así que no haría falta hacerle free(file_tag);
     }
+    list_destroy(file_tags);
+    //Cuidado con usar list_destroy_and_destroy_elements aca porque esa lista es generada por la entrada_tabla_pags* y si liberan los elementos se pierde elementos de la entrada_tabla_pags*->file_tag
 }
 
 #endif
