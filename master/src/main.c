@@ -111,11 +111,12 @@ void* attend_multiple_clients(void* params)
             q->priority = prioridad;
             q->fd = sock_client;
             q->id = increment_idx();
-            q->sp = STATE_READY;
+            //q->sp = STATE_READY;
             q->temp = temporal_create();
             id = q->id;
             log_orange(logger, "Recibi el dato de Query Control: Query:%s ID=%d, Prioridad: %d", archive_query, q->id, prioridad);
-            add_query_on_state(q, q->sp);
+            query_to(q, STATE_READY);
+            //add_query_on_state(q, q->sp);
             list_add(queries, q);
             log_info(logger, "## Se conecta un Query Control para ejecutar la Query %s con prioridad %d - Id asignado: %d. Nivel multiprocesamiento: %d",
                 q->archive_query,
@@ -205,8 +206,8 @@ void disconnect_callback(void* params){
         qid id_query = id;
         query* q = get_query_by_qid(id_query);
         if(q->sp == STATE_READY){
-            t_queue* que = get_queue_by_sp(STATE_READY);
-            list_remove_by_condition_by(que->elements, by_query_qid, id_query);
+            /*t_queue* que = get_queue_by_sp(STATE_READY);
+            list_remove_by_condition_by(que->elements, by_query_qid, id_query);*/
             query_to(q, STATE_EXIT);
             //Se debe mandar a exit directamente
         }
@@ -269,6 +270,7 @@ void disconnect_callback(void* params){
             //WARNING: Test this
             log_light_blue(logger, "Removiendo el elemento en el indice %d tengo en total: %d", idx, list_size(workers));
             free_element(list_remove(workers, idx));
+            
             degree_multiprocess = list_size(workers);
 
             log_info(logger, "## Se desconecta el Worker %d - Se finaliza la Query %d - Cantidad total de Workers: %d",
@@ -346,14 +348,14 @@ void work_worker(t_list* pack, int id, int sock){
     }
     if(opcode == QUERY_END || opcode==INSTRUCTION_ERROR || opcode==FILE_NOT_FOUND || opcode==TAG_NOT_FOUND || opcode==INSUFFICIENT_SPACE || opcode==WRITE_NO_PERMISSION || opcode==READ_WRITE_OVERFLOW)
     {
-        int qid;
+        int qid = list_get_int(pack, 1);
         if(opcode == QUERY_END){
-            qid = list_get_int(pack, 1);
+            //qid = list_get_int(pack, 1);
             log_info(logger, "## Se terminó la Query: %d en el Worker %d",
                 qid, id
             );
         }else{
-            qid = w->id_query;
+            //qid = w->id_query;
             log_orange(logger, "El Worker %d reporta un ERROR en la Query %d - OPCODE ERROR: %d",
                 id,
                 qid,
@@ -371,7 +373,9 @@ void work_worker(t_list* pack, int id, int sock){
         add_int_to_packet(p, REQUEST_KILL);
         add_string_to_packet(p, opcode == QUERY_END ? "Por fin de query" : get_motivo_error(opcode));
         send_and_free_packet(p, q->fd);
-        q->sp= STATE_EXIT;
+        query_to_no_notify(q, STATE_EXIT);
+        /*q->sp = STATE_EXIT;
+        add_query_on_state(q, q->sp);*/
         log_light_blue(logger, "Un query (ID=%d,Archivo=%s) cambió de estado valor: %s", q->id, q->archive_query, state_to_string(q->sp));
         w->id_query = -1; //Debo especificar que ahora este worker no tiene asignado ningún query.
         w->is_free=1;

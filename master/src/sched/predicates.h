@@ -80,8 +80,10 @@ bool order_query_by(void* a, void* b){
 }
 
 bool by_worker_free(void* elem){
-    if(elem == NULL)
+    if(elem == NULL){
+        log_error(logger, "ELEMENTO DEL WORKER ES NULO");
         return 0;
+    }
     return cast_worker(elem)->is_free;
 }
 

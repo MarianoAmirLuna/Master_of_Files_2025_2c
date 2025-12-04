@@ -101,6 +101,7 @@ int desalojo(worker* w)
         q->sp = STATE_READY;
     }
     
+    query_to(q, q->sp);
     w->is_free = 1; //El worker ahora está libre
     on_changed(on_query_state_changed, q);
     execute_worker(); //Ya que desalojé algo y debería asignarle algún trabajo
@@ -191,16 +192,39 @@ int increment_idx(){
     return aux;
 }
 
-void query_to(query* q, state_process to){
-    
-    if(!is_valid_sp(q->sp, to)){
-        log_error(logger, "is not valid from %s to %s state process returned is invoked", 
-            state_to_string(q->sp),
-            state_to_string(to)
-        );
-        return;
-        //exit(EXIT_FAILURE);
+void query_to_no_notify(query* q, state_process to){
+      if(to == STATE_EXEC){
+        if(q->temp == NULL){
+            q->temp = temporal_create();
+        }
+        else{
+            temporal_restart(q->temp);
+        }
     }
+    if(is_list_sp(q->sp))
+    {
+        t_list* l= get_list_by_sp(q->sp); 
+        list_remove_by_condition_by(l, by_query_qid, (void*)q->id); //remove from this 
+    }
+    if(is_queue_sp(q->sp)){
+        //el que estaba en READY que pasa a EXIT debo removerlo de la pila
+        t_queue* l = get_queue_by_sp(q->sp);
+        list_remove_by_condition_by(l->elements, by_query_qid, (void*)q->id); //remove from this 
+    }
+    q->sp = to;
+    add_query_on_state(q, to); //No le importa el t_queue por que t_queue se invocó previamente un pop y ese pop ya lo removió
+}
+
+void query_to(query* q, state_process to){
+    /*if(q->sp != STATE_READY && to != STATE_READY){
+        if(!is_valid_sp(q->sp, to)){
+            log_error(logger, "is not valid from %s to %s state process returned is invoked", 
+                state_to_string(q->sp),
+                state_to_string(to)
+            );
+            return;
+        }
+    }*/
     if(to == STATE_EXEC){
         if(q->temp == NULL){
             q->temp = temporal_create();
@@ -208,15 +232,19 @@ void query_to(query* q, state_process to){
         else{
             temporal_restart(q->temp);
         }
-        //MANDAR AL WORKER PARA QUE LO EJECUTE
     }
-    if(is_list_sp(q->sp) && q->sp != STATE_EXIT)
+    if(is_list_sp(q->sp))
     {
         t_list* l= get_list_by_sp(q->sp); 
         list_remove_by_condition_by(l, by_query_qid, (void*)q->id); //remove from this 
-        add_query_on_state(q, to); //No le importa el t_queue por que t_queue se invocó previamente un pop y ese pop ya lo removió
+    }
+    if(is_queue_sp(q->sp)){
+        //el que estaba en READY que pasa a EXIT debo removerlo de la pila
+        t_queue* l = get_queue_by_sp(q->sp);
+        list_remove_by_condition_by(l->elements, by_query_qid, (void*)q->id); //remove from this 
     }
     q->sp = to;
+    add_query_on_state(q, to); //No le importa el t_queue por que t_queue se invocó previamente un pop y ese pop ya lo removió
     on_changed(on_query_state_changed, q);
 }
 
@@ -236,6 +264,16 @@ void print_queries(){
     log_light_blue(logger, "End print queries");
 }
     
+void print_query_de_la_pila(){
+    t_queue* qqq = get_queue_by_sp(STATE_READY);
+    
+    log_light_blue(logger, "Start print queries DE PILA");
+    int sz = list_size(qqq->elements);
+    for(int i=0;i<sz;i++){
+        print_query(cast_query(list_get(qqq->elements, i)));
+    }
+    log_light_blue(logger, "End print queries DE PILA");
+}
 
 void print_workers(){
     log_light_blue(logger, "Start print workers");

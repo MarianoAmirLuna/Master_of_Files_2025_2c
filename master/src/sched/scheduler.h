@@ -9,8 +9,10 @@
 
 query* get_query_available(){
     t_queue* q = get_queue_by_sp(STATE_READY);
-    if(queue_is_empty(q))
+    if(queue_is_empty(q)){
+        log_warning(logger, "Queue READY está empty");
         return NULL;
+    }
     if(cm.algoritmo_planificacion == PRIORITIES){
         //Obtener el primer query de más alta prioridad
         list_sort(q->elements, order_query_by); //NOTE: El t_queue pop lo que hace es invocar el list_remove(lista, 0);
@@ -98,7 +100,9 @@ void* execute_this_query_on_this_worker_v2_thread(void* elem){
 
 void execute_worker(){
     log_light_blue(logger, "%s", "On ExecuteWorker");
-    
+    print_queries();
+    print_query_de_la_pila();
+    print_workers();
     //TODO: Debo comprobar entre todas las queries tanto EXEC como en READY si existe alguno más prioritario que los que ya se ejecutan en worker para que este la desaloje
     sem_wait(&sem_worker);
     log_light_blue(logger, "%s", "Finish waiting ExecuteWorker");
@@ -107,9 +111,14 @@ void execute_worker(){
     //TODO: Tengo que agarrar un worker libre (si lo hay) y si existe algún query a ejecutar en ready tengo que agarrar ese y mandarlo a EXEC
     worker* w = get_first_worker_free();
     pthread_mutex_unlock(&mutex_sched);
-    
-    if(w == NULL || !have_query_ready()) //De Morgan papá. Viste que es útil la matemática discreta.
+    if(!have_query_ready()){
+        log_pink(logger, "No hay query que se encuentra en ready");
+        sem_post(&sem_worker);
+        return;
+    }
+    if(w == NULL) //De Morgan papá. Viste que es útil la matemática discreta.
     {
+        log_pink(logger, "No hay worker para que ejecute");
         //log_pink(logger, "Estoy en execute_worker y la cosa se puso fea (%s:%d) worker es NULL??? %d", __func__,__LINE__, w==NULL ? 1 : 0);
         sem_post(&sem_worker);
         return;
@@ -120,6 +129,8 @@ void execute_worker(){
         log_warning(logger, "No hay queries en READY");
         /*log_warning(logger, "WTF (%s:%d) exit(1) IS INVOKED",__func__,__LINE__);
         exit(EXIT_FAILURE);*/
+        sem_post(&sem_worker);
+        return;
     }
     pthread_t* pth = malloc(sizeof(pthread_t));
     t_list* params = list_create();

@@ -210,6 +210,7 @@ void loop_atender_queries()
                 actual_query->pc,
                 instruccion
             );
+            log_pink(logger, "Estoy por ejecutar el: %s", instruccion);
             decode_y_execute(instruccion);
             log_pink(logger, "SE TERMINO LA EJECUCION DE: %s", instruccion);
             actual_query->pc++;
