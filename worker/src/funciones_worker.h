@@ -13,78 +13,35 @@
 #include "exts/string_ext.h"
 #endif
 
-/*void ejecutar_instruccion_v2(instr_code caso, char* instr){
-    t_packet* pack = create_packet();
-    add_int_to_packet(pack, caso);
-    
-    if(caso == CREATE || caso == FLUSH || caso == COMMIT || caso == DELETE) //estos casos tienen siempre "[file:tag]"
-    {
-        add_file_tag_to_packet(pack, instr);
-        send_and_free_packet(pack, sock_storage);
-        return;
-    }
-    if(caso == TRUNCATE) //este caso tiene siempre "[file:tag] [número]"
-    {
-        char* left = string_new();
-        char* right = string_new();
-        get_space_instr(instr, left, right);
-
-        add_file_tag_to_packet(pack, left);
-        add_int_to_packet(pack, atoi(right));
-        send_and_free_packet(pack, sock_storage);
-        free(left);
-        free(right);
-        return;
-    }
-    if(caso == READ || caso == WRITE) //este caso tiene siempre "[file:tag] [número] [<número (si es READ) | cadena (si es WRITE)>]"
-    {
-        char* left = string_new();
-        char* middle = string_new();
-        char* right = string_new();
-        get_two_space_instr(instr, left, middle, right);
-        add_file_tag_to_packet(pack, left);
-        add_int_to_packet(pack,atoi(middle));
-        if(caso == READ){
-            add_int_to_packet(pack,atoi(right));
-            log_info(logger, "## Query %d: Acción LEER - Dirección Física: %d - Valor Leído %s", actual_worker->id_query, atoi(right), left);
-        }else{
-            add_string_to_packet(pack,right);
-            log_info(logger, "## Query %d: Acción ESCRIBIR - Dirección Física: %d - Valor Escrito %s", actual_worker->id_query, atoi(middle), right);
-        }
-        
-        send_and_free_packet(pack, sock_storage);
-        free(left);
-        free(middle);
-        free(right);
-
-        return;
-    }
-    if(caso == END) //este caso no tiene una goma
-    {
-        send_and_free_packet(pack, sock_storage);
-    }
-    log_info(logger, "## Query: %d: - Instrucción realizada: %s", actual_worker->id_query, instr);
-}*/
-
 // FASE EXECUTE //
 void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, char *parametro3)
 {
     log_debug(logger, "EJECUTAR_INSTRUCCION: (%s) | %s | %s | %s", instr_to_string(caso), parametro1, parametro2, parametro3);
     if (caso == CREATE)
     {
+        log_debug(logger,"1 - ################################################################");
+
         //El tamaño del archivo debe ser 0
         ejecutar_create(parametro1);
     }
     else if(caso==TRUNCATE)
     {
+                log_debug(logger,"2 - ################################################################");
+
         ejecutar_truncate(parametro1, atoi(parametro2));
+                log_debug(logger,"3 - ################################################################");
+
     }
     else if(caso == WRITE)
     {
+            log_debug(logger,"4 - ################################################################");
+
         ejecutar_write(parametro1, atoi(parametro2), parametro3);
     }
     else if(caso == READ)
     {
+        log_debug(logger,"5 - ################################################################");
+        log_debug(logger,)
         int dir_base = atoi(parametro2);
         int tamanio = atoi(parametro3);
         ejecutar_read(parametro1, dir_base, tamanio);
@@ -251,7 +208,7 @@ void loop_atender_queries()
             decode_y_execute(instruccion);
             log_pink(logger, "SE TERMINO LA EJECUCION DE: %s", instruccion);
             actual_query->pc++;
-            
+
         }
     }
 }
