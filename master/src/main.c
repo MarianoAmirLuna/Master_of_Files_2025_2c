@@ -368,7 +368,7 @@ void work_worker(t_list* pack, int id, int sock){
 
         //
     }
-    if(opcode == QUERY_END || opcode==INSTRUCTION_ERROR || opcode==FILE_NOT_FOUND || opcode==TAG_NOT_FOUND || opcode==INSUFFICIENT_SPACE || opcode==WRITE_NO_PERMISSION || opcode==READ_WRITE_OVERFLOW)
+    if(opcode == QUERY_END || opcode==INSTRUCTION_ERROR || opcode==FILE_NOT_FOUND || opcode==TAG_NOT_FOUND || opcode==INSUFFICIENT_SPACE || opcode==WRITE_NO_PERMISSION || opcode==READ_WRITE_OVERFLOW || opcode==TAG_YA_EXISTENTE_SACA_LA_MANO_DE_AHI)
     {
         int qid = list_get_int(pack, 1);
         if(opcode == QUERY_END){
@@ -383,6 +383,15 @@ void work_worker(t_list* pack, int id, int sock){
                 qid,
                 opcode
             );
+            log_error(logger, "llego lpm ###################3");
+            log_error(logger, "llego lpm ###################3");
+            log_error(logger, "llego lpm ###################3");
+            log_error(logger, "llego lpm ###################3");
+            log_error(logger, "llego lpm ###################3");
+            log_error(logger, "llego lpm ###################3");
+            log_error(logger, "llego lpm ###################3");
+            log_error(logger, "llego lpm ###################3");
+            log_error(logger, "llego lpm ###################3");
         }
         query* q = get_query_by_qid(qid);
         if(q == NULL || qid == -1){

@@ -243,9 +243,9 @@ void packet_callback(void* params){
                 free(tag);
                 sem_post(&sem_get_data);
             }
-            
-        }
-        if(op_code==INSTRUCTION_ERROR || op_code==FILE_NOT_FOUND || op_code==TAG_NOT_FOUND || op_code==INSUFFICIENT_SPACE || op_code==WRITE_NO_PERMISSION || op_code==READ_WRITE_OVERFLOW)
+
+        }//TAG_NOT_FOUND FILE_NOT_FOUND
+        if(op_code==INSTRUCTION_ERROR || op_code==FILE_NOT_FOUND || op_code==TAG_NOT_FOUND || op_code==INSUFFICIENT_SPACE || op_code==WRITE_NO_PERMISSION || op_code==READ_WRITE_OVERFLOW || op_code == TAG_YA_EXISTENTE_SACA_LA_MANO_DE_AHI)
         {
             t_packet* paq=create_packet();
             add_int_to_packet(paq, op_code);

@@ -33,6 +33,7 @@ void tag_file_ops(char* file, char* tag_origen, char* file_destino, char* tag_de
 
     if (control_existencia(path_tag_destino)){
         log_error(logger, "[TAG_FILE] El tag destino %s ya existe", tag_destino);
+        send_basic_packet(w->fd, TAG_YA_EXISTENTE_SACA_LA_MANO_DE_AHI);
         free(path_tag_destino);
         return;
     }

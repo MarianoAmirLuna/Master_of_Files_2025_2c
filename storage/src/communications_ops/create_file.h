@@ -13,7 +13,7 @@ void create_file_ops(char* file, char* tag, worker* w){
     //La única comprobación que importa en CREATE es la de si el TAG existe, no el FILE.
     if(!file_tag_exist_or_not_not_error(file, tag, w) == 1){
         log_error(logger, "Existe el FILE con el TAG indicado");
-        // send_basic_packet(w->fd, READ_WRITE_OVERFLOW); //  agregar si decidimos mandar error
+         send_basic_packet(w->fd, READ_WRITE_OVERFLOW); //  agregar si decidimos mandar error
         return;
     }
 
