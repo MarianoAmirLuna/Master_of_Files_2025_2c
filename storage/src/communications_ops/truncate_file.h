@@ -189,6 +189,9 @@ void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
 
     // Si necesitan decirle algo al worker desde este método se crea el packet y se envía en w->fd
     // Ejemplo: send_and_free_packet(p, w->fd);
+    t_packet* response = create_packet();
+    add_int_to_packet(response, SUCCESS);
+    send_and_free_packet(response, w->fd);
 }
 
 #endif

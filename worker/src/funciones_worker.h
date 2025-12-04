@@ -23,6 +23,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
 
         //El tamaño del archivo debe ser 0
         ejecutar_create(parametro1);
+        sem_wait(&sem_respuesta_storage_success);
     }
     else if(caso==TRUNCATE)
     {
@@ -30,7 +31,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
 
         ejecutar_truncate(parametro1, atoi(parametro2));
         log_pink(logger,"Aca 3");
-
+        sem_wait(&sem_respuesta_storage_success);
     }
     else if(caso == WRITE)
     {
@@ -53,6 +54,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         add_file_tag_to_packet(paq, parametro1);
         add_file_tag_to_packet(paq, parametro2);
         send_and_free_packet(paq, sock_storage);
+        sem_wait(&sem_respuesta_storage_success);
     }
     else if(caso==COMMIT)
     {
@@ -62,11 +64,12 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         add_int_to_packet(paq, COMMIT_TAG);
         add_file_tag_to_packet(paq, parametro1);
         send_and_free_packet(paq, sock_storage);
+        sem_wait(&sem_respuesta_storage_success);
     }
     else if(caso==FLUSH)
     {
         log_pink(logger,"Aca 8");
-        ejecutar_flush(parametro1, true); 
+        ejecutar_flush(parametro1, true);  
     }
     else if(caso==DELETE)
     {

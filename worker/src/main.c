@@ -216,7 +216,7 @@ void packet_callback(void* params){
     }
     if(ocm == MODULE_STORAGE){
         if(op_code == GET_DATA){
-       
+            sem_post(&sem_respuesta_storage_success);
             log_light_blue(logger, "Tamaño del paquete: %d", list_size(packet));
             int returned = list_get_int(packet, 0);
             if(returned != GET_DATA)
@@ -241,6 +241,7 @@ void packet_callback(void* params){
         }
         if(op_code == SUCCESS)
         {
+            sem_post(&sem_respuesta_storage_success);
         }
     }
     list_destroy(packet); //véase como en por ejemplo EJECUTAR_QUERY al recibir el list_get_str luego lo libero,

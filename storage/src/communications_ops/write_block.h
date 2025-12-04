@@ -226,6 +226,9 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
 
     log_info(logger, "Ejecutando la operacion WRITE_BLOCK");
     log_info(logger, "## %d - Bloque Lógico Escrito %s:%s Número de Bloque %d", w->id_query, file, tag, bloque_logico);
+    t_packet* response = create_packet();
+    add_int_to_packet(response, SUCCESS);
+    send_and_free_packet(response, w->fd);
 }
 
 #endif

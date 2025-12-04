@@ -179,6 +179,9 @@ void commit_tag_ops(char* file, char* tag, worker* w){
 
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
+    t_packet* response = create_packet();
+    add_int_to_packet(response, SUCCESS);
+    send_and_free_packet(response, w->fd);
 }
 
 
