@@ -45,9 +45,11 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
     int tamanio_actual = get_size_from_metadata(metadata);
 
     // 3) Verificar estado COMMITED
-    if(reportar_error && get_state_metadata(metadata) == COMMITED){
-        send_basic_packet(w->fd, WRITE_NO_PERMISSION);   // Escritura_no_permitida
-        log_error(logger, "[WRITE_BLOCK] El tag %s:%s está COMMITED, no se puede escribir", file, tag);
+    if( get_state_metadata(metadata) == COMMITED){
+       if (reportar_error){
+            send_basic_packet(w->fd, WRITE_NO_PERMISSION);   // Escritura_no_permitida
+            log_error(logger, "[WRITE_BLOCK] El tag %s:%s está COMMITED, no se puede escribir", file, tag);
+       }
         config_destroy(metadata);
         return;
     }

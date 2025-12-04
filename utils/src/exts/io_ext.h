@@ -61,6 +61,7 @@ void delete_directory(char* fullpathdir){
         // Ignorar "." y ".."
         if (string_equals_ignore_case(entry->d_name, ".") || string_equals_ignore_case(entry->d_name, ".."))
             continue;
+
         char full_path[1024];
         snprintf(full_path, sizeof(full_path), "%s/%s", fullpathdir, entry->d_name);
 
@@ -71,16 +72,21 @@ void delete_directory(char* fullpathdir){
         }
 
         if (S_ISDIR(statbuf.st_mode)) {
-            delete_directory(full_path); //RECURSIVE
-            if (rmdir(full_path) != 0)
-                perror("Error al eliminar directorio");
+            // Borrar recursivamente el subdirectorio (y su contenido)
+            delete_directory(full_path);
         } else {
             // Es un archivo
             if (remove(full_path) != 0)
                 perror("Error al eliminar archivo");
         }
     }
+
     closedir(dir);
+
+    // Ahora que el directorio está vacío, lo borramos también
+    if (rmdir(fullpathdir) != 0) {
+        perror("Error al eliminar directorio");
+    }
 }
 
 t_list* get_files_from_dir(char* fullpathdir){
