@@ -22,8 +22,11 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         log_pink(logger,"Aca 1");
 
         //El tamaño del archivo debe ser 0
+        log_error(logger, "antes de enviar el create a storage");
         ejecutar_create(parametro1);
-        sem_wait(&sem_respuesta_storage_success);
+        log_error(logger, "despues de enviar el create a storage");
+        sem_wait(&sem_respuesta_storage);
+        log_error(logger, "ya pase el semaforo de create");
     }
     else if(caso==TRUNCATE)
     {
@@ -31,7 +34,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
 
         ejecutar_truncate(parametro1, atoi(parametro2));
         log_pink(logger,"Aca 3");
-        sem_wait(&sem_respuesta_storage_success);
+        sem_wait(&sem_respuesta_storage);
     }
     else if(caso == WRITE)
     {
@@ -54,7 +57,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         add_file_tag_to_packet(paq, parametro1);
         add_file_tag_to_packet(paq, parametro2);
         send_and_free_packet(paq, sock_storage);
-        sem_wait(&sem_respuesta_storage_success);
+        sem_wait(&sem_respuesta_storage);
     }
     else if(caso==COMMIT)
     {
@@ -64,7 +67,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         add_int_to_packet(paq, COMMIT_TAG);
         add_file_tag_to_packet(paq, parametro1);
         send_and_free_packet(paq, sock_storage);
-        sem_wait(&sem_respuesta_storage_success);
+        sem_wait(&sem_respuesta_storage);
     }
     else if(caso==FLUSH)
     {

@@ -42,7 +42,7 @@ sem_t sem_file_tag_buscado;
 sem_t sem_bloque_recibido;
 sem_t sem_get_data;
 sem_t sem_storage_conectado;
-sem_t sem_respuesta_storage_success;
+sem_t sem_respuesta_storage;
 
 /*/// @brief Cuando el worker está libre para una nueva ejecución que quiera hacer el Master
 int is_free;*/

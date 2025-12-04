@@ -216,7 +216,7 @@ void packet_callback(void* params){
     }
     if(ocm == MODULE_STORAGE){
         if(op_code == GET_DATA){
-            sem_post(&sem_respuesta_storage_success);
+            sem_post(&sem_respuesta_storage);
             log_light_blue(logger, "Tamaño del paquete: %d", list_size(packet));
             int returned = list_get_int(packet, 0);
             if(returned != GET_DATA)
@@ -251,11 +251,12 @@ void packet_callback(void* params){
             add_int_to_packet(paq, op_code);
             add_int_to_packet(paq, actual_query->id);
             send_and_free_packet(paq, sock_master);
+            sem_post(&sem_respuesta_storage);
             hubo_error=true;
         }
         if(op_code == SUCCESS)
         {
-            sem_post(&sem_respuesta_storage_success);
+            sem_post(&sem_respuesta_storage);
         }
     }
     list_destroy(packet); //véase como en por ejemplo EJECUTAR_QUERY al recibir el list_get_str luego lo libero,

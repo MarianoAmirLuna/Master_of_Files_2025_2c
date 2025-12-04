@@ -309,7 +309,7 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
     add_int_to_packet(paq, elemento->pag); 
     add_string_to_packet(paq, contenido2);    
     send_and_free_packet(paq, sock_storage);
-    sem_wait(&sem_respuesta_storage_success);
+    sem_wait(&sem_respuesta_storage);
     log_trace(logger, "FILE: %s, TAG:%s a enviar al storage", file, tag);
     string_array_destroy(spl);
     free(contenido2);

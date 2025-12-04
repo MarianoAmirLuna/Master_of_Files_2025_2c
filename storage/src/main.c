@@ -197,14 +197,14 @@ int file_tag_exist_or_not(char* file, char* tag, worker* w){
     char* fullpath = string_from_format("%s/%s", filespath, file);
     free(filespath);
     if(!directory_exists(fullpath)){
-//        send_basic_packet(w->fd, FILE_NOT_FOUND); //File inexistente
+        send_basic_packet(w->fd, FILE_NOT_FOUND); //File inexistente
         log_error(logger, "No se encontro el file deseado");
         free(fullpath);
         return 0;
     }
     char* fullpathtag = string_from_format("%s/%s", fullpath, tag);
     if(!directory_exists(fullpathtag)){
-//        send_basic_packet(w->fd, TAG_NOT_FOUND); //Tag inexistente
+        send_basic_packet(w->fd, TAG_NOT_FOUND); //Tag inexistente
         log_error(logger, "No se encontro el tag deseado");
         free(fullpath);
         free(fullpathtag);
