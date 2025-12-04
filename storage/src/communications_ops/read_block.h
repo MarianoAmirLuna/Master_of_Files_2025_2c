@@ -68,6 +68,8 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     t_packet* p = create_packet();
     add_int_to_packet(p, GET_DATA);
     add_string_to_packet(p, buffer);
+    add_string_to_packet(p, file);
+    add_string_to_packet(p, tag);
     send_and_free_packet(p, w->fd);
 
     fclose(f);

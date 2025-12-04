@@ -111,10 +111,14 @@ void* attend_multiple_clients(void* params)
             q->priority = prioridad;
             q->fd = sock_client;
             q->id = increment_idx();
+            q->pc=0;
             //q->sp = STATE_READY;
             q->temp = temporal_create();
             id = q->id;
             log_orange(logger, "Recibi el dato de Query Control: Query:%s ID=%d, Prioridad: %d", archive_query, q->id, prioridad);
+
+            //TODO: Si los workers están ocupados pero tiene algún query que tiene menos prioridad que este nuevo query que instancie debe desalojar ese
+
             query_to(q, STATE_READY);
             //add_query_on_state(q, q->sp);
             list_add(queries, q);
@@ -345,6 +349,24 @@ void work_worker(t_list* pack, int id, int sock){
         w->resp_desalojo.pc = pc;
 
         sem_post(&w->sem_desalojo);
+    }
+    if(opcode == GET_DATA){
+        qid id_query = list_get_int(pack, 1);
+        char* buffer = list_get_str(pack, 2);
+        char* file = list_get_str(pack, 3);
+        char* tag = list_get_str(pack, 4);
+        log_info(logger, "## Se envía un mensaje de lectura de la Query <%d> en el Worker <%d> al Query Control", id_query, id);
+        t_packet* p = create_packet();
+        add_int_to_packet(p, REQUEST_READ);
+        add_string_to_packet(p, buffer);
+        add_string_to_packet(p, file);
+        add_string_to_packet(p, tag);
+        free(buffer);
+        free(file);
+        free(tag);
+
+
+        //
     }
     if(opcode == QUERY_END || opcode==INSTRUCTION_ERROR || opcode==FILE_NOT_FOUND || opcode==TAG_NOT_FOUND || opcode==INSUFFICIENT_SPACE || opcode==WRITE_NO_PERMISSION || opcode==READ_WRITE_OVERFLOW)
     {

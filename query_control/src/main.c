@@ -52,11 +52,13 @@ int main(int argc, char* argv[]) {
             break;*/
         int v = list_get_int(l, 0);
         if(v == REQUEST_READ){
-            char* archivo = list_get_str(l,1);
-            char* contenido = list_get_str(l,2);
-            log_info(logger, "## Lectura realizada: %s, contenido: %s", archivo, contenido);
-            free(archivo);
+            char* contenido = list_get_str(l,1);
+            char* file = list_get_str(l,2);
+            char* tag = list_get_str(l,3);
+            log_info(logger, "## Lectura realizada: %s:%s, contenido: %s", file, tag, contenido);
             free(contenido);
+            free(file);
+            free(tag);
         }
         if(v == REQUEST_EXECUTE_QUERY){
             //Sera que el Master solicita el query y este modulo le responde? eso es lo que entendí.

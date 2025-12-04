@@ -227,9 +227,23 @@ void packet_callback(void* params){
             else{
                 log_trace(logger, "Estoy en get data");
                 char* data = list_get_str(packet, 1);
+                char* file = list_get_str(packet, 2);
+                char* tag = list_get_str(packet, 3);
                 memcpy(data_bloque, data, storage_block_size);
+
+                t_packet* paq = create_packet();
+                add_int_to_packet(paq, op_code);
+                add_int_to_packet(paq, actual_query->id);
+                add_string_to_packet(paq, data);
+                add_string_to_packet(paq, file);
+                add_string_to_packet(paq, tag);
+                send_and_free_packet(paq, sock_master);
+                free(data);
+                free(file);
+                free(tag);
                 sem_post(&sem_get_data);
             }
+            
         }
         if(op_code==INSTRUCTION_ERROR || op_code==FILE_NOT_FOUND || op_code==TAG_NOT_FOUND || op_code==INSUFFICIENT_SPACE || op_code==WRITE_NO_PERMISSION || op_code==READ_WRITE_OVERFLOW)
         {
