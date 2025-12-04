@@ -383,15 +383,6 @@ void work_worker(t_list* pack, int id, int sock){
                 qid,
                 opcode
             );
-            log_error(logger, "llego lpm ###################3");
-            log_error(logger, "llego lpm ###################3");
-            log_error(logger, "llego lpm ###################3");
-            log_error(logger, "llego lpm ###################3");
-            log_error(logger, "llego lpm ###################3");
-            log_error(logger, "llego lpm ###################3");
-            log_error(logger, "llego lpm ###################3");
-            log_error(logger, "llego lpm ###################3");
-            log_error(logger, "llego lpm ###################3");
         }
         query* q = get_query_by_qid(qid);
         if(q == NULL || qid == -1){
