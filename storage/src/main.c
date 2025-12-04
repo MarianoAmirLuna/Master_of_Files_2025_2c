@@ -215,6 +215,27 @@ int file_tag_exist_or_not(char* file, char* tag, worker* w){
     return 1;
 }
 
+int file_tag_exist_or_not_not_error(char* file, char* tag, worker* w){
+    char* filespath =get_files_from_punto_montaje(cs);
+    char* fullpath = string_from_format("%s/%s", filespath, file);
+    free(filespath);
+    if(!directory_exists(fullpath)){
+        log_error(logger, "No se encontro el file deseado");
+        free(fullpath);
+        return 0;
+    }
+    char* fullpathtag = string_from_format("%s/%s", fullpath, tag);
+    if(!directory_exists(fullpathtag)){
+        log_error(logger, "No se encontro el tag deseado");
+        free(fullpath);
+        free(fullpathtag);
+        return 0;
+    }
+    free(fullpath);
+    free(fullpathtag);
+    return 1;
+}
+
 void instance_signal_handler(){
     if(signal(SIGINT, catch_handler_termination) == SIG_ERR){
         log_error(logger, "Problema seteando un handler para señales");
