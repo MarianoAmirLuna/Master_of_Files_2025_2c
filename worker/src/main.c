@@ -251,8 +251,8 @@ void packet_callback(void* params){
             add_int_to_packet(paq, op_code);
             add_int_to_packet(paq, actual_query->id);
             send_and_free_packet(paq, sock_master);
-            sem_post(&sem_respuesta_storage);
             hubo_error=true;
+            sem_post(&sem_respuesta_storage);
         }
         if(op_code == SUCCESS)
         {
