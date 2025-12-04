@@ -41,13 +41,13 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     else if(caso == READ)
     {
         log_debug(logger,"5 - ################################################################");
-        log_debug(logger,)
         int dir_base = atoi(parametro2);
         int tamanio = atoi(parametro3);
         ejecutar_read(parametro1, dir_base, tamanio);
     }
     else if(caso == TAG)
     {
+        log_debug(logger,"6 - ################################################################");
         t_packet* paq = create_packet();
         add_int_to_packet(paq, TAG_FILE);
         add_file_tag_to_packet(paq, parametro1);
@@ -56,6 +56,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==COMMIT)
     {
+        log_debug(logger,"7 - ################################################################");
         ejecutar_flush(parametro1, true); 
         t_packet* paq = create_packet();
         add_int_to_packet(paq, COMMIT_TAG);
@@ -64,21 +65,25 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==FLUSH)
     {
+        log_debug(logger,"8 - ################################################################");
         ejecutar_flush(parametro1, true); 
     }
     else if(caso==DELETE)
     {
+        log_debug(logger,"9 - ################################################################");
         t_packet* paq = create_packet();
         add_int_to_packet(paq, DELETE_TAG);
         add_file_tag_to_packet(paq, parametro1);
         send_and_free_packet(paq, sock_storage);
     }
     else if(caso==NOOP){ 
+        log_debug(logger,"10 - ################################################################");
         //El NOOP no existe en este TP
         ejecutar_noop();
     }
     else if(caso == END)
     {
+        log_debug(logger,"11 - ################################################################");
         t_packet* paq = create_packet();
         add_int_to_packet(paq, QUERY_END);
         add_int_to_packet(paq, actual_query->id);
