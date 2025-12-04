@@ -170,14 +170,11 @@ void packet_callback(void* params){
             actual_worker->id_query = id_query;
             
             log_pink(logger, "Por re-setear el actual_query");
-            if(actual_query != NULL){
-                free_query(actual_query);
-                //free(actual_query);
-            }
             actual_query = create_basic_query(id_query, archivo_query_actual, pc);
 
             log_light_blue(logger, "Worker asignado a la Query %d PC=%d", actual_query->id, actual_query->pc);
             log_info(logger, "## Query %d: Se recibe la Query. El path de operaciones es: %s", id_query, archivo_query_actual); 
+            hubo_error=false;
             sem_post(&sem_query_recibida); //Aviso que ya tengo una query para ejecutar
             free(str);
         }
@@ -195,6 +192,7 @@ void packet_callback(void* params){
             pthread_detach(pth);*/
         
             need_desalojo=1;
+            log_light_green(logger, "need_desalojo seteada a 1 por request del Master");
             log_light_blue(logger, "En Semwait need desalojo");
             sem_wait(&sem_need_desalojo);
             log_light_blue(logger, "Termine Semwait need desalojo");
@@ -239,6 +237,7 @@ void packet_callback(void* params){
             add_int_to_packet(paq, op_code);
             add_int_to_packet(paq, actual_query->id);
             send_and_free_packet(paq, sock_master);
+            hubo_error=true;
         }
         if(op_code == SUCCESS)
         {

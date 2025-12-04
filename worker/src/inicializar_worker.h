@@ -22,6 +22,7 @@ void inicializar_semaforos()
 void inicializar_variables()
 {
     actual_worker->is_free=true;
+    hubo_error=false;
 }
 
 void inicializar_colecciones(){

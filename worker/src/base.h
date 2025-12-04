@@ -51,6 +51,8 @@ char* data_bloque;
 char* archivo_query_actual;
 char *file_tag_buscado;
 
+bool hubo_error;
+
 marco* frame_buscado;
 
 sem_t* sem_block_size_recibido;

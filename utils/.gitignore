@@ -8,6 +8,8 @@ obj/
 .cproject
 .project
 
+*.dat
+
 # CLion files
 .idea/
 

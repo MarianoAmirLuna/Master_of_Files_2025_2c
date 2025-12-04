@@ -173,7 +173,7 @@ void loop_atender_queries()
         free(fullpath);
         actual_worker->is_free = false;
         log_warning(logger, "Estoy en el ciclo infinito fuera del while_actual_worker");
-        while (!actual_worker->is_free)
+        while (!actual_worker->is_free && !hubo_error)
         {
             log_warning(logger, "Estoy en el ciclo");
             //Incrementá el PC negro y con chequeo de out-bound si tenés 10 instrucciones no te podés ir a la instrucción 11 porque se hace percha.
@@ -227,6 +227,11 @@ void loop_atender_queries()
             decode_y_execute(instruccion);
             log_pink(logger, "SE TERMINO LA EJECUCION DE: %s", instruccion);
             actual_query->pc++;
+        }
+        if(hubo_error){
+            log_error(logger, "ERROR, se salio de la ejecucion del query por un error de storage");
+            need_desalojo=1;
+            log_light_green(logger, "need_desalojo seteada a 1 por error de storage");
         }
         log_warning(logger, "Estoy fuera del ciclo actual_worker is free");
         if(need_desalojo){
