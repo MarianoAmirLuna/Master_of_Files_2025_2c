@@ -104,6 +104,8 @@ void* connect_to_server(void* params){
     return NULL;
 }
 
+/*
+//Lo puse para saber si se solucionaba en un nuevo thread pero ni así...
 void por_desalojarme(void* socket){
     int sock = (int)socket;
     need_desalojo=1;
@@ -126,7 +128,7 @@ void por_desalojarme(void* socket){
     //need_desalojo=0;
     flushear_tabla_paginas(false);
     log_light_blue(logger, "Termine de flushear");
-}
+}*/
 
 void packet_callback(void* params){
     int cntargs = 0;
@@ -152,16 +154,25 @@ void packet_callback(void* params){
             qid id_query =list_get_int(packet, 1);
             int pc = list_get_int(packet, 2);
             char* str =list_get_str(packet, 3);
+            if(archivo_query_actual)
+            {
+                free(archivo_query_actual);
+            }
+            if(actual_query)
+            {
+                free_query(actual_query);
+            }
             archivo_query_actual = malloc(strlen(str)+1);
             strcpy(archivo_query_actual, str);
             
             
-            actual_worker->is_free=false;
+            //actual_worker->is_free=false;
             actual_worker->id_query = id_query;
             
             log_pink(logger, "Por re-setear el actual_query");
             if(actual_query != NULL){
-                free(actual_query);
+                free_query(actual_query);
+                //free(actual_query);
             }
             actual_query = create_basic_query(id_query, archivo_query_actual, pc);
 
@@ -200,7 +211,7 @@ void packet_callback(void* params){
             actual_worker->is_free=true;
             actual_worker->id_query = -1;
             free_query(actual_query);
-            //need_desalojo=0;
+            need_desalojo=0;
             flushear_tabla_paginas(false);
             log_light_blue(logger, "Termine de flushear");
         }

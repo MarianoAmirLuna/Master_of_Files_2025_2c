@@ -19,35 +19,35 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     log_debug(logger, "EJECUTAR_INSTRUCCION: (%s) | %s | %s | %s", instr_to_string(caso), parametro1, parametro2, parametro3);
     if (caso == CREATE)
     {
-        log_debug(logger,"1 - ################################################################");
+        log_pink(logger,"Aca 1");
 
         //El tamaño del archivo debe ser 0
         ejecutar_create(parametro1);
     }
     else if(caso==TRUNCATE)
     {
-                log_debug(logger,"2 - ################################################################");
+        log_pink(logger,"Aca 2");
 
         ejecutar_truncate(parametro1, atoi(parametro2));
-                log_debug(logger,"3 - ################################################################");
+        log_pink(logger,"Aca 3");
 
     }
     else if(caso == WRITE)
     {
-            log_debug(logger,"4 - ################################################################");
+        log_pink(logger,"Aca 4");
 
         ejecutar_write(parametro1, atoi(parametro2), parametro3);
     }
     else if(caso == READ)
     {
-        log_debug(logger,"5 - ################################################################");
+        log_pink(logger,"Aca 5");
         int dir_base = atoi(parametro2);
         int tamanio = atoi(parametro3);
         ejecutar_read(parametro1, dir_base, tamanio);
     }
     else if(caso == TAG)
     {
-        log_debug(logger,"6 - ################################################################");
+        log_pink(logger,"Aca 6");
         t_packet* paq = create_packet();
         add_int_to_packet(paq, TAG_FILE);
         add_file_tag_to_packet(paq, parametro1);
@@ -56,7 +56,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==COMMIT)
     {
-        log_debug(logger,"7 - ################################################################");
+        log_pink(logger,"Aca 7");
         ejecutar_flush(parametro1, true); 
         t_packet* paq = create_packet();
         add_int_to_packet(paq, COMMIT_TAG);
@@ -65,30 +65,34 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==FLUSH)
     {
-        log_debug(logger,"8 - ################################################################");
+        log_pink(logger,"Aca 8");
         ejecutar_flush(parametro1, true); 
     }
     else if(caso==DELETE)
     {
-        log_debug(logger,"9 - ################################################################");
+        log_pink(logger,"Aca 9");
         t_packet* paq = create_packet();
         add_int_to_packet(paq, DELETE_TAG);
         add_file_tag_to_packet(paq, parametro1);
         send_and_free_packet(paq, sock_storage);
     }
     else if(caso==NOOP){ 
-        log_debug(logger,"10 - ################################################################");
+        log_pink(logger,"Aca 10");
         //El NOOP no existe en este TP
         ejecutar_noop();
     }
     else if(caso == END)
     {
-        log_debug(logger,"11 - ################################################################");
+        log_pink(logger,"Aca 11");
         t_packet* paq = create_packet();
         add_int_to_packet(paq, QUERY_END);
         add_int_to_packet(paq, actual_query->id);
         add_int_to_packet(paq, actual_query->pc);
         send_and_free_packet(paq, sock_master); 
+        if(need_desalojo){
+            sem_post(&sem_need_desalojo);
+            need_desalojo=0;
+        }
         actual_worker->is_free=true;
     }
     log_info(logger, "## Query: %d: - Instrucción realizada: %s", actual_query->id, instr_to_string(caso));
@@ -101,11 +105,13 @@ void decode_y_execute(char *linea_de_instruccion)
     remove_new_line(linea_de_instruccion);
     char** spl = string_split(linea_de_instruccion, " ");
     instruccion = spl[0];
-    if (spl[1] != NULL && string_array_size(spl) > 1)
+    int sz = string_array_size(spl);
+    
+    if (sz > 1 && spl[1] != NULL && !string_is_empty(spl[1]))
         parametro1 = spl[1];
-    if (spl[2] != NULL && string_array_size(spl) > 2)
+    if (sz > 2 && spl[2] != NULL && !string_is_empty(spl[2]))
         parametro2 = spl[2];
-    if (spl[3] != NULL && string_array_size(spl) > 3)
+    if (sz > 3 && spl[3] != NULL && !string_is_empty(spl[3]))
         parametro3 = spl[3];
     
     instr_code caso = cast_code(instruccion);
@@ -154,6 +160,10 @@ void loop_atender_queries()
     for (;;) // 1 iteracionn por query atendida
     {
         log_trace(logger, "Esperando una nueva Query...");
+        if(need_desalojo){
+            sem_post(&sem_need_desalojo);
+            need_desalojo=0;
+        }
         sem_wait(&sem_query_recibida); 
         log_trace(logger, "Recibi una QUERYYYYYYYYYYYYYYYYYYYYYY");
         char* fullpath = string_from_format("%s%s", cw.path_queries, archivo_query_actual);
@@ -162,9 +172,10 @@ void loop_atender_queries()
         log_trace(logger, "CANTIDAD DE INSTRUCCIONES QUE TIENE EL QUERY PATH: %s ES %d", archivo_query_actual, sz);
         free(fullpath);
         actual_worker->is_free = false;
-
+        log_warning(logger, "Estoy en el ciclo infinito fuera del while_actual_worker");
         while (!actual_worker->is_free)
         {
+            log_warning(logger, "Estoy en el ciclo");
             //Incrementá el PC negro y con chequeo de out-bound si tenés 10 instrucciones no te podés ir a la instrucción 11 porque se hace percha.
             // Fase Fetch
             if(need_desalojo){
@@ -175,9 +186,11 @@ void loop_atender_queries()
             }
             if(need_stop)
             {
-                if(need_desalojo)
-                {
-                    sem_post(&sem_need_desalojo); //por si las moscas
+                if(need_desalojo){
+                    actual_worker->is_free=true;
+                    sem_post(&sem_need_desalojo);
+                    need_desalojo=0;
+                    //break;
                 }
                 log_debug(logger, "Voy a mandar un QUERY_END porque solicitaron un desalojo | need_stop es true: %d", need_stop);
                 //QUERY END Termina esto que te rre fuiste
@@ -214,7 +227,12 @@ void loop_atender_queries()
             decode_y_execute(instruccion);
             log_pink(logger, "SE TERMINO LA EJECUCION DE: %s", instruccion);
             actual_query->pc++;
-
+        }
+        log_warning(logger, "Estoy fuera del ciclo actual_worker is free");
+        if(need_desalojo){
+            actual_worker->is_free=true;
+            sem_post(&sem_need_desalojo);
+            need_desalojo=0;
         }
     }
 }

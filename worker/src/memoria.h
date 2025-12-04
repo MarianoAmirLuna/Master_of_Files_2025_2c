@@ -357,6 +357,7 @@ entrada_tabla_pags* buscar_victima_lru(){
 }
 
 entrada_tabla_pags* buscar_victima_clock_modificado(){
+    log_debug(logger, "entre a ejecutar_flush()");
     if (queue_size(tabla_pags_global) == 0) {
         log_error(logger, "CLOCK-M: tabla_pags_global vacía, no hay víctima para seleccionar");
         return NULL;

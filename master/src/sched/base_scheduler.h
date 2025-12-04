@@ -193,7 +193,7 @@ int increment_idx(){
 }
 
 void query_to_no_notify(query* q, state_process to){
-      if(to == STATE_EXEC){
+    if(to == STATE_EXEC){
         if(q->temp == NULL){
             q->temp = temporal_create();
         }
@@ -216,6 +216,14 @@ void query_to_no_notify(query* q, state_process to){
 }
 
 void query_to(query* q, state_process to){
+    if(q->sp == STATE_EXIT && to == STATE_READY)
+    {
+        log_error(logger, "is not valid from %s to %s state process returned is invoked", 
+            state_to_string(q->sp),
+            state_to_string(to)
+        );
+        return;
+    }
     /*if(q->sp != STATE_READY && to != STATE_READY){
         if(!is_valid_sp(q->sp, to)){
             log_error(logger, "is not valid from %s to %s state process returned is invoked", 
