@@ -4,7 +4,6 @@
 void inicializar_memoria()
 {
     memory = malloc(cw.tam_memoria);
-    sem_wait(&sem_storage_conectado);
     if(block_size == 0){
         log_error(logger, "No podés dividir por 0 gil pero lo voy a ignorar seteando como 16");
         block_size = 16;

@@ -67,7 +67,6 @@ void* connect_to_server(void* params){
         wcl = client_connection(cw.ip_storage,cw.puerto_storage);
         sock_storage = wcl;
         sem_post(&sem_storage_conectado); //Aviso que ya estoy conectado al storage
-        sem_post(&sem_storage_conectado);
     }
     if(handshake(wcl, 0) != 0)
     {
@@ -87,6 +86,7 @@ void* connect_to_server(void* params){
         data_bloque = malloc(storage_block_size);
         log_trace(logger, "TENGO EL BLOCK SIZE DEL STORAGE: %d", block_size);
         list_destroy_and_destroy_elements(l, free_element);
+        inicializar_memoria();
     }
 
     //add_socket_structure_by_name_ocm_sock_server(ocm_to_string(ocm), ocm, wcl, 0);

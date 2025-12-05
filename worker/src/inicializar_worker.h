@@ -36,7 +36,7 @@ void inicializar_worker()
     inicializar_semaforos();
     inicializar_variables();
     inicializar_colecciones();
-    inicializar_memoria();
+    //inicializar_memoria();
 }
 
 
