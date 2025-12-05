@@ -355,12 +355,19 @@ void work_worker(t_list* pack, int id, int sock){
         char* buffer = list_get_str(pack, 2);
         char* file = list_get_str(pack, 3);
         char* tag = list_get_str(pack, 4);
+        query* q = get_query_by_qid(id_query);
+        
         log_info(logger, "## Se envía un mensaje de lectura de la Query <%d> en el Worker <%d> al Query Control", id_query, id);
+        if(q == NULL){
+            log_error(logger, "No se encontró el query return is invoked");
+            return;   
+        }
         t_packet* p = create_packet();
         add_int_to_packet(p, REQUEST_READ);
         add_string_to_packet(p, buffer);
         add_string_to_packet(p, file);
         add_string_to_packet(p, tag);
+        send_and_free_packet(p, q->fd);
         free(buffer);
         free(file);
         free(tag);
