@@ -67,6 +67,7 @@ void* connect_to_server(void* params){
         wcl = client_connection(cw.ip_storage,cw.puerto_storage);
         sock_storage = wcl;
         sem_post(&sem_storage_conectado); //Aviso que ya estoy conectado al storage
+        sem_post(&sem_storage_conectado);
     }
     if(handshake(wcl, 0) != 0)
     {
