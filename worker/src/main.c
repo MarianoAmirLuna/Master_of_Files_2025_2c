@@ -210,8 +210,17 @@ void packet_callback(void* params){
             actual_worker->id_query = -1;
             free_query(actual_query);
             need_desalojo=0;
-            if(ultimo_error_storage != WRITE_NO_PERMISSION){
-                flushear_tabla_paginas(false);
+            if (hubo_error)
+            {
+                if (ultimo_error_storage != WRITE_NO_PERMISSION)
+                {
+                    flushear_tabla_paginas(false);
+                    log_light_blue(logger, "Termine de flushear");
+                }
+            }
+            else
+            {
+                flushear_tabla_paginas(true);
                 log_light_blue(logger, "Termine de flushear");
             }
         }
