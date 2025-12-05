@@ -81,6 +81,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         add_int_to_packet(paq, DELETE_TAG);
         add_file_tag_to_packet(paq, parametro1);
         send_and_free_packet(paq, sock_storage);
+        sem_wait(&sem_respuesta_storage);
     }
     else if(caso==NOOP){ 
         log_pink(logger,"Aca 10");
