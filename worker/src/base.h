@@ -49,6 +49,8 @@ int is_free;*/
 
 char* data_bloque;
 
+int ultimo_error_storage;
+
 char* archivo_query_actual;
 char *file_tag_buscado;
 

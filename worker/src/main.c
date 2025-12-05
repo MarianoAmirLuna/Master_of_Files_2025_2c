@@ -210,8 +210,10 @@ void packet_callback(void* params){
             actual_worker->id_query = -1;
             free_query(actual_query);
             need_desalojo=0;
-            flushear_tabla_paginas(false);
-            log_light_blue(logger, "Termine de flushear");
+            if(ultimo_error_storage != WRITE_NO_PERMISSION){
+                flushear_tabla_paginas(false);
+                log_light_blue(logger, "Termine de flushear");
+            }
         }
     }
     if(ocm == MODULE_STORAGE){
@@ -252,6 +254,7 @@ void packet_callback(void* params){
             add_int_to_packet(paq, actual_query->id);
             send_and_free_packet(paq, sock_master);
             hubo_error=true;
+            ultimo_error_storage=op_code;
             sem_post(&sem_respuesta_storage);
         }
         if(op_code == SUCCESS)
