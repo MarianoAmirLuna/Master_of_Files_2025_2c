@@ -67,10 +67,6 @@ entrada_tabla_pags *obtener_frame(char *archivo, int donde_comenzar)
     if(ret == NULL){
         log_error(logger, "EL RET ES NULL DEBERIA SER ASI???? (%s:%d)", __func__, __LINE__);
     }
-    if(ret->marco > 2)
-    {
-        log_pink(logger, "pasaron cosas");
-    }
     return ret;
 }
 
@@ -342,12 +338,7 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
                 entrada_tabla_pags *entrada_con_frame = obtener_frame(file_tag, dir_base);
                 if (entrada_con_frame == NULL)
                 {
-                    log_error(logger, "ENTRADA CON FRAME ES NULL");
-                }
-
-                if (entrada_con_frame->marco > 2)
-                {
-                    log_pink(logger, "pasaron cosas");
+                    //log_error(logger, "ENTRADA CON FRAME ES NULL");
                 }
                 n_frame = entrada_con_frame->marco;
             }
