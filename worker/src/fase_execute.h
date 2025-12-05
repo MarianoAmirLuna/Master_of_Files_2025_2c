@@ -370,6 +370,15 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
     ((char *)leido)[tam] = '\0';
     log_trace(logger, "frame usado para la LEER: %d, tamaño de bloque: %d, offset: %d", n_frame, storage_block_size, offset);
     log_info(logger, "Query <%d>: Acción: <LEER> - Dirección Física: <%d> - Valor: <%s>", actual_worker->id_query, n_frame * storage_block_size + offset, leido);
+    t_packet* paq = create_packet();
+    add_int_to_packet(paq, GET_DATA);
+    add_int_to_packet(paq, actual_worker->id_query);
+    add_string_to_packet(paq, leido);
+    char** copia_ft = string_split(file_tag, ":");
+    add_string_to_packet(paq, copia_ft[0]); //file
+    add_string_to_packet(paq, copia_ft[1]); //tag
+    send_and_free_packet(paq, sock_master);
+    string_array_destroy(copia_ft);
 }
 
 void ejecutar_commit(char *file, char *tag)
@@ -393,8 +402,8 @@ void ejecutar_flush(char *file_tag, bool reportar_error)
     for (int i = 0; i < list_size(tabla); i++)
     {
         entrada_tabla_pags *entrada = list_get(tabla, i);
-        actualizar_pagina_en_storage(entrada, reportar_error);
         if(entrada ->modificada){
+            actualizar_pagina_en_storage(entrada, reportar_error);
             int indice = list_index_of(tabla_pags_global->elements, entrada, entrada_compare_completa);
             log_trace(logger, "indice a actualizar en tabla global: %d", indice);
             entrada->modificada = false;
