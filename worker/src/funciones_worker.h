@@ -19,39 +19,27 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     log_debug(logger, "EJECUTAR_INSTRUCCION: (%s) | %s | %s | %s", instr_to_string(caso), parametro1, parametro2, parametro3);
     if (caso == CREATE)
     {
-        log_pink(logger,"Aca 1");
-
         //El tamaño del archivo debe ser 0
-        log_error(logger, "antes de enviar el create a storage");
         ejecutar_create(parametro1);
-        log_error(logger, "despues de enviar el create a storage");
         sem_wait(&sem_respuesta_storage);
-        log_error(logger, "ya pase el semaforo de create");
     }
     else if(caso==TRUNCATE)
     {
-        log_pink(logger,"Aca 2");
-
         ejecutar_truncate(parametro1, atoi(parametro2));
-        log_pink(logger,"Aca 3");
         sem_wait(&sem_respuesta_storage);
     }
     else if(caso == WRITE)
     {
-        log_pink(logger,"Aca 4");
-
         ejecutar_write(parametro1, atoi(parametro2), parametro3);
     }
     else if(caso == READ)
     {
-        log_pink(logger,"Aca 5");
         int dir_base = atoi(parametro2);
         int tamanio = atoi(parametro3);
         ejecutar_read(parametro1, dir_base, tamanio);
     }
     else if(caso == TAG)
     {
-        log_pink(logger,"Aca 6");
         t_packet* paq = create_packet();
         add_int_to_packet(paq, TAG_FILE);
         add_file_tag_to_packet(paq, parametro1);
@@ -61,7 +49,6 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==COMMIT)
     {
-        log_pink(logger,"Aca 7");
         ejecutar_flush(parametro1, true); 
         t_packet* paq = create_packet();
         add_int_to_packet(paq, COMMIT_TAG);
@@ -71,12 +58,10 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==FLUSH)
     {
-        log_pink(logger,"Aca 8");
         ejecutar_flush(parametro1, true);  
     }
     else if(caso==DELETE)
     {
-        log_pink(logger,"Aca 9");
         t_packet* paq = create_packet();
         add_int_to_packet(paq, DELETE_TAG);
         add_file_tag_to_packet(paq, parametro1);
@@ -84,13 +69,11 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         sem_wait(&sem_respuesta_storage);
     }
     else if(caso==NOOP){ 
-        log_pink(logger,"Aca 10");
         //El NOOP no existe en este TP
         ejecutar_noop();
     }
     else if(caso == END)
     {
-        log_pink(logger,"Aca 11");
         t_packet* paq = create_packet();
         add_int_to_packet(paq, QUERY_END);
         add_int_to_packet(paq, actual_query->id);
