@@ -18,7 +18,9 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
 
     char* fullpath = get_filetag_path(cs,file,tag);
     if(!control_existencia(fullpath)){
-        create_nested_directories(fullpath);
+        send_basic_packet(w->fd, TAG_NOT_FOUND); // no existe el file:tag
+        log_pink(logger, "[READ_BLOCK] No existe el File:Tag %s:%s", file, tag);
+        return;
     }
     
     t_config* metadata = get_metadata_from_file_tag(cs, file, tag);
