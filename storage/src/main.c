@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 
 worker* get_worker_by_id(int id){
     for(int i=0;i<list_size(workers);i++){
-        worker* w = list_get(workers, i);
+        worker* w = (worker*)list_get(workers, i);
         if(w->id == id){
             return w;
         }
