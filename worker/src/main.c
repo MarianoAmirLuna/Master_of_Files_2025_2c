@@ -126,6 +126,10 @@ void packet_callback(void* params){
     if(ocm == MODULE_MASTER){
         //ACA RECIBIS UN PAQUETE PROVENIENTE DE MASTER
         if(op_code == REQUEST_EXECUTE_QUERY){
+            if(hubo_error)
+            {
+                sem_post(&sem_dimi);
+            }
             qid id_query =list_get_int(packet, 1);
             int pc = list_get_int(packet, 2);
             char* str =list_get_str(packet, 3);

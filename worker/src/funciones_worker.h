@@ -149,6 +149,9 @@ void loop_atender_queries()
 {
     for (;;) // 1 iteracionn por query atendida
     {
+        if(hubo_error){
+            sem_wait(&sem_dimi);
+        }
         log_trace(logger, "Esperando una nueva Query...");
         if(need_desalojo){
             sem_post(&sem_need_desalojo);

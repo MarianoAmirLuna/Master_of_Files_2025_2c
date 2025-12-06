@@ -18,6 +18,7 @@ void inicializar_semaforos()
     sem_init(&sem_get_data, 0, 0);
     sem_init(&sem_storage_conectado, 0, 0);
     sem_init(&sem_respuesta_storage, 0, 0);
+    sem_init(&sem_dimi, 0, 0);
 }
 
 void inicializar_variables()
