@@ -34,6 +34,8 @@ sem_t sem_incoming_client;
 sem_t sem_idx;
 sem_t sem_locker;
 sem_t sem_worker;
+sem_t sem_have_query;
+sem_t sem_have_worker;
 void execute_worker();
 
 //On predicates

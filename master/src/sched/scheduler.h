@@ -153,6 +153,8 @@ void* scheduler(void* params){
         log_error(logger, "Tiempo Aging inválido exit(1) as INVOKED");
         //exit(EXIT_FAILURE);
     }
+    sem_wait(&sem_have_worker);
+    sem_wait(&sem_have_query);
     //Debería usar semáforo acá sólo para habilitar este thread cuando se esté corriendo sino habrá desplazamiento de tiempo aging?
     for(;;){
         execute_worker();

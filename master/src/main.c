@@ -20,6 +20,8 @@ int main(int argc, char* argv[]) {
     sem_init(&sem_incoming_client, 0,1);
     sem_init(&sem_locker, 0,1);
     sem_init(&sem_worker, 0,1);
+    sem_init(&sem_have_query, 0,0);
+    sem_init(&sem_have_worker, 0,0);
     //sem_init(&sem_desalojo, 0,0);
     int sock_server = server_connection(cm.puerto_escucha);
     
@@ -129,6 +131,7 @@ void* attend_multiple_clients(void* params)
                 list_size(workers)
             );
             free(archive_query);
+            sem_post(&sem_have_query);
             //print_queries();
             //Deberia hacer una planificación ahora mismo para saber si puede asignar un 
         }
@@ -151,6 +154,7 @@ void* attend_multiple_clients(void* params)
             //Acaso cuando recibo el id_worker en seguida le tengo que asignar un query?? de ahí para pasar el path de la query al worker???????
             log_orange(logger, "Recibi el id_worker de Worker: ID_WORKER = %d", id_worker);
             log_info(logger, "## Se conecta el Worker %d - Cantidad total de Workers: %d", id_worker, list_size(workers));
+            sem_post(&sem_have_worker);
         }
 
         list_destroy(l);
