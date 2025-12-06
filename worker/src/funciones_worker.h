@@ -162,10 +162,10 @@ void loop_atender_queries()
         log_trace(logger, "CANTIDAD DE INSTRUCCIONES QUE TIENE EL QUERY PATH: %s ES %d", archivo_query_actual, sz);
         free(fullpath);
         actual_worker->is_free = false;
-        log_warning(logger, "Estoy en el ciclo infinito fuera del while_actual_worker");
+        log_debug(logger, "Estoy en el ciclo infinito fuera del while_actual_worker");
         while (!actual_worker->is_free && !hubo_error)
         {
-            log_warning(logger, "Estoy en el ciclo");
+            log_debug(logger, "Estoy en el ciclo");
             //Incrementá el PC negro y con chequeo de out-bound si tenés 10 instrucciones no te podés ir a la instrucción 11 porque se hace percha.
             // Fase Fetch
             if(need_desalojo){
@@ -223,7 +223,7 @@ void loop_atender_queries()
             need_desalojo=1;
             log_light_green(logger, "need_desalojo seteada a 1 por error de storage");
         }
-        log_warning(logger, "Estoy fuera del ciclo actual_worker is free");
+        log_debug(logger, "Estoy fuera del ciclo actual_worker is free");
         if(need_desalojo){
             actual_worker->is_free=true;
             sem_post(&sem_need_desalojo);

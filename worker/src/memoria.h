@@ -29,7 +29,7 @@ void inicializar_memoria()
 
 void loguear_tabla_paginas_global() {
     log_trace(logger, "");
-    log_warning(logger, "=== Tabla de Páginas Global ===");
+    log_debug(logger, "=== Tabla de Páginas Global ===");
 
     if (queue_size(tabla_pags_global) == 0) {
         log_info(logger, "La tabla de páginas global está vacía.");
@@ -44,7 +44,7 @@ void loguear_tabla_paginas_global() {
             continue;
         }
 
-        log_info(logger, "Entrada %d: File:Tag = <%s>, Página = <%d>, Marco = <%d>, Uso = <%d>, Modificada = <%d>",
+        log_trace(logger, "Entrada %d: File:Tag = <%s>, Página = <%d>, Marco = <%d>, Uso = <%d>, Modificada = <%d>",
                  i,
                  entrada->file_tag,
                  entrada->pag,
@@ -53,7 +53,7 @@ void loguear_tabla_paginas_global() {
                  entrada->modificada);
     }
 
-    log_warning(logger, "=== Fin de la Tabla de Páginas Global ===");
+    log_debug(logger, "=== Fin de la Tabla de Páginas Global ===");
     log_trace(logger, "");
 }
 
@@ -402,12 +402,12 @@ entrada_tabla_pags* seleccionar_victima()
 
     if (R_LRU == cw.algoritmo_reemplazo)
     {
-        log_warning(logger, "Usando LRU para seleccionar víctima");
+        log_debug(logger, "Usando LRU para seleccionar víctima");
         victima = buscar_victima_lru();
     }
     else
     {
-        log_warning(logger, "Usando CLOCK MODIFICADO para seleccionar víctima");
+        log_debug(logger, "Usando CLOCK MODIFICADO para seleccionar víctima");
         victima =buscar_victima_clock_modificado();
     }
     log_trace(logger, "Estado actual de la tabla de páginas global DESPUES de seleccionar víctima:");
