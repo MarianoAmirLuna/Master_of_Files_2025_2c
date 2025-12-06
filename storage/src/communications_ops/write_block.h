@@ -154,6 +154,7 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
         }
 
         bloque_fisico_final = bloque_nuevo;
+        og_info(logger, "## %d - Bloque Físico Reservado - Número de Bloque: %d", w->id_query, bloque_fisico_final);
         log_debug(logger, "[WRITE_BLOCK] COPY-ON-WRITE asignó nuevo bloque físico %d", bloque_fisico_final);
 
         // 2) Escribir el contenido nuevo en el bloque físico nuevo
