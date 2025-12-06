@@ -396,6 +396,10 @@ void ejecutar_flush(char *file_tag, bool reportar_error)
         entrada_tabla_pags *entrada = list_get(tabla, i);
         if(entrada ->modificada){
             actualizar_pagina_en_storage(entrada, reportar_error);
+            if(hubo_error)
+            {
+                break;
+            }
             int indice = list_index_of(tabla_pags_global->elements, entrada, entrada_compare_completa);
             log_trace(logger, "indice a actualizar en tabla global: %d", indice);
             entrada->modificada = false;
@@ -405,6 +409,10 @@ void ejecutar_flush(char *file_tag, bool reportar_error)
                 log_error(logger, "No se encontró la entrada en la tabla global para actualizar.");
             }
         }
+    }
+    if(hubo_error)
+    {
+        log_orange(logger, "se abortó el flush");
     }
     loguear_tabla_paginas_global();
     list_destroy(tabla);

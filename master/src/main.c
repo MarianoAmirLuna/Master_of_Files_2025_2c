@@ -401,6 +401,10 @@ void work_worker(t_list* pack, int id, int sock){
         t_packet* p = create_packet();
         add_int_to_packet(p, REQUEST_KILL);
         add_string_to_packet(p, opcode == QUERY_END ? "Por fin de query" : get_motivo_error(opcode));
+        if(!strcmp(get_motivo_error(opcode), "Error desconocido"))
+        {
+            log_orange(logger, "Error desconocido n°%d", opcode);
+        }
         send_and_free_packet(p, q->fd);
         query_to_no_notify(q, STATE_EXIT);
         /*q->sp = STATE_EXIT;

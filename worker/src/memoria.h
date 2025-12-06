@@ -314,7 +314,8 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
     string_array_destroy(spl);
     free(contenido2);
     free(contenido);
-    
+    sem_wait(&sem_respuesta_storage);
+    log_light_green(logger, "me contestó storage para el flush de %s:%s pag %d", file, tag, elemento->pag);
 }
 
 void liberar_entrada_TPG(entrada_tabla_pags *elemento)

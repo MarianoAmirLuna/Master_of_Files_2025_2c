@@ -49,6 +49,9 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==COMMIT)
     {
+        char** copia_ft = string_split(parametro1, ":");
+        ejecutar_commit(copia_ft[0], copia_ft[1]);
+        string_array_destroy(copia_ft);
         ejecutar_flush(parametro1, true); 
         t_packet* paq = create_packet();
         add_int_to_packet(paq, COMMIT_TAG);

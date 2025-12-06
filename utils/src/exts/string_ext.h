@@ -197,6 +197,9 @@ char* get_motivo_error(int code_error){
     if(code_error == READ_WRITE_OVERFLOW){
         return "Desborde de lectura/escritura";
     }
+    if(code_error == TAG_YA_EXISTENTE_SACA_LA_MANO_DE_AHI){
+        return "Tag ya existente";
+    }
     return "Error desconocido";
 }
 
