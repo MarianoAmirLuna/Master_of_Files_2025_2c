@@ -321,6 +321,7 @@ void liberar_entrada_TPG(entrada_tabla_pags *elemento)
     if (elemento->modificada)
     {
         actualizar_pagina_en_storage(elemento, true);
+        sem_wait(&sem_respuesta_storage);
     }
 
     marco* el_frame = list_get(lista_frames, elemento->marco);

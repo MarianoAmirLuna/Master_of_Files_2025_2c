@@ -206,7 +206,7 @@ void packet_callback(void* params){
     }
     if(ocm == MODULE_STORAGE){
         if(op_code == GET_DATA){
-            sem_post(&sem_respuesta_storage);
+            //sem_post(&sem_respuesta_storage);
             log_light_blue(logger, "Tamaño del paquete: %d", list_size(packet));
             int returned = list_get_int(packet, 0);
             if(returned != GET_DATA)

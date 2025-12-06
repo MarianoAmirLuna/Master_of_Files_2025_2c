@@ -20,4 +20,4 @@ obj/
 *.dat
 
 # Filesystem datos
-files/
+./files

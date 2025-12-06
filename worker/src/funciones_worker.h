@@ -37,7 +37,6 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         int dir_base = atoi(parametro2);
         int tamanio = atoi(parametro3);
         ejecutar_read(parametro1, dir_base, tamanio);
-        sem_wait(&sem_respuesta_storage);
     }
     else if(caso == TAG)
     {
@@ -63,8 +62,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso==FLUSH)
     {
-        ejecutar_flush(parametro1, true);  
-        sem_wait(&sem_respuesta_storage);
+        ejecutar_flush(parametro1, true);
         sem_wait(&fin_de_flush);
     }
     else if(caso==DELETE)
