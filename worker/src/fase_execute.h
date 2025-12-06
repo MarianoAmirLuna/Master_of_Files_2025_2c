@@ -89,7 +89,8 @@ int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
         return -1;
     }
 
-    //entrada_con_frame->modificada = true;
+    entrada_con_frame->modificada = true;
+    entrada_con_frame->uso = true;
     
     log_trace(logger, "realizar_escritura: dir_logica=%d contenido=%s", dir_logica, contenido);
     log_trace(logger, "Entrada de la TPG: file_tag=%s, pag=%d, marco=%d, modificada=%d, uso=%d", entrada_con_frame->file_tag, entrada_con_frame->pag, entrada_con_frame->marco, entrada_con_frame->modificada, entrada_con_frame->uso);
@@ -130,6 +131,8 @@ int realizar_lectura(void *dest, char *file_tag, int dir_logica, int tam)
 {
     msleep(cw.retardo_memoria);
     entrada_tabla_pags *entrada_con_frame = obtener_frame(file_tag, dir_logica);
+
+    entrada_con_frame->uso = true;
     actualizarPrioridadLRU(entrada_con_frame);
 
     int frame = entrada_con_frame->marco;
@@ -264,7 +267,7 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
 
             // Apartir de acá hay espacio
             entrada_tabla_pags* nueva_entrada_TPG = reservar_frame(file_tag, pagina);
-            nueva_entrada_TPG->modificada = true;
+            //nueva_entrada_TPG->modificada = true;
             
             // Si el algoritmo es LRU acá se esta añadiendo una nueva entrada con la referencia más reciente
             queue_push(tabla_pags_global, nueva_entrada_TPG);
