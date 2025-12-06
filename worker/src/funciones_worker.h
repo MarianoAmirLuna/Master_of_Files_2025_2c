@@ -30,7 +30,26 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     }
     else if(caso == WRITE)
     {
-        ejecutar_write(parametro1, atoi(parametro2), parametro3);
+
+
+    int len = strlen(parametro3);
+    int base = atoi(parametro2);
+
+    for (int offset = 0; offset < len; offset += block_size) {
+
+        int slice_len = block_size;
+        if (offset + slice_len > len) {
+            slice_len = len - offset;   // Último pedazo si no completa el block_size
+        }
+
+        char buffer[block_size + 1];
+        memcpy(buffer, parametro3 + offset, slice_len);
+        buffer[slice_len] = '\0';   // SOLO para que ejecutar_write reciba un string válido
+
+        ejecutar_write(parametro1, base + offset, buffer);
+    }
+
+
     }
     else if(caso == READ)
     {
