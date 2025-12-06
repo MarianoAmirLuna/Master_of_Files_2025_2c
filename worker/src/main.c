@@ -105,32 +105,6 @@ void* connect_to_server(void* params){
     return NULL;
 }
 
-/*
-//Lo puse para saber si se solucionaba en un nuevo thread pero ni así...
-void por_desalojarme(void* socket){
-    int sock = (int)socket;
-    need_desalojo=1;
-    log_light_blue(logger, "En Semwait need desalojo");
-    sem_wait(&sem_need_desalojo);
-    log_light_blue(logger, "Termine Semwait need desalojo");
-    
-    t_packet* p = create_packet();
-    add_int_to_packet(p, REQUEST_DESALOJO);
-    add_int_to_packet(p, SUCCESS);
-    add_int_to_packet(p, actual_query->id);
-    add_int_to_packet(p, actual_query->pc);
-    send_and_free_packet(p, sock);
-    log_light_blue(logger, "Se envio respuesta del desalojo al Master ID=%d, PC=%d", actual_query->id, actual_query->pc);
-    
-    log_info(logger, "## Query %d: Desalojado por pedido del Master", actual_query->id);
-    actual_worker->is_free=true;
-    actual_worker->id_query = -1;
-    free_query(actual_query);
-    //need_desalojo=0;
-    flushear_tabla_paginas(false);
-    log_light_blue(logger, "Termine de flushear");
-}*/
-
 void packet_callback(void* params){
     int cntargs = 0;
     int sock = -1;
@@ -206,7 +180,7 @@ void packet_callback(void* params){
             send_and_free_packet(p, sock);
             log_light_blue(logger, "Se envio respuesta del desalojo al Master ID=%d, PC=%d", actual_query->id, actual_query->pc);
             
-            log_info(logger, "## Query %d: Desalojado por pedido del Master", actual_query->id);
+            log_info(logger, "## Query %d: Desalojada por pedido del Master", actual_query->id);
             actual_worker->is_free=true;
             actual_worker->id_query = -1;
             free_query(actual_query);

@@ -38,7 +38,7 @@ void execute_this_query_on_this_worker(query* q, worker* w){
         desalojo(w);
     }
     w->id_query = q->id;
-    log_info(logger, "## Se envía la Query %d al Worker %d", q->id, w->id);
+    log_info(logger, "## Se envía la Query %d (%d) al Worker %d", q->id, q->priority, w->id);
     t_packet* p = create_packet();
     add_int_to_packet(p, REQUEST_EXECUTE_QUERY);
     add_int_to_packet(p, q->id); //enviar el id_query
@@ -76,7 +76,7 @@ void* execute_this_query_on_this_worker_v2_thread(void* elem){
         desalojo(w);
     }
     w->id_query = q->id;
-    log_info(logger, "## Se envía la Query %d al Worker %d", q->id, w->id);
+    log_info(logger, "## Se envía la Query %d (%d) al Worker %d", q->id, q->priority,w->id);
     t_packet* p = create_packet();
     add_int_to_packet(p, REQUEST_EXECUTE_QUERY);
     add_int_to_packet(p, q->id); //enviar el id_query

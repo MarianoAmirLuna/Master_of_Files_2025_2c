@@ -257,7 +257,8 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
             if (!hay_n_bytes_en_memoria(block_size))
             {
                 entrada_tabla_pags *victima = seleccionar_victima(); // selecciona una victima
-                log_info(logger, "## Query <%d>: Para <%s> se reemplaza la página <%d> por la pagina <%d> del archivo <%s>", actual_worker->id_query, victima->file_tag, victima->pag, pagina, file_tag);
+                //log_info(logger, "## Query <%d>: Para <%s> se reemplaza la página <%d> por la pagina <%d> del archivo <%s>", actual_worker->id_query, victima->file_tag, victima->pag, pagina, file_tag);
+                log_info(logger, "## Query <%d>: se reemplaza la página <%s>/<%d> por la <%s>/<%d> del archivo <%s>", actual_worker->id_query, victima->file_tag, victima->pag, file_tag,pagina);
                 liberar_entrada_TPG(victima);
             }
 

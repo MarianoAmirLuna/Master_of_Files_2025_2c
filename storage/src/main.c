@@ -183,6 +183,24 @@ void disconnect_callback(void* params){
     offset+=sizeof(int);
     memcpy(&id_worker, params+offset, sizeof(int));
 
+    worker* w = get_worker_by_id(id_worker);
+    if(w != NULL){
+        //Existe este worker y lo puedo eliminar
+        int sz = list_size(workers);
+        for(int i=0;sz;i++){
+            worker* wl = (worker*)list_get(workers, i);
+            if(wl != NULL){
+                if(wl->id == w->id)
+                {
+                    list_remove(workers, i);
+                    break;
+                }
+            }
+        }
+    }else{
+        log_error(logger, "No exist el worker en la lista, del id_worker=%d", id_worker);
+    }
+
     log_info(logger, "## Se desconecta el Worker %d - Cantidad de Workers: %d", id_worker, list_size(workers));
     log_warning(logger, "Se desconectó el cliente %s fd:%d", ocm_to_string(ocm), sock_client);
 }
