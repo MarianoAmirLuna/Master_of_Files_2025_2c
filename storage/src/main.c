@@ -192,7 +192,7 @@ void disconnect_callback(void* params){
             if(wl != NULL){
                 if(wl->id == w->id)
                 {
-                    list_remove(workers, i);
+                    free(list_remove(workers, i));
                     break;
                 }
             }
