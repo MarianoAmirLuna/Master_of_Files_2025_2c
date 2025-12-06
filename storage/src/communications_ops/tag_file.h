@@ -130,7 +130,7 @@ void tag_file_ops(char* file, char* tag_origen, char* file_destino, char* tag_de
             return;
         }
 
-        og_info(logger, "## %d - Bloque Físico Reservado - Número de Bloque: %d", w->id_query, bloque_fisico_final);
+        log_info(logger, "## %d - Bloque Físico Reservado - Número de Bloque: %d", w->id_query, bloque_fisico_destino);
         log_orange(logger, "[TAG_FILE] Bloque físico %d clonado a bloque %d", bloque_fisico_origen, bloque_fisico_destino);
 
         // Agregar el nuevo bloque a la lista de bloques destino
