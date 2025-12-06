@@ -44,6 +44,7 @@ sem_t sem_get_data;
 sem_t sem_storage_conectado;
 sem_t sem_respuesta_storage;
 sem_t sem_dimi;
+sem_t fin_de_flush;
 
 /*/// @brief Cuando el worker está libre para una nueva ejecución que quiera hacer el Master
 int is_free;*/

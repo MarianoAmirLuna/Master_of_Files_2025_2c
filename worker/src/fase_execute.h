@@ -363,7 +363,7 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
     log_trace(logger, "frame usado para la LEER: %d, tamaño de bloque: %d, offset: %d", n_frame, storage_block_size, offset);
     log_info(logger, "Query <%d>: Acción: <LEER> - Dirección Física: <%d> - Valor: <%s>", actual_worker->id_query, n_frame * storage_block_size + offset, leido);
     t_packet* paq = create_packet();
-    add_int_to_packet(paq, GET_DATA);
+    add_int_to_packet(paq, READ_BLOCK);
     add_int_to_packet(paq, actual_worker->id_query);
     add_string_to_packet(paq, leido);
     char** copia_ft = string_split(file_tag, ":");
@@ -396,6 +396,7 @@ void ejecutar_flush(char *file_tag, bool reportar_error)
         entrada_tabla_pags *entrada = list_get(tabla, i);
         if(entrada ->modificada){
             actualizar_pagina_en_storage(entrada, reportar_error);
+            sem_wait(&sem_respuesta_storage);
             if(hubo_error)
             {
                 break;
@@ -416,6 +417,7 @@ void ejecutar_flush(char *file_tag, bool reportar_error)
     }
     loguear_tabla_paginas_global();
     list_destroy(tabla);
+    sem_post(&fin_de_flush);
 }
 
 void ejecutar_delete(char *file, char *tag)
