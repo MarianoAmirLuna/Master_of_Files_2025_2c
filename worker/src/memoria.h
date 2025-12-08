@@ -35,15 +35,15 @@ void loguear_contenido_marco(int numero_marco) {
 
     marco *el_marco = list_get(lista_frames, numero_marco);
     if (el_marco == NULL || el_marco->libre) {
-        log_info(logger, "El marco %d está libre o es NULL.", numero_marco);
+        log_warning(logger, "El marco %d está libre o es NULL.", numero_marco);
         return;
     }
 
-    log_info(logger, "Contenido del marco %d:", numero_marco);
+    log_trace(logger, "Contenido del marco %d:", numero_marco);
     unsigned char *inicio = (unsigned char *)el_marco->inicio;
     for (int i = 0; i < block_size; i++) {
         unsigned char byte = *(inicio + i);
-        log_info(logger, "Byte %d: 0x%02X (%c)", i, byte, (byte >= 32 && byte <= 126) ? byte : '.');
+        log_trace(logger, "Byte %d: 0x%02X (%c)", i, byte, (byte >= 32 && byte <= 126) ? byte : '.');
     }
 }
 
@@ -331,10 +331,10 @@ void actualizar_pagina_en_storage(entrada_tabla_pags *elemento, bool reportar_er
     add_string_to_packet(paq, contenido2);    
     send_and_free_packet(paq, sock_storage);
     log_trace(logger, "FILE: %s, TAG:%s a enviar al storage", file, tag);
+    log_light_green(logger, "me contestó storage para el flush de %s:%s pag %d", file, tag, elemento->pag);
     string_array_destroy(spl);
     free(contenido2);
     free(contenido);
-    log_light_green(logger, "me contestó storage para el flush de %s:%s pag %d", file, tag, elemento->pag);
 }
 
 void liberar_entrada_TPG(entrada_tabla_pags *elemento)

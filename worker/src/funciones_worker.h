@@ -37,6 +37,8 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
 
     for (int offset = 0; offset < len; offset += block_size) {
 
+        //Si el fragmento actual excede el tamaño total del contenido (len), 
+        //se ajusta para que solo tome los bytes restantes.
         int slice_len = block_size;
         if (offset + slice_len > len) {
             slice_len = len - offset;   // Último pedazo si no completa el block_size

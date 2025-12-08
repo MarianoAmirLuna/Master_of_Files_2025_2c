@@ -215,6 +215,22 @@ entrada_tabla_pags *reservar_frame(char *file_tag, int pagina)
     return nueva;
 }
 
+int manejar_miss_memoria(char *file_tag, int pagina) {
+    int marco_a_loguear;
+    if (!hay_n_bytes_en_memoria(block_size)) {
+        entrada_tabla_pags *victima = seleccionar_victima();
+        log_info(logger, "## Query <%d>: Se reemplaza la página <%s>/<%d> por la <%s>/<%d>", 
+                 actual_worker->id_query, victima->file_tag, victima->pag, file_tag, pagina);
+        liberar_entrada_TPG(victima);
+    }
+
+    entrada_tabla_pags *nueva_entrada_TPG = reservar_frame(file_tag, pagina);
+    marco_a_loguear = nueva_entrada_TPG->marco;
+    queue_push(tabla_pags_global, nueva_entrada_TPG);
+    actualizar_pagina(file_tag, pagina);
+    return marco_a_loguear;
+}
+
 bool dl_en_tp(char *file_tag, int pagina)
 {
     log_debug(logger, "entre a dl_en_tp()");
@@ -248,51 +264,19 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
             char *file = spl[0];
             char *tag = spl[1];
 
-            log_debug(logger, "PAGINA= %d", pagina);
             log_debug(logger, "ACTUAL WORKER ES NULL? %d", actual_worker == NULL);
             log_debug(logger, "FILE_TAG ES NULL? %d", file_tag == NULL);
-            log_debug(logger, "FILE_TAG=%s", file_tag);
             log_debug(logger, "FILE ES NULL? %d, TAG ES NULL? %d", file == NULL, tag == NULL);
-            log_debug(logger, "FILE=%s", file);
-            log_debug(logger, "TAG=%s", tag);
-            log_debug(logger, "IDQUERY=%d", actual_worker->id_query);
             log_info(logger, "Query <%d>: - Memoria Miss - File: <%s> - Tag: <%s> - Pagina: <%d>", actual_worker->id_query, file, tag, pagina);
 
-            //if (!hay_espacio_memoria(contenido))
-            if (!hay_n_bytes_en_memoria(block_size))
-            {
-                entrada_tabla_pags *victima = seleccionar_victima(); // selecciona una victima
-                //log_info(logger, "## Query <%d>: Para <%s> se reemplaza la página <%d> por la pagina <%d> del archivo <%s>", actual_worker->id_query, victima->file_tag, victima->pag, pagina, file_tag);
-                log_info(logger, "## Query <%d>: se reemplaza la página <%s>/<%d> por la <%s>/<%d> del archivo <%s>", actual_worker->id_query, victima->file_tag, victima->pag, file_tag,pagina, file_tag);
-                liberar_entrada_TPG(victima);
-            }
-
-            // Apartir de acá hay espacio
-            entrada_tabla_pags* nueva_entrada_TPG = reservar_frame(file_tag, pagina);
-            n_frame = nueva_entrada_TPG->marco;
-            
-            // Si el algoritmo es LRU acá se esta añadiendo una nueva entrada con la referencia más reciente
-            queue_push(tabla_pags_global, nueva_entrada_TPG);
-
-            /*
-            if(espacio_ya_escrito == 0) //pura y exclusivamente para el log hago esto
-            {
-                entrada_tabla_pags *entrada_con_frame = obtener_frame(file_tag, dir_base);
-                if (entrada_con_frame == NULL)
-                {
-                    log_error(logger, "ENTRADA DE TABLA DE PAGINAS ES NULL");
-                }
-                n_frame = entrada_con_frame->marco;
-            }*/
+            n_frame = manejar_miss_memoria(file_tag, pagina);
             
             string_array_destroy(spl);
-         
-            log_light_green(logger, "ANTES DE ACTUALIZAR PAGINA");
-            actualizar_pagina(file_tag, pagina);
         }
         else
         {
-            n_frame = obtener_frame(file_tag, dir_base);
+            entrada_tabla_pags* aux = obtener_frame(file_tag, dir_base);
+            n_frame = aux->marco;
         }
         // Apartir de acá existe la DL en memoria
         int bytes_escritos = realizar_escritura(file_tag, indice, contenido + espacio_ya_escrito); // espacio_ya_escrito funciona como un offset para el contenido
@@ -327,36 +311,15 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
             char* file = spl[0];
             char* tag = spl[1];
             log_info(logger, "Query <%d>: - Memoria Miss - File: <%s> - Tag: <%s> - Pagina: <%d>", actual_worker->id_query, file, tag, pagina);
-            if (!hay_n_bytes_en_memoria(block_size))
-            {
-                entrada_tabla_pags *victima = seleccionar_victima(); // selecciona una victima
-                log_info(logger, "## Query <%d>: Se reemplaza la página <%s>/<%d> por la <%s>/<%d>", actual_worker->id_query, victima->file_tag, victima->pag, file_tag, pagina);
-                liberar_entrada_TPG(victima);
-            }
-
-            // Apartir de acá hay espacio
-            entrada_tabla_pags* nueva_entrada_TPG = reservar_frame(file_tag, pagina);
             
-            // Si el algoritmo es LRU acá se esta añadiendo una nueva entrada con la referencia más reciente
-            queue_push(tabla_pags_global, nueva_entrada_TPG);
+            n_frame = manejar_miss_memoria(file_tag, pagina);
 
-            if(espacio_ya_leido == 0) //pura y exclusivamente para el log hago esto
-            {
-                entrada_tabla_pags *entrada_con_frame = obtener_frame(file_tag, dir_base);
-                if (entrada_con_frame == NULL)
-                {
-                    //log_error(logger, "ENTRADA CON FRAME ES NULL");
-                }
-                n_frame = entrada_con_frame->marco;
-            }
-
-            log_trace(logger, "ANTES DE ACTUALIZAR PAGINA");
-            actualizar_pagina(file_tag, pagina);
             string_array_destroy(spl);
         }
         else
         {
-            n_frame = obtener_frame(file_tag, dir_base);
+            entrada_tabla_pags* aux = obtener_frame(file_tag, dir_base);
+            n_frame = aux->marco;
         }
         // Apartir de acá existe la DL en memoria
         int bytes_leidos = realizar_lectura(leido + espacio_ya_leido, file_tag, indice, tam - espacio_ya_leido);
