@@ -252,10 +252,10 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
     int espacio_ya_escrito = 0;
     int n_frame;
 
-    for (int indice = dir_base; espacio_ya_escrito < strlen(contenido);)
-    {
+    //for (int indice = dir_base; espacio_ya_escrito < strlen(contenido);)
+    //{
         log_trace(logger, "escribi: %d, tengo que escribir: %d", espacio_ya_escrito, strlen(contenido));
-        pagina = calcular_pagina(indice);
+        //pagina = calcular_pagina(indice);
         if (!dl_en_tp(file_tag, pagina))
         {
             char** spl = string_split(file_tag, ":");
@@ -278,11 +278,11 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
             n_frame = aux->marco;
         }
         // Apartir de acá existe la DL en memoria
-        int bytes_escritos = realizar_escritura(file_tag, indice, contenido + espacio_ya_escrito); // espacio_ya_escrito funciona como un offset para el contenido
+        int bytes_escritos = realizar_escritura(file_tag, dir_base, contenido + espacio_ya_escrito); // espacio_ya_escrito funciona como un offset para el contenido
 
-        indice += bytes_escritos;
-        espacio_ya_escrito += bytes_escritos;
-    }
+        //indice += bytes_escritos;
+        //espacio_ya_escrito += bytes_escritos;
+    //}
 
     log_trace(logger, "frame usado para la escritura: %d, tamaño de bloque: %d, offset: %d", n_frame, storage_block_size, offset);
     
