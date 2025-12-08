@@ -252,14 +252,13 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
     int espacio_ya_escrito = 0;
     int n_frame;
 
-    for (int indice = dir_base; espacio_ya_escrito < strlen(contenido);) //(si lees esto, perdon)
+    for (int indice = dir_base; espacio_ya_escrito < strlen(contenido);)
     {
         log_trace(logger, "escribi: %d, tengo que escribir: %d", espacio_ya_escrito, strlen(contenido));
         pagina = calcular_pagina(indice);
         if (!dl_en_tp(file_tag, pagina))
         {
             char** spl = string_split(file_tag, ":");
-            //char *copia = strdup(file_tag);
 
             char *file = spl[0];
             char *tag = spl[1];
@@ -295,7 +294,6 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
     void *leido = malloc(tam + 1);
     int pagina = calcular_pagina(dir_base);
     int espacio_ya_leido = 0;
-    //El primer argumento es al pedo porque no lo usan.
     int offset = obtener_offset(file_tag, dir_base);
     int n_frame;
 
@@ -305,9 +303,6 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
         if (!dl_en_tp(file_tag, pagina))
         {
             char** spl = string_split(file_tag, ":");
-            /*char *copia = strdup(file_tag);
-            char *file = strtok(copia, ":");
-            char *tag = strtok(NULL, ":");*/
             char* file = spl[0];
             char* tag = spl[1];
             log_info(logger, "Query <%d>: - Memoria Miss - File: <%s> - Tag: <%s> - Pagina: <%d>", actual_worker->id_query, file, tag, pagina);
