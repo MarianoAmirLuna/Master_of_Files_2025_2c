@@ -27,6 +27,26 @@ void inicializar_memoria()
     log_trace(logger, "tamaño de la lista: %d", list_size(lista_frames));
 }
 
+void loguear_contenido_marco(int numero_marco) {
+    if (numero_marco < 0 || numero_marco >= list_size(lista_frames)) {
+        log_error(logger, "Número de marco inválido: %d", numero_marco);
+        return;
+    }
+
+    marco *el_marco = list_get(lista_frames, numero_marco);
+    if (el_marco == NULL || el_marco->libre) {
+        log_info(logger, "El marco %d está libre o es NULL.", numero_marco);
+        return;
+    }
+
+    log_info(logger, "Contenido del marco %d:", numero_marco);
+    unsigned char *inicio = (unsigned char *)el_marco->inicio;
+    for (int i = 0; i < block_size; i++) {
+        unsigned char byte = *(inicio + i);
+        log_info(logger, "Byte %d: 0x%02X (%c)", i, byte, (byte >= 32 && byte <= 126) ? byte : '.');
+    }
+}
+
 void loguear_tabla_paginas_global() {
     log_trace(logger, "");
     log_debug(logger, "=== Tabla de Páginas Global ===");
@@ -51,6 +71,7 @@ void loguear_tabla_paginas_global() {
                  entrada->marco,
                  entrada->uso,
                  entrada->modificada);
+        loguear_contenido_marco(entrada->marco);
     }
 
     log_debug(logger, "=== Fin de la Tabla de Páginas Global ===");

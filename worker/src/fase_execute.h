@@ -119,6 +119,8 @@ int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
         log_trace(logger, "Se realizó una escritura %d", strlen(contenido));
         return strlen(contenido);
     }
+
+    loguear_tabla_paginas_global();
 }
 
 /// @brief guarda en "dest" una cantidad de bytes a partir de la dir. logica dada
@@ -261,17 +263,18 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
             {
                 entrada_tabla_pags *victima = seleccionar_victima(); // selecciona una victima
                 //log_info(logger, "## Query <%d>: Para <%s> se reemplaza la página <%d> por la pagina <%d> del archivo <%s>", actual_worker->id_query, victima->file_tag, victima->pag, pagina, file_tag);
-                log_info(logger, "## Query <%d>: se reemplaza la página <%s>/<%d> por la <%s>/<%d> del archivo <%s>", actual_worker->id_query, victima->file_tag, victima->pag, file_tag,pagina);
+                log_info(logger, "## Query <%d>: se reemplaza la página <%s>/<%d> por la <%s>/<%d> del archivo <%s>", actual_worker->id_query, victima->file_tag, victima->pag, file_tag,pagina, file_tag);
                 liberar_entrada_TPG(victima);
             }
 
             // Apartir de acá hay espacio
             entrada_tabla_pags* nueva_entrada_TPG = reservar_frame(file_tag, pagina);
-            //nueva_entrada_TPG->modificada = true;
+            n_frame = nueva_entrada_TPG->marco;
             
             // Si el algoritmo es LRU acá se esta añadiendo una nueva entrada con la referencia más reciente
             queue_push(tabla_pags_global, nueva_entrada_TPG);
 
+            /*
             if(espacio_ya_escrito == 0) //pura y exclusivamente para el log hago esto
             {
                 entrada_tabla_pags *entrada_con_frame = obtener_frame(file_tag, dir_base);
@@ -280,7 +283,7 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
                     log_error(logger, "ENTRADA DE TABLA DE PAGINAS ES NULL");
                 }
                 n_frame = entrada_con_frame->marco;
-            }
+            }*/
             
             string_array_destroy(spl);
          
