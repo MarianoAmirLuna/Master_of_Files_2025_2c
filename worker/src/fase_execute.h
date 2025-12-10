@@ -355,6 +355,9 @@ void ejecutar_flush(char *file_tag, bool reportar_error)
 {
     log_debug(logger, "entre a ejecutar_flush()");
     t_list *tabla = obtener_tabla_paginas(file_tag);
+    
+    loguear_tabla_de_paginas(tabla);
+    
     for (int i = 0; i < list_size(tabla); i++)
     {
         entrada_tabla_pags *entrada = list_get(tabla, i);
