@@ -121,8 +121,8 @@ int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
     else
     {
         memcpy(base + offset, contenido, strlen(contenido));
-        log_trace(logger, "Se realizó una escritura %d", strlen(contenido));
-        return strlen(contenido);
+        log_trace(logger, "Se realizó una escritura %d", (int)strlen(contenido));
+        return (int)strlen(contenido);
     }
 
     loguear_tabla_paginas_global();
@@ -160,8 +160,19 @@ int realizar_lectura(void *dest, char *file_tag, int dir_logica, int tam)
     memcpy(dest, base, tam);
 
     log_trace(logger, "Lectura realizada: %d bytes desde el marco %d, offset %d", tam, frame, offset);
-    log_trace(logger, "Contenido del buffer leido: %s", dest);
     return tam;
+}
+
+void mandarLecturaAMaster(char* lectura, char* file_tag) {
+    t_packet *paq = create_packet();
+    add_int_to_packet(paq, READ_BLOCK);
+    add_int_to_packet(paq, actual_worker->id_query);
+    add_string_to_packet(paq, lectura);
+    char **copia_ft = string_split(file_tag, ":");
+    add_string_to_packet(paq, copia_ft[0]); // file
+    add_string_to_packet(paq, copia_ft[1]); // tag
+    send_and_free_packet(paq, sock_master);
+    string_array_destroy(copia_ft);
 }
 
 void *actualizar_pagina(char *file_tag, int pagina)
@@ -251,7 +262,7 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
     log_trace(logger, "FILETAG ES NULL? %d, DIR=%d, CONTENIDO ES NULL?: %d", file_tag == NULL, dir_base, contenido == NULL);
     int pagina = calcular_pagina(dir_base);
     int offset = obtener_offset(dir_base);
-    int restante_en_pag = block_size - offset;
+    //int restante_en_pag = block_size - offset;
     int espacio_ya_escrito = 0;
     int n_frame;
 
@@ -281,7 +292,8 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
         n_frame = aux->marco;
     }
     // Apartir de acá existe la DL en memoria
-    int bytes_escritos = realizar_escritura(file_tag, dir_base, contenido + espacio_ya_escrito); // espacio_ya_escrito funciona como un offset para el contenido
+    //int bytes_escritos = realizar_escritura(file_tag, dir_base, contenido + espacio_ya_escrito);
+    realizar_escritura(file_tag, dir_base, contenido + espacio_ya_escrito); // espacio_ya_escrito funciona como un offset para el contenido
 
     // indice += bytes_escritos;
     // espacio_ya_escrito += bytes_escritos;
@@ -292,11 +304,11 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
     log_info(logger, "Query <%d>: Acción: <ESCRIBIR> - Dirección Física: <%d> - Valor: <%s>", actual_worker->id_query, n_frame * storage_block_size + offset, contenido);
 }
 
-void ejecutar_read(char *file_tag, int dir_base, int tam)
+char* ejecutar_read(char *file_tag, int dir_base, int tam)
 {
     void *leido = malloc(tam + 1);
     int pagina = calcular_pagina(dir_base);
-    int espacio_ya_leido = 0;
+    //int espacio_ya_leido = 0;
     int offset = obtener_offset(dir_base);
     int n_frame;
 
@@ -320,7 +332,8 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
         n_frame = aux->marco;
     }
     // Apartir de acá existe la DL en memoria
-    int bytes_leidos = realizar_lectura(leido, file_tag, dir_base, tam);
+    realizar_lectura(leido, file_tag, dir_base, tam);
+    //int bytes_leidos = realizar_lectura(leido, file_tag, dir_base, tam);
 
     // indice += bytes_leidos;
     // espacio_ya_leido += bytes_leidos;
@@ -328,16 +341,9 @@ void ejecutar_read(char *file_tag, int dir_base, int tam)
 
     ((char *)leido)[tam] = '\0';
     log_trace(logger, "frame usado para la LEER: %d, tamaño de bloque: %d, offset: %d", n_frame, storage_block_size, offset);
-    log_info(logger, "Query <%d>: Acción: <LEER> - Dirección Física: <%d> - Valor: <%s>", actual_worker->id_query, n_frame * storage_block_size + offset, leido);
-    t_packet *paq = create_packet();
-    add_int_to_packet(paq, READ_BLOCK);
-    add_int_to_packet(paq, actual_worker->id_query);
-    add_string_to_packet(paq, leido);
-    char **copia_ft = string_split(file_tag, ":");
-    add_string_to_packet(paq, copia_ft[0]); // file
-    add_string_to_packet(paq, copia_ft[1]); // tag
-    send_and_free_packet(paq, sock_master);
-    string_array_destroy(copia_ft);
+    log_info(logger, "Query <%d>: Acción: <LEER> - Dirección Física: <%d> - Valor: <%s>", actual_worker->id_query, n_frame * storage_block_size + offset, (char *)leido);
+
+    return leido;
 }
 
 void ejecutar_commit(char *file, char *tag)

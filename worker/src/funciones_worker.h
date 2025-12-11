@@ -57,9 +57,12 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         int base = atoi(parametro2);
         int len = atoi(parametro3);
 
+        // Crear un buffer acumulador para almacenar el contenido leído
+        char *contenido_total = malloc(len + 1); // Reservar memoria para todo el contenido
+        contenido_total[0] = '\0';               // Inicializar el string acumulador como vacío
+
         for (int offset = 0; offset < len; offset += block_size)
         {
-
             // Si el fragmento actual excede el tamaño total a leer (len),
             // se ajusta para que solo tome los bytes restantes.
             int slice_len = block_size;
@@ -68,8 +71,20 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
                 slice_len = len - offset; // Último pedazo si no completa el block_size
             }
 
-            ejecutar_read(parametro1, base + offset, slice_len);
+            // Leer la página actual
+            char *paginaLeida = ejecutar_read(parametro1, base + offset, slice_len);
+
+            // Concatenar el contenido leído al acumulador
+            strcat(contenido_total, paginaLeida);
+
+            // Liberar la memoria de la página leída
+            free(paginaLeida);
         }
+
+        mandarLecturaAMaster(contenido_total, parametro1);
+        free(contenido_total);
+
+
     }
     else if (caso == TAG)
     {
@@ -86,10 +101,6 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         ejecutar_flush(parametro1, true);
         ejecutar_commit(copia_ft[0], copia_ft[1]);
         string_array_destroy(copia_ft);
-        t_packet *paq = create_packet();
-        // add_int_to_packet(paq, COMMIT_TAG);
-        // add_file_tag_to_packet(paq, parametro1);
-        // send_and_free_packet(paq, sock_storage);
         sem_wait(&sem_respuesta_storage);
         sem_wait(&fin_de_flush);
     }
