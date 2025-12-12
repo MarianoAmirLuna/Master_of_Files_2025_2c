@@ -354,7 +354,7 @@ void work_worker(t_list* pack, int id, int sock){
 
         sem_post(&w->sem_desalojo);
     }
-    if(opcode == GET_DATA){
+    if(opcode == GET_DATA || opcode == REQUEST_READ || opcode == REQUEST_READ_DEL_WORKER){
         qid id_query = list_get_int(pack, 1);
         char* buffer = list_get_str(pack, 2);
         char* file = list_get_str(pack, 3);
@@ -375,9 +375,6 @@ void work_worker(t_list* pack, int id, int sock){
         free(buffer);
         free(file);
         free(tag);
-
-
-        //
     }
     if(opcode == QUERY_END || opcode==INSTRUCTION_ERROR || opcode==FILE_NOT_FOUND || opcode==TAG_NOT_FOUND || opcode==INSUFFICIENT_SPACE || opcode==WRITE_NO_PERMISSION || opcode==READ_WRITE_OVERFLOW || opcode==TAG_YA_EXISTENTE_SACA_LA_MANO_DE_AHI)
     {
@@ -416,24 +413,6 @@ void work_worker(t_list* pack, int id, int sock){
         log_light_blue(logger, "Un query (ID=%d,Archivo=%s) cambió de estado valor: %s", q->id, q->archive_query, state_to_string(q->sp));
         w->id_query = -1; //Debo especificar que ahora este worker no tiene asignado ningún query.
         w->is_free=1;
-    }
-    if(opcode == REQUEST_READ){
-        query* q = get_query_by_qid(w->id_query);
-        
-        char* filetag = list_get_str(pack,1);
-        char* content = list_get_str(pack, 2);
-        t_packet* p = create_packet();
-        add_int_to_packet(p, opcode);
-        add_string_to_packet(p, filetag);
-        add_string_to_packet(p, content);
-        send_and_free_packet(p, q->fd);
-        log_info(logger, "## Se envia un mensaje de lectura de la Query %d en el Worker %d al Query Control", 
-            w->id_query, 
-            id
-        );
-
-        free(content);
-        free(filetag);
     }
     if(opcode == ACTUAL_STATUS){
         int is_free = list_get_int(pack, 1);
