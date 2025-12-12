@@ -354,7 +354,7 @@ void work_worker(t_list* pack, int id, int sock){
 
         sem_post(&w->sem_desalojo);
     }
-    if(opcode == GET_DATA || opcode == REQUEST_READ || opcode == REQUEST_READ_DEL_WORKER){
+    if(opcode == REQUEST_READ || opcode == REQUEST_READ_DEL_WORKER){
         qid id_query = list_get_int(pack, 1);
         char* buffer = list_get_str(pack, 2);
         char* file = list_get_str(pack, 3);

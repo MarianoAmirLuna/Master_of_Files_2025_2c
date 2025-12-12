@@ -164,11 +164,11 @@ int realizar_lectura(void *dest, char *file_tag, int dir_logica, int tam)
 }
 
 void mandarLecturaAMaster(char* lectura, char* file_tag) {
+    char **copia_ft = string_split(file_tag, ":");
     t_packet *paq = create_packet();
-    add_int_to_packet(paq, GET_DATA);
+    add_int_to_packet(paq, REQUEST_READ);
     add_int_to_packet(paq, actual_worker->id_query);
     add_string_to_packet(paq, lectura);
-    char **copia_ft = string_split(file_tag, ":");
     add_string_to_packet(paq, copia_ft[0]); // file
     add_string_to_packet(paq, copia_ft[1]); // tag
     send_and_free_packet(paq, sock_master);
