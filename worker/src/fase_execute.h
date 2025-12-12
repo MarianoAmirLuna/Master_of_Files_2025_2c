@@ -165,7 +165,7 @@ int realizar_lectura(void *dest, char *file_tag, int dir_logica, int tam)
 
 void mandarLecturaAMaster(char* lectura, char* file_tag) {
     t_packet *paq = create_packet();
-    add_int_to_packet(paq, READ_BLOCK);
+    add_int_to_packet(paq, GET_DATA);
     add_int_to_packet(paq, actual_worker->id_query);
     add_string_to_packet(paq, lectura);
     char **copia_ft = string_split(file_tag, ":");
