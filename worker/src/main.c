@@ -47,7 +47,6 @@ int main(int argc, char* argv[]) {
     pthread_t* pth_que = malloc(sizeof(pthread_t));
     pthread_create(pth_que, NULL, (void*)loop_atender_queries, NULL);
     pthread_join(*pth_que, NULL);
-    //loop_atender_queries();
 
     return 0;
 }
@@ -91,7 +90,6 @@ void* connect_to_server(void* params){
         inicializar_memoria();
     }
 
-    //add_socket_structure_by_name_ocm_sock_server(ocm_to_string(ocm), ocm, wcl, 0);
     
     void* parameters = malloc(sizeof(int)*3);
     int len_args = 2;
@@ -118,7 +116,6 @@ void packet_callback(void* params){
     memcpy(&ocm, params+offset, sizeof(int));
     offset+=sizeof(int);
     memcpy(&sock, params+offset, sizeof(int));
-    //free(params);
     log_debug(logger, "OCM: %s", ocm_to_string(ocm));
     t_list* packet = recv_packet(sock);
     log_info(logger, "Recibi mensaje de %s cantidad del packet: %d", ocm_to_string(ocm), list_size(packet));
@@ -139,15 +136,11 @@ void packet_callback(void* params){
             {
                 free(archivo_query_actual);
             }
-/*            if(actual_query)
-            {
-                free_query(actual_query);
-            }*/
+
             archivo_query_actual = malloc(strlen(str)+1);
             strcpy(archivo_query_actual, str);
             
             
-            //actual_worker->is_free=false;
             actual_worker->id_query = id_query;
             
             log_pink(logger, "Por re-setear el actual_query");
@@ -157,21 +150,9 @@ void packet_callback(void* params){
             log_info(logger, "## Query %d: Se recibe la Query. El path de operaciones es: %s", id_query, archivo_query_actual); 
             hubo_error=false;
             hubo_query=true;
-            //sem_post(&sem_query_recibida); //Aviso que ya tengo una query para ejecutar
             free(str);
         }
         if(op_code == REQUEST_DESALOJO){
-            /*if(actual_worker == NULL || actual_query == NULL){
-                t_packet* p = create_packet();
-                add_int_to_packet(p, ERROR);
-                send_and_free_packet(p, sock);
-                list_destroy(packet);
-                return;
-            }*/
-            //qid id_query = list_get_int(packet, 1);
-            /*pthread_t pth = malloc(sizeof(pthread_t));
-            pthread_create(&pth, NULL, (void*)por_desalojarme, (void*)sock);
-            pthread_detach(pth);*/
         
             need_desalojo=1;
             log_light_green(logger, "need_desalojo seteada a 1 por request del Master");
@@ -211,7 +192,6 @@ void packet_callback(void* params){
     }
     if(ocm == MODULE_STORAGE){
         if(op_code == GET_DATA){
-            //sem_post(&sem_respuesta_storage);
             log_light_blue(logger, "Tamaño del paquete: %d", list_size(packet));
             log_trace(logger, "Estoy en get data");
             char* data = list_get_str(packet, 1);
@@ -248,16 +228,7 @@ void packet_callback(void* params){
             hubo_error=true;
             ultimo_error_storage=op_code;
             sem_post(&sem_respuesta_storage);
-            //sem_post(&sem_de_esperar_la_puta_respuesta);
         }
-        /*if(op_code== TUVE_UNA_RESPUESTA_DEL_PUTO_STORAGE){
-            sem_post(&sem_de_esperar_la_puta_respuesta);
-        }
-        if(op_code == SUCCESS)
-        {
-            sem_post(&sem_respuesta_storage);
-            
-        }*/
         sem_post(&sem_de_esperar_la_puta_respuesta);
     }
     list_destroy(packet); //véase como en por ejemplo EJECUTAR_QUERY al recibir el list_get_str luego lo libero,
