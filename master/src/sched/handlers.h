@@ -42,14 +42,21 @@ void on_query_priority_changed(void* elem){
 //        return;
     //sem_wait(&sem_locker);
     //Desalojar un worker que tenga un query de menor prioridad (número mayor)
+    //list_distinct(workers, )
     for(int i=0;i<list_size(workers);i++){
         worker* w = cast_worker(list_get(workers, i));
-        log_orange(logger, "Existe worker ID=%d y ID_QUERY=%d",w->id, w->id_query);
+        
         query* q_worker = get_query_by_qid(w->id_query);
+        if(q->id == q_worker->id){
+            log_light_green(logger,"Ambos query tienen mismos ID se lo ignora");
+            continue;
+        }
+        log_orange(logger, "Existe worker ID=%d y ID_QUERY=%d",w->id, w->id_query);
         if(w == NULL || q_worker == NULL){
             //Holy shit
             continue;
         }
+        
         if(q_worker->priority <= q->priority)
             continue;
         log_debug(logger, "Voy a desalojarlo");
@@ -58,9 +65,9 @@ void on_query_priority_changed(void* elem){
         list_add(params, w);
         list_add(params, q_worker);
         list_add(params, q);
-        pthread_create(pth, NULL, desalojo_worker_query, params);
-        pthread_detach(*pth);
-        //desalojo(w);
+        /*pthread_create(pth, NULL, desalojo_worker_query, params);
+        pthread_detach(*pth);*/
+        desalojo(w);
     
         
         break;

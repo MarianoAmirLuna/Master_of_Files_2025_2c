@@ -58,7 +58,7 @@ char* archivo_query_actual;
 char *file_tag_buscado;
 
 bool hubo_error;
-
+bool hubo_query;
 marco* frame_buscado;
 
 sem_t* sem_block_size_recibido;

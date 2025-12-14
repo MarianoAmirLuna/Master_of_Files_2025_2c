@@ -286,11 +286,11 @@ void print_query_de_la_pila(){
 }
 
 void print_workers(){
-    log_light_blue(logger, "Start print workers");
+    log_violet(logger, "Start print workers");
     int sz = list_size(workers);
     for(int i=0;i<sz;i++){
         print_worker(cast_worker(list_get(workers, i)));
     }
-    log_light_blue(logger, "End print workers");
+    log_violet(logger, "End print workers");
 }
 #endif

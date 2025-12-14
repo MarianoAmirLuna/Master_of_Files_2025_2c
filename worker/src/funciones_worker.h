@@ -195,6 +195,15 @@ t_list *obtener_instrucciones_v2(char *fullpath)
     return res;
 }
 
+int check_need_desalojo(){
+    if (!need_desalojo)
+        return 0;
+
+    sem_post(&sem_need_desalojo);
+    need_desalojo = 0;
+    return 1;
+}
+
 // FASE FETCH //
 void loop_atender_queries()
 {
@@ -206,13 +215,14 @@ void loop_atender_queries()
             sem_wait(&sem_dimi);
             log_pink(logger, "TERMINE DE ESPERAR ESPERANDO EN SEM_DIMI");
         }
-        log_trace(logger, "Esperando una nueva Query...");
-        if (need_desalojo)
+        //log_trace(logger, "Esperando una nueva Query...");
+        check_need_desalojo();
+        if(!hubo_query)
         {
-            sem_post(&sem_need_desalojo);
-            need_desalojo = 0;
+            msleep(25);
+            continue;
         }
-        sem_wait(&sem_query_recibida);
+        //sem_wait(&sem_query_recibida);
         log_trace(logger, "Recibi una QUERYYYYYYYYYYYYYYYYYYYYYY");
         char *fullpath = string_from_format("%s%s", cw.path_queries, archivo_query_actual);
         actual_query->instructions = obtener_instrucciones_v2(fullpath);
@@ -229,22 +239,12 @@ void loop_atender_queries()
             log_debug(logger, "Estoy en el ciclo");
             // Incrementá el PC negro y con chequeo de out-bound si tenés 10 instrucciones no te podés ir a la instrucción 11 porque se hace percha.
             //  Fase Fetch
-            if (need_desalojo)
-            {
-                actual_worker->is_free = true;
-                sem_post(&sem_need_desalojo);
-                need_desalojo = 0;
+            if (check_need_desalojo()){
                 break;
             }
             if (need_stop)
             {
-                if (need_desalojo)
-                {
-                    actual_worker->is_free = true;
-                    sem_post(&sem_need_desalojo);
-                    need_desalojo = 0;
-                    // break;
-                }
+                check_need_desalojo();
                 log_debug(logger, "Voy a mandar un QUERY_END porque solicitaron un desalojo | need_stop es true: %d", need_stop);
                 // QUERY END Termina esto que te rre fuiste
                 actual_worker->is_free = true;
@@ -284,7 +284,7 @@ void loop_atender_queries()
                       instruccion);
             log_pink(logger, "Estoy por ejecutar el: %s", instruccion);
             decode_y_execute(instruccion);
-            log_pink(logger, "SE TERMINO LA EJECUCION DE: %s", instruccion);
+            //log_pink(logger, "SE TERMINO LA EJECUCION DE: %s", instruccion);
             actual_query->pc++;
         }
         if (hubo_error)
@@ -295,12 +295,8 @@ void loop_atender_queries()
         
         }
         log_debug(logger, "Estoy fuera del ciclo actual_worker is free");
-        if (need_desalojo)
-        {
-            actual_worker->is_free = true;
-            sem_post(&sem_need_desalojo);
-            need_desalojo = 0;
-        }
+        check_need_desalojo();
+        hubo_query=false;
     }
 }
 

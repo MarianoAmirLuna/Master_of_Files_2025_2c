@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     actual_worker = malloc(sizeof(worker));
     actual_worker->id = id_worker;
     actual_worker->is_free = true;
-    
+    hubo_query=false;
 
     inicializar_worker();
     
@@ -156,7 +156,8 @@ void packet_callback(void* params){
             log_light_blue(logger, "Worker asignado a la Query %d PC=%d", actual_query->id, actual_query->pc);
             log_info(logger, "## Query %d: Se recibe la Query. El path de operaciones es: %s", id_query, archivo_query_actual); 
             hubo_error=false;
-            sem_post(&sem_query_recibida); //Aviso que ya tengo una query para ejecutar
+            hubo_query=true;
+            //sem_post(&sem_query_recibida); //Aviso que ya tengo una query para ejecutar
             free(str);
         }
         if(op_code == REQUEST_DESALOJO){
@@ -191,6 +192,7 @@ void packet_callback(void* params){
             actual_worker->id_query = -1;
             free_query(actual_query);
             need_desalojo=0;
+            
             if (hubo_error)
             {
                 if (ultimo_error_storage != WRITE_NO_PERMISSION)
@@ -204,6 +206,7 @@ void packet_callback(void* params){
                 flushear_tabla_paginas(true);
                 log_light_blue(logger, "Termine de flushear");
             }
+            hubo_query=0;
         }
     }
     if(ocm == MODULE_STORAGE){
