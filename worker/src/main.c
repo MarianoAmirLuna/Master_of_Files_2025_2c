@@ -208,31 +208,23 @@ void packet_callback(void* params){
         if(op_code == GET_DATA){
             //sem_post(&sem_respuesta_storage);
             log_light_blue(logger, "Tamaño del paquete: %d", list_size(packet));
-            int returned = list_get_int(packet, 0);
-            if(returned != GET_DATA)
-            {
-                log_error(logger, "Ehh que pasó acá esto no es GET_DATA esto es: %d exit 1 is invoked", returned);
-                exit(1);
-            }
-            else{
-                log_trace(logger, "Estoy en get data");
-                char* data = list_get_str(packet, 1);
-                char* file = list_get_str(packet, 2);
-                char* tag = list_get_str(packet, 3);
-                memcpy(data_bloque, data, storage_block_size);
+            log_trace(logger, "Estoy en get data");
+            char* data = list_get_str(packet, 1);
+            char* file = list_get_str(packet, 2);
+            char* tag = list_get_str(packet, 3);
+            memcpy(data_bloque, data, storage_block_size);
 
-                t_packet* paq = create_packet();
-                add_int_to_packet(paq, op_code);
-                add_int_to_packet(paq, actual_query->id);
-                add_string_to_packet(paq, data);
-                add_string_to_packet(paq, file);
-                add_string_to_packet(paq, tag);
-                send_and_free_packet(paq, sock_master);
-                free(data);
-                free(file);
-                free(tag);
-                sem_post(&sem_get_data);
-            }
+            t_packet* paq = create_packet();
+            add_int_to_packet(paq, op_code);
+            add_int_to_packet(paq, actual_query->id);
+            add_string_to_packet(paq, data);
+            add_string_to_packet(paq, file);
+            add_string_to_packet(paq, tag);
+            send_and_free_packet(paq, sock_master);
+            free(data);
+            free(file);
+            free(tag);
+            sem_post(&sem_get_data);
 
         }//TAG_NOT_FOUND FILE_NOT_FOUND
         if(op_code==INSTRUCTION_ERROR || op_code==FILE_NOT_FOUND || op_code==TAG_NOT_FOUND || op_code==INSUFFICIENT_SPACE || op_code==WRITE_NO_PERMISSION || op_code==READ_WRITE_OVERFLOW || op_code == TAG_YA_EXISTENTE_SACA_LA_MANO_DE_AHI)
