@@ -22,3 +22,7 @@ obj/
 # Filesystem datos
 ./files
 files/
+files/*
+/files/
+./files/
+#IGNORA LA PUTA CARPETA LA CONCHA PUTA DE TU VIEJA GITHUB

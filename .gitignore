@@ -60,3 +60,33 @@ Module.symvers
 Mkfile.old
 dkms.conf
 .vscode
+files/bitmap.bin
+
+# Generated files
+lib/
+obj/
+*.log
+
+# Eclipse files
+.settings/
+.cproject
+.project
+
+# CLion files
+.idea/
+
+# Visual Studio Code files
+.vscode/*
+!.vscode/c_cpp_properties.json
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
+*.dat
+
+# Filesystem datos
+./files
+files/
+files/*
+/files/
+./files/
+#IGNORA LA PUTA CARPETA LA CONCHA PUTA DE TU VIEJA GITHUB

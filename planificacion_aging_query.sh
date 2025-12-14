@@ -2,7 +2,7 @@ run_query()
 {
 	echo "Run Script $1"
 	query_control/bin/query_control "query_control/planificacion.config" "$1" $2 &
-	sleep 0.25 #duerme 250 milisegundos
+	#sleep 0.25 #duerme 250 milisegundos
 }
 run_query AGING_1 4
 run_query AGING_2 3
