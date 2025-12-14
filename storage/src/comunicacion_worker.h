@@ -22,7 +22,7 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
    
     char* file = list_get_str(pack,1);
     char* tag = list_get_str(pack, 2);
-   
+    t_temporal* temp = temporal_create();
     int YA_ENVIO_LA_MIERDA_DE_ERROR_O_RESPUESTA=0;
     if(opcode == CREATE_FILE){
         if(real_sz < 2){
@@ -65,6 +65,8 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     free(file);
     free(tag);
     
+    log_violet(logger, "BENCHMARK (id_query=%d): %s: %ldms", w->id_query, cast_storage_oper_to_string(opcode), temporal_gettime(temp));
+    temporal_destroy(temp);
     if(YA_ENVIO_LA_MIERDA_DE_ERROR_O_RESPUESTA) // YA ENVIO Y NO VOY A HACER UNA REVERENDA CHOTA
         return; 
     

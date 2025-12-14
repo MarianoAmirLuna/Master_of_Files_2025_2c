@@ -193,6 +193,7 @@ int tag_file_ops(char* file, char* tag_origen, char* file_destino, char* tag_des
     /*t_packet* response = create_packet();
     add_int_to_packet(response, SUCCESS);
     send_and_free_packet(response, w->fd);*/
+    return 0;
 }
 
 

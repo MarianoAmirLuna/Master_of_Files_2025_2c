@@ -36,8 +36,6 @@ int read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     } // si no falla los libero igual
     config_destroy(metadata);
     list_destroy(bloques);
-    /*free(t_list);
-    free(t_config);*/
 
 
     char* block_name = get_block_name_logical(numero_bloque);

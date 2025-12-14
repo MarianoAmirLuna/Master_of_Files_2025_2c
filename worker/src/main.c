@@ -227,9 +227,8 @@ void packet_callback(void* params){
             free(file);
             free(tag);
             sem_post(&sem_get_data);
-            sem_post(&sem_de_esperar_la_puta_respuesta);
-
-        }//TAG_NOT_FOUND FILE_NOT_FOUND
+        }
+        
         if(
             op_code==INSTRUCTION_ERROR || 
             op_code==FILE_NOT_FOUND || 
@@ -246,16 +245,17 @@ void packet_callback(void* params){
             hubo_error=true;
             ultimo_error_storage=op_code;
             sem_post(&sem_respuesta_storage);
-            sem_post(&sem_de_esperar_la_puta_respuesta);
+            //sem_post(&sem_de_esperar_la_puta_respuesta);
         }
-        if(op_code== TUVE_UNA_RESPUESTA_DEL_PUTO_STORAGE){
+        /*if(op_code== TUVE_UNA_RESPUESTA_DEL_PUTO_STORAGE){
             sem_post(&sem_de_esperar_la_puta_respuesta);
         }
         if(op_code == SUCCESS)
         {
             sem_post(&sem_respuesta_storage);
-            sem_post(&sem_de_esperar_la_puta_respuesta);
-        }
+            
+        }*/
+        sem_post(&sem_de_esperar_la_puta_respuesta);
     }
     list_destroy(packet); //véase como en por ejemplo EJECUTAR_QUERY al recibir el list_get_str luego lo libero,
     //como el resto son enteros, los enteros no se pueden liberar porque lo hace el compilador

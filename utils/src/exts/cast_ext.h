@@ -280,6 +280,42 @@ storage_operation cast_storage_oper(char* code){
     return ERROR;
 }
 
+
+char* cast_storage_oper_to_string(storage_operation oper){
+    if(oper == CREATE_FILE)
+    {
+        return "CREATE_FILE";
+    }
+    if(oper == TRUNCATE_FILE)
+    {
+        return "TRUNCATE_FILE";
+    }
+    if(oper == TAG_FILE)
+    {
+        return "TAG_FILE";
+    }
+    if(oper == COMMIT_TAG)
+    {
+        return "COMMIT_TAG";
+    }
+    if(oper == WRITE_BLOCK)
+    {
+        return "WRITE_BLOCK";
+    }
+    if(oper == READ_BLOCK)
+    {
+        return "READ_BLOCK";
+    }
+    if(oper == DELETE_TAG)
+    {
+        return "DELETE_TAG";
+    }
+    if(oper == ERROR)
+    {
+        return "ERROR";
+    }
+    return "WTF";
+}
 errors_operation cast_error_operation(char* code){
     if(string_equals_ignore_case(code, "FILE_NOT_FOUND")){
         return FILE_NOT_FOUND;
