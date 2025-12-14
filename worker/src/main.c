@@ -137,10 +137,10 @@ void packet_callback(void* params){
             {
                 free(archivo_query_actual);
             }
-            if(actual_query)
+/*            if(actual_query)
             {
                 free_query(actual_query);
-            }
+            }*/
             archivo_query_actual = malloc(strlen(str)+1);
             strcpy(archivo_query_actual, str);
             
