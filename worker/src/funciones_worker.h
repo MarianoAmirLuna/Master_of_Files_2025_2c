@@ -129,6 +129,7 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         actual_worker->is_free=1;
     }
     log_info(logger, "## Query: %d: - Instrucción realizada: %s", actual_query->id, instr_to_string(caso));
+    log_debug(logger, "Query: %d (PC=%d): Valor de actual_workerfree=: %d, Need_desalojo=%d", actual_query->id, actual_query->pc, actual_worker->is_free, need_desalojo);
     
 }
 

@@ -14,7 +14,6 @@
 
 pthread_mutex_t mutex_sched;
 
-
 //response_desalojo resp_desalojo= {-1, -1, -1};
 
 config_master cm;
@@ -29,13 +28,11 @@ t_dictionary* dict_state;
 /// @brief Es como PID, es incremental desde 0, doc página 13
 qid query_idx=0;
 int degree_multiprocess;
-sem_t sem_incoming_client;
-//sem_t sem_desalojo;
 sem_t sem_idx;
-sem_t sem_locker;
-sem_t sem_worker;
+sem_t sem_incoming_client;
 sem_t sem_have_query;
 sem_t sem_have_worker;
+
 void execute_worker();
 
 //On predicates
@@ -68,13 +65,37 @@ void on_query_state_changed(void* elem);
 void on_query_priority_changed(void* elem);
 void on_changed(void(*cbMeth)(void*), void* argsMeth);
 
-int desalojo(worker* w)
+int increment_idx(){
+    //Thread-safe
+    sem_wait(&sem_idx);
+    int aux = query_idx;
+    query_idx++;
+    sem_post(&sem_idx);
+    return aux;
+}
+
+int increment_priority(query* q){
+    //Recordar que cuanto menor es el número, mayor es su prioridad. No confundir.
+    //Ejemplo, Prioridad =0 es máxima, Prioridad = 4 es baja, etc.
+    int old_priority = q->priority;
+    q->priority--;
+    if(old_priority == 0 && q->priority==0)
+        return q->priority; //No hubo cambio, es lo mismo
+    if(q->priority <= 0)
+        q->priority = 0;
+    if(old_priority == 0 && q->priority==0)
+        return q->priority; //No hubo cambio, es lo mismo
+    log_info(logger, "## %d Cambio de prioridad: %d - %d", q->id, old_priority, q->priority);
+    on_changed(on_query_priority_changed, q);
+    return q->priority;
+}
+
+int _desalojo(worker* w)
 {
     if(w == NULL){
         log_error(logger, "W es nulo en desalojo (%s:%d)", __func__, __LINE__);
         return 0;
     }
-    
     if(w->is_free){
         return 0;
     }
@@ -82,7 +103,7 @@ int desalojo(worker* w)
     t_packet* pdes = create_packet();
     add_int_to_packet(pdes, REQUEST_DESALOJO);
     send_and_free_packet(pdes, w->fd); //Envío y espero su respuesta de success
-
+    query* q_worker = get_query_by_qid(w->id_query);
     log_light_blue(logger, "Esperando respuesta de desalojo del worker %d", w->id);
     sem_wait(&w->sem_desalojo); //MMM me da medio miedo porque como tiene que flushear la tabla el worker, debe esperar hasta que termine de flushearla el pete.
     log_light_blue(logger, "Termine de esperar respuesta de desalojo del worker %d", w->id);
@@ -101,15 +122,43 @@ int desalojo(worker* w)
     if(q != NULL){
         q->pc = pc;
         q->sp = STATE_READY;
+    }else{
+        log_error(logger, "Query es nulo en desalojo (%s:%d)", __func__, __LINE__);
+        return 0;
     }
-    
+    if(cm.algoritmo_planificacion == PRIORITIES && cm.tiempo_aging > 0){
+        log_info(logger, "## Se desaloja la Query <%d> (%d) del Worker <%d> - Motivo: PRIORIDAD",
+            q_worker->id,
+            q_worker->priority,
+            w->id
+        );
+    }
     query_to(q, q->sp);
     w->is_free = 1; //El worker ahora está libre
-    on_changed(on_query_state_changed, q);
-    execute_worker(); //Ya que desalojé algo y debería asignarle algún trabajo
+    //Como el desalojo sólo invoca cuando en PRIORIDADES CON AGING en el siguiente ciclo del scheduler ya invoca el execute_worker
+    //execute_worker();
     return w->resp_desalojo.status;
 }
 
+int desalojo_worker_de_este_query(query* q){
+    int sz = list_size(workers);
+    for(int i=0;i<sz;i++){
+        worker* w = cast_worker(list_get(workers, i));
+        if(w == NULL){
+            log_error(logger, "W es NULL en (%s:%d)", __func__, __LINE__);
+            continue;
+        }
+        if(w->id_query == q->id){
+            pthread_t* pth = malloc(sizeof(pthread_t));
+            pthread_create(pth, NULL, _desalojo, w);
+            pthread_detach(*pth);
+            //return _desalojo(w);
+        }
+    }
+    return 0;
+}
+
+/*
 void* desalojo_worker_query(void* params)
 {
     log_orange(logger, "Desalojo worker query is invoked");
@@ -167,57 +216,10 @@ void* desalojo_worker_query(void* params)
     //return w->resp_desalojo.status;
     return NULL;
 }
+*/
 
-
-int increment_priority(query* q){
-    //Recordar que cuanto menor es el número mayor es su prioridad. No confundir.
-    //Ejemplo, Prioridad =0 es máxima, Prioridad = 4 es baja, etc.
-    int old_priority = q->priority;
-    q->priority--;
-    if(old_priority == 0 && q->priority==0)
-        return q->priority; //No hubo cambio, es lo mismo
-    if(q->priority <= 0)
-        q->priority = 0;
-    if(old_priority == 0 && q->priority==0)
-        return q->priority; //No hubo cambio, es lo mismo
-    log_info(logger, "## %d Cambio de prioridad: %d - %d", q->id, old_priority, q->priority);
-    on_changed(on_query_priority_changed, q);
-    return q->priority;
-}
-
-int increment_idx(){
-    //Thread-safe
-    sem_wait(&sem_idx);
-    int aux = query_idx;
-    query_idx++;
-    sem_post(&sem_idx);
-    return aux;
-}
-
-void query_to_no_notify(query* q, state_process to){
-    if(to == STATE_EXEC){
-        if(q->temp == NULL){
-            q->temp = temporal_create();
-        }
-        else{
-            temporal_restart(q->temp);
-        }
-    }
-    if(is_list_sp(q->sp))
-    {
-        t_list* l= get_list_by_sp(q->sp); 
-        list_remove_by_condition_by(l, by_query_qid, (void*)q->id); //remove from this 
-    }
-    if(is_queue_sp(q->sp)){
-        //el que estaba en READY que pasa a EXIT debo removerlo de la pila
-        t_queue* l = get_queue_by_sp(q->sp);
-        list_remove_by_condition_by(l->elements, by_query_qid, (void*)q->id); //remove from this 
-    }
-    q->sp = to;
-    add_query_on_state(q, to); //No le importa el t_queue por que t_queue se invocó previamente un pop y ese pop ya lo removió
-}
-
-void query_to(query* q, state_process to){
+//PRIVATE FUNC
+void _query_to(query* q, state_process to){
     if(q->sp == STATE_EXIT && to == STATE_READY)
     {
         log_error(logger, "is not valid from %s to %s state process returned is invoked", 
@@ -226,15 +228,6 @@ void query_to(query* q, state_process to){
         );
         return;
     }
-    /*if(q->sp != STATE_READY && to != STATE_READY){
-        if(!is_valid_sp(q->sp, to)){
-            log_error(logger, "is not valid from %s to %s state process returned is invoked", 
-                state_to_string(q->sp),
-                state_to_string(to)
-            );
-            return;
-        }
-    }*/
     if(to == STATE_EXEC){
         if(q->temp == NULL){
             q->temp = temporal_create();
@@ -243,19 +236,20 @@ void query_to(query* q, state_process to){
             temporal_restart(q->temp);
         }
     }
-    if(is_list_sp(q->sp))
-    {
-        t_list* l= get_list_by_sp(q->sp); 
-        list_remove_by_condition_by(l, by_query_qid, (void*)q->id); //remove from this 
-    }
-    if(is_queue_sp(q->sp)){
-        //el que estaba en READY que pasa a EXIT debo removerlo de la pila
-        t_queue* l = get_queue_by_sp(q->sp);
-        list_remove_by_condition_by(l->elements, by_query_qid, (void*)q->id); //remove from this 
-    }
+
+    t_list* l = is_list_sp(q->sp) ? get_list_by_sp(q->sp) : get_queue_by_sp(q->sp)->elements;
+    list_remove_by_condition_by(l, by_query_qid, (void*)q->id); //remove from this 
+    
     q->sp = to;
-    add_query_on_state(q, to); //No le importa el t_queue por que t_queue se invocó previamente un pop y ese pop ya lo removió
+    add_query_on_state(q, to);
+}
+void query_to(query* q, state_process to){
+    _query_to(q, to);
     on_changed(on_query_state_changed, q);
+}
+
+void query_to_no_notify(query* q, state_process to){
+    _query_to(q, to);
 }
 
 void print_query(query* q){
@@ -265,7 +259,7 @@ void print_worker(worker* w){
     log_orange(logger, "ID=%d, ID_QUERY=%d, ISFree: %d", w->id, w->id_query, w->is_free);
 }
 
-void print_queries(){
+void _print_queries(){
     log_light_blue(logger, "Start print queries");
     int sz = list_size(queries);
     for(int i=0;i<sz;i++){
@@ -274,7 +268,7 @@ void print_queries(){
     log_light_blue(logger, "End print queries");
 }
     
-void print_query_de_la_pila(){
+void _print_query_de_la_pila(){
     t_queue* qqq = get_queue_by_sp(STATE_READY);
     
     log_light_blue(logger, "Start print queries DE PILA");
@@ -285,12 +279,18 @@ void print_query_de_la_pila(){
     log_light_blue(logger, "End print queries DE PILA");
 }
 
-void print_workers(){
+void _print_workers(){
     log_violet(logger, "Start print workers");
     int sz = list_size(workers);
     for(int i=0;i<sz;i++){
         print_worker(cast_worker(list_get(workers, i)));
     }
     log_violet(logger, "End print workers");
+}
+
+void print_queries_y_workers(){
+    _print_queries();
+    _print_query_de_la_pila();
+    _print_workers();
 }
 #endif
