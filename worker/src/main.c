@@ -59,7 +59,9 @@ void* connect_to_server(void* params){
     log_debug(logger, "Connectando al servidor: %s", ocm_to_string(ocm)); 
     int wcl = 0; 
     if(ocm == MODULE_MASTER){
+        log_pink(logger, "ESTOY ESPERANDO EL UN SEM STORAGE CONECTADO");
         sem_wait(&sem_storage_conectado); //Espero a que el storage esté conectado para conectarme al master
+        log_pink(logger, "ESTOY ESPERANDO EL UN SEM STORAGE CONECTADO");
         wcl = client_connection(cw.ip_master,cw.puerto_master);
         sock_master = wcl;
     }
@@ -225,9 +227,17 @@ void packet_callback(void* params){
             free(file);
             free(tag);
             sem_post(&sem_get_data);
+            sem_post(&sem_de_esperar_la_puta_respuesta);
 
         }//TAG_NOT_FOUND FILE_NOT_FOUND
-        if(op_code==INSTRUCTION_ERROR || op_code==FILE_NOT_FOUND || op_code==TAG_NOT_FOUND || op_code==INSUFFICIENT_SPACE || op_code==WRITE_NO_PERMISSION || op_code==READ_WRITE_OVERFLOW || op_code == TAG_YA_EXISTENTE_SACA_LA_MANO_DE_AHI)
+        if(
+            op_code==INSTRUCTION_ERROR || 
+            op_code==FILE_NOT_FOUND || 
+            op_code==TAG_NOT_FOUND || 
+            op_code==INSUFFICIENT_SPACE || 
+            op_code==WRITE_NO_PERMISSION || 
+            op_code==READ_WRITE_OVERFLOW || 
+            op_code == TAG_YA_EXISTENTE_SACA_LA_MANO_DE_AHI)
         {
             t_packet* paq=create_packet();
             add_int_to_packet(paq, op_code);
@@ -236,10 +246,15 @@ void packet_callback(void* params){
             hubo_error=true;
             ultimo_error_storage=op_code;
             sem_post(&sem_respuesta_storage);
+            sem_post(&sem_de_esperar_la_puta_respuesta);
+        }
+        if(op_code== TUVE_UNA_RESPUESTA_DEL_PUTO_STORAGE){
+            sem_post(&sem_de_esperar_la_puta_respuesta);
         }
         if(op_code == SUCCESS)
         {
             sem_post(&sem_respuesta_storage);
+            sem_post(&sem_de_esperar_la_puta_respuesta);
         }
     }
     list_destroy(packet); //véase como en por ejemplo EJECUTAR_QUERY al recibir el list_get_str luego lo libero,

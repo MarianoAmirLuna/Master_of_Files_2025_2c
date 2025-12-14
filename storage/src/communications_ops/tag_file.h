@@ -9,16 +9,16 @@
 #include "../control_accesos.h"
 #endif
 
-void tag_file_ops(char* file, char* tag_origen, char* file_destino, char* tag_destino, worker* w){
+int tag_file_ops(char* file, char* tag_origen, char* file_destino, char* tag_destino, worker* w){
 
     //Control de que no se reciban cosas nulas
     if(file == NULL || tag_origen == NULL || file_destino == NULL || tag_destino == NULL){
         log_error(logger, "FILE, TAG_ORIGEN, file_destino o TAG_DESTINO son nulos");
-        return;
+        return 0;
     }
 
     if(!file_tag_exist_or_not(file, tag_origen, w)){
-        return; //Ya se envió el error al worker
+        return 1; //Ya se envió el error al worker
     }
     log_orange(logger, "[TAG_FILE] Iniciando operacion TAG para %s:%s -> %s:%s", file, tag_origen, file, tag_destino);
 
@@ -35,7 +35,7 @@ void tag_file_ops(char* file, char* tag_origen, char* file_destino, char* tag_de
         log_error(logger, "[TAG_FILE] El tag destino %s ya existe", tag_destino);
         send_basic_packet(w->fd, TAG_YA_EXISTENTE_SACA_LA_MANO_DE_AHI);
         free(path_tag_destino);
-        return;
+        return 1;
     }
 
     //Leer metadata del tag de origen
@@ -46,7 +46,7 @@ void tag_file_ops(char* file, char* tag_origen, char* file_destino, char* tag_de
         free(path_tag_origen);
         free(path_tag_destino);
         free(path_metadata_origen);
-        return;
+        return 0;
     }
 
     int tamanio_origen =get_size_from_metadata(metadata_origen);
@@ -77,7 +77,7 @@ void tag_file_ops(char* file, char* tag_origen, char* file_destino, char* tag_de
         free(path_tag_origen);
         free(path_tag_destino);
         free(path_metadata_origen);
-        return;
+        return 1;
     }
 
     char* logical_blocks_dir = get_logical_blocks_dir(cs, file,tag_destino);
@@ -127,7 +127,7 @@ void tag_file_ops(char* file, char* tag_origen, char* file_destino, char* tag_de
             free(path_tag_origen);
             free(path_tag_destino);
             free(path_metadata_origen);
-            return;
+            return 0;
         }
 
         log_info(logger, "## %d - Bloque Físico Reservado - Número de Bloque: %d", w->id_query, bloque_fisico_destino);
@@ -188,9 +188,11 @@ void tag_file_ops(char* file, char* tag_origen, char* file_destino, char* tag_de
     free(logical_blocks_dir);
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
-    t_packet* response = create_packet();
+
+    //NO HAGAS ESA MIERDA ACA...
+    /*t_packet* response = create_packet();
     add_int_to_packet(response, SUCCESS);
-    send_and_free_packet(response, w->fd);
+    send_and_free_packet(response, w->fd);*/
 }
 
 

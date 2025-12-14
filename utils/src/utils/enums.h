@@ -54,6 +54,7 @@ typedef enum{
     INTERRUPT,
     SEGMENTATION_FAULT,
     PROCESS_CANT_INITIALIZED,
+    TUVE_UNA_RESPUESTA_DEL_PUTO_STORAGE,
     ACTUAL_STATUS,
     /// @brief No existe
     NOTEXISTS,
@@ -123,7 +124,6 @@ typedef enum{
     ///La instrucción DELETE solicitará al módulo Storage la eliminación del File:Tag correspondiente.
     DELETE,
     INVALID_INSTRUCTION,
-    NOOP,    
     ///Formato: END
     ///Esta instrucción da por finalizada la Query y le informa al módulo Master el fin de la misma.
     END

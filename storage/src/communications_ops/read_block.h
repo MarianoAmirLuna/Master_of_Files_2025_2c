@@ -9,7 +9,7 @@
 #include "exts/file_ext.h"
 #endif
 
-void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
+int read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     /*Dado un File:Tag y número de bloque lógico, la operación de lectura obtendrá y devolverá el contenido del mismo.*/
 
     /* EXCEPCIONES A TENER EN CUENTA EN ESTE PROCEDIMIENTO
@@ -20,7 +20,7 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     if(!control_existencia(fullpath)){
         send_basic_packet(w->fd, TAG_NOT_FOUND); // no existe el file:tag
         log_pink(logger, "[READ_BLOCK] No existe el File:Tag %s:%s", file, tag);
-        return;
+        return 1;
     }
     
     t_config* metadata = get_metadata_from_file_tag(cs, file, tag);
@@ -32,7 +32,7 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
         send_basic_packet(w->fd, READ_WRITE_OVERFLOW); // lectura fuera de limites
         config_destroy(metadata);
         list_destroy(bloques);
-        return;
+        return 1;
     } // si no falla los libero igual
     config_destroy(metadata);
     list_destroy(bloques);
@@ -49,13 +49,13 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     if(!control_existencia_file(block_path)){
         log_pink(logger, "El bloque lógico %d del File:Tag %s:%s no existe (%s:%d) BLOCKPATH=%s", numero_bloque, file, tag, __func__, __LINE__, block_path);
         free(block_path);
-        return;
+        return 0;
     }
     FILE* f =fopen(block_path, "r");
     if(f == NULL){
         log_pink(logger, "No se pudo abrir el bloque lógico %d del File:Tag %s:%s (%s:%d) BLOCKPATH=%s", numero_bloque, file, tag, __func__, __LINE__, block_path);
         free(block_path);
-        return;
+        return 0;
     }
     int sz = get_size_file(f)+1;
     char* buffer = (char*)malloc(sz);
@@ -82,6 +82,7 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     log_info(logger, "## %d - Bloque Lógico Leído %s:%s - Número de Bloque: %d", w->id_query, file, tag, numero_bloque);
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
+    return 1;
 }
 
 #endif

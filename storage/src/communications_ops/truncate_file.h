@@ -13,7 +13,7 @@
 #include "exts/bitmap_ext.h"
 #endif
 
-void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
+int truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
     /*Esta operación se encargará de modificar el tamaño del File:Tag especificados agrandando o achicando el tamaño del mismo
     para reflejar el nuevo tamaño deseado (actualizando la metadata necesaria).
     Al incrementar el tamaño del File, se le asignarán tantos bloques lógicos (hard links) como sea necesario.
@@ -25,12 +25,12 @@ void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
     // Control de que no se reciban cosas nulas
     if(file == NULL || tag == NULL){
         log_error(logger, "FILE o TAG son nulos");
-        return;
+        return 0;
     }
 
     // Verificar que File:Tag existe
     if(!file_tag_exist_or_not(file, tag, w)){
-        return; // Ya se envió el error al worker
+        return 1; // Ya se envió el error al worker
     }
 
     // Obtener metadata del tag
@@ -38,7 +38,7 @@ void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
     t_config* metadata = get_metadata_from_file_tag(cs, file, tag);
     if(metadata == NULL){
         log_error(logger, "[TRUNCATE] No se pudo obtener metadata de %s:%s", file, tag);
-        return;
+        return 0;
     }
 
     // Verificar que el tag NO esté en estado COMMITED
@@ -46,7 +46,7 @@ void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
         send_basic_packet(w->fd, WRITE_NO_PERMISSION);
         log_error(logger, "[TRUNCATE] Tag %s:%s está COMMITED, no se puede truncar", file, tag);
         config_destroy(metadata);
-        return;
+        return 1;
     }
 
     // Obtener tamaño actual y lista de bloques
@@ -91,7 +91,7 @@ void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
             config_destroy(metadata);
             free(logical_blocks_dir);
             free(physical_blocks_dir);
-            return;
+            return 1;
         }
 
         // Construir path del bloque físico 0
@@ -189,9 +189,11 @@ void truncate_file_ops(char* file, char* tag, int nuevo_tam, worker* w){
 
     // Si necesitan decirle algo al worker desde este método se crea el packet y se envía en w->fd
     // Ejemplo: send_and_free_packet(p, w->fd);
-    t_packet* response = create_packet();
+    //NO HAGAS ESA MIERDA ACA
+    /*t_packet* response = create_packet();
     add_int_to_packet(response, SUCCESS);
-    send_and_free_packet(response, w->fd);
+    send_and_free_packet(response, w->fd);*/
+    return 0;
 }
 
 #endif

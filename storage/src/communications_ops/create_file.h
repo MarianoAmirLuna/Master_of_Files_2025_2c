@@ -5,16 +5,16 @@
 #include "base_communication_ops.h"
 #endif
 
-void create_file_ops(char* file, char* tag, worker* w){
+int create_file_ops(char* file, char* tag, worker* w){
     if(file == NULL || tag == NULL){
         log_error(logger, "Hubo un problema file o tag son nulos en (%s:%d)", __func__,__LINE__);
-        return;
+        return 0;
     }
     //La única comprobación que importa en CREATE es la de si el TAG existe, no el FILE.
     if(file_tag_exist_or_not_not_error(file, tag, w)==1){
         log_error(logger, "Existe el FILE con el TAG indicado");
         send_basic_packet(w->fd, TAG_YA_EXISTENTE_SACA_LA_MANO_DE_AHI); //  agregar si decidimos mandar error
-        return;
+        return 1;
     }
 
     char* logical_blocks_dir = get_logical_blocks_dir(cs, file, tag);
@@ -37,9 +37,11 @@ void create_file_ops(char* file, char* tag, worker* w){
     log_info(logger, "## %d - File Creado %s:%s", w->id_query, file, tag);
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
-    t_packet* response = create_packet();
+    //NO HAGAS ESA MIERDA ACA
+    /*t_packet* response = create_packet();
     add_int_to_packet(response, SUCCESS);
-    send_and_free_packet(response, w->fd);
+    send_and_free_packet(response, w->fd);*/
+    return 0;
 }
 
 #endif

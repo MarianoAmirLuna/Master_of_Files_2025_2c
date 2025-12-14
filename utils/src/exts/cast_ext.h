@@ -82,6 +82,10 @@ char* get_opcode_as_string(int opcode){
 	if(opcode == REQUEST_INSTRUCTIONS_MEMORY){
         return "REQUEST_INSTRUCTIONS_MEMORY";
     }
+    if(opcode == TUVE_UNA_RESPUESTA_DEL_PUTO_STORAGE)
+    {
+        return "TUVE_UNA_RESPUESTA_DEL_PUTO_STORAGE";
+    }
     if(opcode == REQUEST_DESALOJO){
         return "REQUEST_DESALOJO";
     }
@@ -207,9 +211,6 @@ instr_code cast_code(char* code){
     }
     if(string_equals_ignore_case(code,"DELETE")){
         return DELETE;
-    }
-    if(string_equals_ignore_case(code,"NOOP")){
-        return NOOP;
     }
     if(string_equals_ignore_case(code,"END")){
         return END;

@@ -9,7 +9,6 @@
 //NOTESE QUE EXISTE t_list* workers 
 void tratar_mensaje(t_list* pack, worker* w, int sock_client)
 {
-    msleep(cs.retardo_operacion); //Según el TP dice que TODAS LAS OPERACIONES se deberá esperar un tiempo de retardo, claro pa, pero esto va arriba
 
     if(pack == NULL) {
         log_error(logger, "Error recibiendo paquete");
@@ -20,80 +19,58 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     log_pink(logger, "OPCODE RECIBIDO EN STORAGE: %s", get_opcode_as_string(opcode));
     int real_sz = list_size(pack)-1;
    
-    /*char* params = NULL;
-    if(list_size(pack) > 1)
-    {
-        params = list_get_str(pack ,1);
-    }
-    
-    log_debug(logger, "OPCODE ES: %d, PARAMS: %s", opcode, params);
-    if(opcode == CREATE_FILE){
-        log_debug(logger, "Segudno argumento es: %s", list_get_str(pack, 2));
-    }
-    char** args = NULL;
-    if(params != NULL)
-    {
-        args = string_split(params, " ");
-    }*/
-    
-    //Descomentar esto sólo si desde worker usan el ejecutar_instruccion_v2
-    //opcode = convert_instr_code_to_storage_operation(opcode);
+   
     char* file = list_get_str(pack,1);
     char* tag = list_get_str(pack, 2);
-    /*if(opcode == GET_BLOCK_DATA){ // devuelve el tamaño del bloque porque ? no se, pero lo hace atte: lseijas
-        t_packet* pdata = create_packet();
-        add_int_to_packet(pdata, RETURN_BLOCK_DATA);
-        //NO CONFUNDAS CON EL PUTO TAMAÑO DEL BLOQUE PORQUE ESO LO OBTIENE 
-        //EL WORKER LA PRIMERA VZE QUE SE CONECTA CON STORAGE
-        // SORETE
-        //add_int_to_packet(pdata, g_block_size);
-        send_and_free_packet(pdata, sock_client);
-        return;
-    }*/
+   
+    int YA_ENVIO_LA_MIERDA_DE_ERROR_O_RESPUESTA=0;
     if(opcode == CREATE_FILE){
         if(real_sz < 2){
             log_error(logger, "Cantidad inválida de argumentos");
         }
-        create_file_ops(file, tag, w);
+        YA_ENVIO_LA_MIERDA_DE_ERROR_O_RESPUESTA= create_file_ops(file, tag, w);
     } 
     if(opcode == TRUNCATE_FILE){
         if(real_sz < 3){
             log_error(logger, "Cantidad inválida de argumentos");
         }
         int sz = list_get_int(pack, 3);
-        truncate_file_ops(file,tag,sz, w);
+        YA_ENVIO_LA_MIERDA_DE_ERROR_O_RESPUESTA = truncate_file_ops(file,tag,sz, w);
     }
     if(opcode == TAG_FILE){
         char* file_destino = list_get_str(pack, 3);
         char* tag_destino = list_get_str(pack, 4);
 
         //Tiene 3 argumentos el TAG_FILE??? Con el args[3]??? Investigar.
-        tag_file_ops(file, tag, file_destino, tag_destino,w);
+        YA_ENVIO_LA_MIERDA_DE_ERROR_O_RESPUESTA= tag_file_ops(file, tag, file_destino, tag_destino,w);
         free(tag_destino);
         free(file_destino);
     }
     if(opcode == COMMIT_TAG){
-        commit_tag_ops(file, tag, w);
+        YA_ENVIO_LA_MIERDA_DE_ERROR_O_RESPUESTA= commit_tag_ops(file, tag, w);
     }
     if(opcode == WRITE_BLOCK || opcode == WRITE_BLOCK_NOT_ERROR){
         int sz = list_get_int(pack, 3);
         char* contenido = list_get_str(pack ,4);
-        write_block_ops(file, tag, sz, contenido, w, opcode != WRITE_BLOCK_NOT_ERROR);
+        YA_ENVIO_LA_MIERDA_DE_ERROR_O_RESPUESTA = write_block_ops(file, tag, sz, contenido, w, opcode != WRITE_BLOCK_NOT_ERROR);
         free(contenido);
     }
     if(opcode == READ_BLOCK){
         int sz = list_get_int(pack, 3);
-        read_block_ops(file, tag, sz, w);
+        YA_ENVIO_LA_MIERDA_DE_ERROR_O_RESPUESTA = read_block_ops(file, tag, sz, w);
     }
     if(opcode == DELETE_TAG){
-        delete_tag_ops(file, tag, w);
+        YA_ENVIO_LA_MIERDA_DE_ERROR_O_RESPUESTA = delete_tag_ops(file, tag, w);
     }
     free(file);
     free(tag);
-    // esto es una respuesta barata, despues le agrego a cada uno su respuesta personalizada
-    /*t_packet* response = create_packet();
-    add_int_to_packet(response, SUCCESS);
-    send_and_free_packet(response, w->fd);*/
+    
+    if(YA_ENVIO_LA_MIERDA_DE_ERROR_O_RESPUESTA) // YA ENVIO Y NO VOY A HACER UNA REVERENDA CHOTA
+        return; 
+    
+    t_packet* response = create_packet();
+    add_int_to_packet(response, TUVE_UNA_RESPUESTA_DEL_PUTO_STORAGE); //LE VOY A RESPONDER AL HIJO DE RE MIL PUTA
+    send_and_free_packet(response, w->fd);
 }
 
 

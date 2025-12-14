@@ -9,7 +9,7 @@
 #include "../control_accesos.h"
 #endif
 
-void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, worker* w, bool reportar_error){
+int write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, worker* w, bool reportar_error){
     /*Esta operación recibirá el contenido de un bloque lógico de un File:Tag y guardará los cambios en el 
     bloque físico correspondiente, siempre y cuando el File:Tag no se encuentre en estado COMMITED y 
     el bloque lógico se encuentre asignado.
@@ -26,19 +26,19 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
 
     if(file == NULL || tag == NULL || contenido == NULL){
         log_error(logger, "[WRITE_BLOCK] FILE, TAG o CONTENIDO son nulos");
-        return;
+        return 0;
     }
 
     // 1) Verificar que exista el File:Tag
     if(!file_tag_exist_or_not(file, tag, w)){
-        return; // Ya se envió el error al worker
+        return 1; // Ya se envió el error al worker
     }
 
     // 2) Obtener metadata
     t_config* metadata = get_metadata_from_file_tag(cs, file, tag);
     if(metadata == NULL){
         log_error(logger, "[WRITE_BLOCK] No se pudo obtener la metadata del File:Tag %s:%s", file, tag);
-        return;
+        return 0;
     }
 
     // Guardamos tamaño actual (no cambia por WRITE_BLOCK)
@@ -49,9 +49,9 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
        if (reportar_error){
             send_basic_packet(w->fd, WRITE_NO_PERMISSION);   // Escritura_no_permitida
             log_error(logger, "[WRITE_BLOCK] El tag %s:%s está COMMITED, no se puede escribir", file, tag);
-       }
+        }
         config_destroy(metadata);
-        return;
+        return reportar_error;
     }
 
     // 4) Obtener lista de bloques físicos desde el metadata
@@ -68,7 +68,7 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
 
         list_destroy(bloques_fisicos);
         config_destroy(metadata);
-        return;
+        return 1;
     }
 
     // 6) Obtener el bloque físico asociado a este bloque lógico
@@ -97,7 +97,7 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
         pthread_mutex_unlock(tag_lock);
         list_destroy(bloques_fisicos);
         config_destroy(metadata);
-        return;
+        return 0;
     }
 
     int cantidad_links = st.st_nlink;
@@ -150,7 +150,7 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
             pthread_mutex_unlock(tag_lock);
             list_destroy(bloques_fisicos);
             config_destroy(metadata);
-            return;
+            return 0;
         }
 
         bloque_fisico_final = bloque_nuevo;
@@ -200,7 +200,7 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
         pthread_mutex_unlock(tag_lock);
         list_destroy(bloques_fisicos);
         config_destroy(metadata);
-        return;
+        return 0;
     }
 
     free(physical_dir);
@@ -227,9 +227,11 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
 
     log_info(logger, "Ejecutando la operacion WRITE_BLOCK");
     log_info(logger, "## %d - Bloque Lógico Escrito %s:%s Número de Bloque %d", w->id_query, file, tag, bloque_logico);
-    t_packet* response = create_packet();
+    //NO HAGAS ESA MIERDA ACA
+    /*t_packet* response = create_packet();
     add_int_to_packet(response, SUCCESS);
-    send_and_free_packet(response, w->fd);
+    send_and_free_packet(response, w->fd);*/
+    return 0;
 }
 
 #endif

@@ -165,6 +165,8 @@ void packet_callback(void* params){
     log_pink(logger, "RECIBI DATOS DEL %s", ocm_to_string(ocm));
 
     tratar_mensaje(pack, w, sock_client); // manejo de operaciones del worker
+    msleep(cs.retardo_operacion); //Según el TP dice que TODAS LAS OPERACIONES se deberá esperar un tiempo de retardo
+    //No esperes esa mierda arriba dentro del tratar_mensaje DORMIR LA OPERACION SERIA DEBAJO
 
     list_destroy(pack);
 }

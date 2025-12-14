@@ -164,6 +164,7 @@ int realizar_lectura(void *dest, char *file_tag, int dir_logica, int tam)
 }
 
 void mandarLecturaAMaster(char* lectura, char* file_tag) {
+    
     char **copia_ft = string_split(file_tag, ":");
     t_packet *paq = create_packet();
     add_int_to_packet(paq, REQUEST_READ);
@@ -355,10 +356,6 @@ void ejecutar_commit(char *file, char *tag)
     send_and_free_packet(paq, sock_storage);
 }
 
-void ejecutar_noop()
-{
-    return;
-}
 
 void ejecutar_flush(char *file_tag, bool reportar_error)
 {
@@ -373,7 +370,7 @@ void ejecutar_flush(char *file_tag, bool reportar_error)
         if (entrada->modificada)
         {
             actualizar_pagina_en_storage(entrada, reportar_error);
-            sem_wait(&sem_respuesta_storage);
+            //sem_wait(&sem_respuesta_storage);
             if (hubo_error)
             {
                 break;

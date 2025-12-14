@@ -8,7 +8,7 @@
 #include "exts/bitmap_ext.h"
 #endif
 
-void delete_tag_ops(char* file, char* tag, worker* w){
+int delete_tag_ops(char* file, char* tag, worker* w){
     /*Esta operación eliminará el directorio correspondiente al File:Tag indicado.
     Al realizar esta operación, si el bloque físico al que apunta cada bloque lógico eliminado
     no es referenciado por ningún otro File:Tag, deberá ser marcado como libre en el bitmap.*/
@@ -21,7 +21,7 @@ void delete_tag_ops(char* file, char* tag, worker* w){
     // Control de que no se reciban cosas nulas
     if(file == NULL || tag == NULL){
         log_error(logger, "FILE o TAG son nulos");
-        return;
+        return 0;
     }
 
     // Aplicar retardo de operación
@@ -30,14 +30,14 @@ void delete_tag_ops(char* file, char* tag, worker* w){
 
     // Verificar que File:Tag existe
     if(!file_tag_exist_or_not(file, tag, w)){
-        return; // Ya se envió el error al worker
+        return 1; // Ya se envió el error al worker
     }
 
     // Obtener metadata del tag ANTES de eliminar el directorio
     t_config* metadata = get_metadata_from_file_tag(cs, file, tag);
     if(metadata == NULL){
         log_error(logger, "[DELETE_TAG] No se pudo obtener metadata de %s:%s", file, tag);
-        return;
+        return 0;
     }
 
     // Obtener lista de bloques físicos del metadata
@@ -109,9 +109,11 @@ void delete_tag_ops(char* file, char* tag, worker* w){
     free(logical_blocks_dir);
     //Si necesitan decirle algo al worker desde este método se crea el paquet y se envía en w->fd send_and_free()
     //Ejemplo: send_and_free_packet(p, w->fd);
-    t_packet* response = create_packet();
+    //NO HAGAS ESA MIERDA ACA
+    /*t_packet* response = create_packet();
     add_int_to_packet(response, SUCCESS);
-    send_and_free_packet(response, w->fd);
+    send_and_free_packet(response, w->fd);*/
+    return 0;
 }
 
 #endif

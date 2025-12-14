@@ -21,12 +21,10 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
     {
         // El tamaño del archivo debe ser 0
         ejecutar_create(parametro1);
-        sem_wait(&sem_respuesta_storage);
     }
     else if (caso == TRUNCATE)
     {
         ejecutar_truncate(parametro1, atoi(parametro2));
-        sem_wait(&sem_respuesta_storage);
     }
     else if (caso == WRITE)
     {
@@ -83,8 +81,6 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
 
         mandarLecturaAMaster(contenido_total, parametro1);
         free(contenido_total);
-
-
     }
     else if (caso == TAG)
     {
@@ -93,7 +89,6 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         add_file_tag_to_packet(paq, parametro1);
         add_file_tag_to_packet(paq, parametro2);
         send_and_free_packet(paq, sock_storage);
-        sem_wait(&sem_respuesta_storage);
     }
     else if (caso == COMMIT)
     {
@@ -101,13 +96,16 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         ejecutar_flush(parametro1, true);
         ejecutar_commit(copia_ft[0], copia_ft[1]);
         string_array_destroy(copia_ft);
-        sem_wait(&sem_respuesta_storage);
+        log_pink(logger, "ESTOY ESPERANDO EL FINFLUSH");
         sem_wait(&fin_de_flush);
+        log_pink(logger, "TERMINE DE ESPERAR ESTOY ESPERANDO EL FINFLUSH");
     }
     else if (caso == FLUSH)
     {
         ejecutar_flush(parametro1, true);
         sem_wait(&fin_de_flush);
+        log_pink(logger, "ESTOY ESPERANDO EL FINFLUSH 1");
+        log_pink(logger, "TERMINE DE ESPERAR ESTOY ESPERANDO EL FINFLUSH 1");
     }
     else if (caso == DELETE)
     {
@@ -115,12 +113,6 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         add_int_to_packet(paq, DELETE_TAG);
         add_file_tag_to_packet(paq, parametro1);
         send_and_free_packet(paq, sock_storage);
-        sem_wait(&sem_respuesta_storage);
-    }
-    else if (caso == NOOP)
-    {
-        // El NOOP no existe en este TP
-        ejecutar_noop();
     }
     else if (caso == END)
     {
@@ -134,9 +126,10 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
             sem_post(&sem_need_desalojo);
             need_desalojo = 0;
         }
-        actual_worker->is_free = true;
+        actual_worker->is_free=1;
     }
     log_info(logger, "## Query: %d: - Instrucción realizada: %s", actual_query->id, instr_to_string(caso));
+    
 }
 
 void decode_y_execute(char *linea_de_instruccion)
@@ -159,6 +152,9 @@ void decode_y_execute(char *linea_de_instruccion)
     log_info(logger, "## Query: %d: -FETCH - Program Counter: %d - %s", actual_query->id, actual_query->pc, instruccion);
     ejecutar_instruccion(caso, parametro1, parametro2, parametro3);
     string_array_destroy(spl);
+    log_pink(logger, "VOY A ESPERAR LA RE PUTA RESPUESTA");
+    sem_wait(&sem_de_esperar_la_puta_respuesta);
+    log_pink(logger, "[NO SAQUEN ESTA MIERDA HASTA QUE ESTEN SEGURO DE QUE FUNCIONE TODO] TERMINE DE ESPERAR LA PUTA RESPUESTA");
 }
 
 // FASE DECODE //
@@ -206,7 +202,9 @@ void loop_atender_queries()
     {
         if (hubo_error)
         {
+            log_pink(logger, "ESTOY ESPERANDO EN SEM_DIMI");
             sem_wait(&sem_dimi);
+            log_pink(logger, "TERMINE DE ESPERAR ESPERANDO EN SEM_DIMI");
         }
         log_trace(logger, "Esperando una nueva Query...");
         if (need_desalojo)
@@ -223,8 +221,11 @@ void loop_atender_queries()
         free(fullpath);
         actual_worker->is_free = false;
         log_debug(logger, "Estoy en el ciclo infinito fuera del while_actual_worker");
-        while (!actual_worker->is_free && !hubo_error)
+        while (!actual_worker->is_free) //Tiene que ser una disyunción enfermo... o cumple uno o cumple el otro no podés una conjunción
         {
+            if(hubo_error){
+                break;
+            }
             log_debug(logger, "Estoy en el ciclo");
             // Incrementá el PC negro y con chequeo de out-bound si tenés 10 instrucciones no te podés ir a la instrucción 11 porque se hace percha.
             //  Fase Fetch
@@ -270,6 +271,11 @@ void loop_atender_queries()
                 log_error(logger, "ACTUAL QUERY INSTRUCTIONS NO TIENE ELEMENTOS %s:%d", __func__, __LINE__);
                 break;
             }
+            if (actual_query->pc >= list_size(actual_query->instructions))
+            {
+                log_error(logger, "TE FUISTE A LA MIERDA CON EL PC %s:%d", __func__, __LINE__);
+                break;
+            }
             log_light_blue(logger, "Query ID=%d PC=%d", actual_query->id, actual_query->pc);
             char *instruccion = list_get(actual_query->instructions, actual_query->pc); // Nótese que incrementa el pc
             log_debug(logger, "QID=%d, PC=%d, Instrucción que va a ejecutar: %s",
@@ -286,6 +292,7 @@ void loop_atender_queries()
             log_error(logger, "ERROR, se salio de la ejecucion del query por un error de storage");
             need_desalojo = 1;
             log_light_green(logger, "need_desalojo seteada a 1 por error de storage");
+        
         }
         log_debug(logger, "Estoy fuera del ciclo actual_worker is free");
         if (need_desalojo)
