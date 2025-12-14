@@ -38,7 +38,7 @@ void on_query_priority_changed(void* elem){
     //Comprueba si existe algún query que tenga menor prioridad (número mayor) que este.
 
     //DANGER: CHECK THIS
-    if(!list_exists(queries, is_most_priority, q))
+//    if(!list_exists(queries, is_most_priority, q))
 //        return;
     //sem_wait(&sem_locker);
     //Desalojar un worker que tenga un query de menor prioridad (número mayor)
