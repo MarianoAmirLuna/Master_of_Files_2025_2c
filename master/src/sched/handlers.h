@@ -39,7 +39,7 @@ void on_query_priority_changed(void* elem){
 
     //DANGER: CHECK THIS
     if(!list_exists(queries, is_most_priority, q))
-        return;
+//        return;
     //sem_wait(&sem_locker);
     //Desalojar un worker que tenga un query de menor prioridad (número mayor)
     for(int i=0;i<list_size(workers);i++){
