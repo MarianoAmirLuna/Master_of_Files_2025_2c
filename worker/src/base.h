@@ -26,7 +26,7 @@ config_worker cw;
 int block_size;
 int need_desalojo;
 int need_stop;
-int storage_block_size;z
+int storage_block_size;
 
 //mutex por ser globales en los get y add
 t_list* lista_frames; //Se conoce el inicio de un frame, no el fin y si esta libre o no
@@ -58,6 +58,7 @@ char* archivo_query_actual;
 char *file_tag_buscado;
 
 bool hubo_error;
+bool hubo_query;
 
 marco* frame_buscado;
 

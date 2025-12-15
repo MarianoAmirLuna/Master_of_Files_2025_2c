@@ -197,7 +197,7 @@ t_list *obtener_instrucciones_v2(char *fullpath)
     if (line)
         free(line);
     return res;
-}z
+}
 
 // FASE FETCH //
 void loop_atender_queries()
