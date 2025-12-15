@@ -172,7 +172,7 @@ void packet_callback(void* params){
         
             need_desalojo=1;
             log_light_green(logger, "need_desalojo seteada a 1 por request del Master");
-            log_light_blue(logger, "En Semwait need desalojo");
+            /*log_light_blue(logger, "En Semwait need desalojo");
             sem_wait(&sem_need_desalojo);
             log_light_blue(logger, "Termine Semwait need desalojo");
             
@@ -201,7 +201,7 @@ void packet_callback(void* params){
             {
                 flushear_tabla_paginas(true);
                 log_light_blue(logger, "Termine de flushear");
-            }
+            }*/
         }
     }
     if(ocm == MODULE_STORAGE){
