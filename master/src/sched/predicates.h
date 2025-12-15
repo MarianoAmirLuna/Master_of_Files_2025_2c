@@ -11,7 +11,6 @@ int is_valid_sp(state_process from, state_process to){
         return 1;
     if(from == STATE_EXEC && (to == STATE_READY || to == STATE_EXIT))
         return 1;
-        
     return 0;
 }
 
@@ -37,16 +36,41 @@ t_queue* get_queue_by_sp(state_process sp){
     return (t_queue*)dictionary_get(dict_state, state_to_string(sp));
 }
 
+int existe_este_queue_en_ready(query* q){
+    if(q == NULL)
+        return 0;
+    t_queue* queu = get_queue_by_sp(STATE_READY);
+    t_list* ql = queu->elements;
+    if(ql == NULL)
+        return 0;
+    int sz = list_size(ql);
+    for(int i=0;i<sz;i++){
+        void* elem = list_get(ql, i);
+        if(elem == NULL)
+            continue;
+        if(cast_query(elem)->id == q->id) //WHAT THE FUCK SON 2 IGUALES YA EXISTEN NO DEBERIA
+            return 1;
+    }
+    return 0;
+}
+
 void add_query_on_state(query* q, state_process sp){
     if(is_queue_sp(sp)){
+        if(existe_este_queue_en_ready(q))
+            return;
         queue_push(get_queue_by_sp(sp), q);
         return;
+    }
+    t_list* l = get_list_by_sp(sp);
+    for(int i=0;i<list_size(l);i++){
+        if(cast_query(list_get(l, i))->id == q->id){
+            return;
+        }
     }
     list_add(get_list_by_sp(sp), q);
 }
 
 int count_by_sp(state_process sp){
-    //void* elem = dictionary_get(dict_state,sp);
     if(is_queue_sp(sp))
         return queue_size(get_queue_by_sp(sp));
     return list_size(get_list_by_sp(sp));
@@ -67,12 +91,9 @@ query* cast_query(void* elem){
     }
     return (query*)elem;
 }
+
 int cast_int(void* elem){
     return (int)elem;
-    //WARNING: check this
-    /*int res = 0;
-    memcpy(&res, elem, sizeof(int));
-    return res;*/
 }
 
 bool order_query_by(void* a, void* b){
@@ -117,7 +138,6 @@ worker* get_first_worker_free()
     if(w == NULL){
         log_debug(logger, "No hay workers libres");
         return NULL;
-        //log_error(logger, "Ohhh es nulo el elemento wtf");
     }
     return cast_worker(w);
 }

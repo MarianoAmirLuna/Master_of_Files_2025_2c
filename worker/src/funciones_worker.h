@@ -131,6 +131,8 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         send_and_free_packet(paq, sock_master);
         if (need_desalojo)
         {
+                        log_error(logger,"CHUPALA NRO 2");
+
             sem_post(&sem_need_desalojo);
             need_desalojo = 0;
         }
@@ -211,6 +213,8 @@ void loop_atender_queries()
         log_trace(logger, "Esperando una nueva Query...");
         if (need_desalojo)
         {
+                        log_error(logger,"CHUPALA NRO 3");
+
             sem_post(&sem_need_desalojo);
             need_desalojo = 0;
         }
@@ -231,7 +235,10 @@ void loop_atender_queries()
             if (need_desalojo)
             {
                 actual_worker->is_free = true;
+                            log_error(logger,"CHUPALA NRO 4");
+
                 sem_post(&sem_need_desalojo);
+
                 need_desalojo = 0;
                 break;
             }
@@ -240,6 +247,8 @@ void loop_atender_queries()
                 if (need_desalojo)
                 {
                     actual_worker->is_free = true;
+                                log_error(logger,"CHUPALA NRO 5");
+
                     sem_post(&sem_need_desalojo);
                     need_desalojo = 0;
                     // break;
@@ -291,6 +300,7 @@ void loop_atender_queries()
         if (need_desalojo)
         {
             actual_worker->is_free = true;
+            log_error(logger,"CHUPALA NRO 1");
             sem_post(&sem_need_desalojo);
             need_desalojo = 0;
         }
