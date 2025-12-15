@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     actual_worker = malloc(sizeof(worker));
     actual_worker->id = id_worker;
     actual_worker->is_free = true;
-    
+    socket_a_desalojar=-1;
 
     inicializar_worker();
     
@@ -158,6 +158,7 @@ void packet_callback(void* params){
             free(str);
         }
         if(op_code == REQUEST_DESALOJO){
+            socket_a_desalojar= sock;
             /*if(actual_worker == NULL || actual_query == NULL){
                 t_packet* p = create_packet();
                 add_int_to_packet(p, ERROR);

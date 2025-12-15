@@ -207,17 +207,15 @@ int check_need_desalojo(){
         
     log_light_blue(logger, "En Semwait need desalojo");
     
-    t_packet* p = create_packet();
-    add_int_to_packet(p, REQUEST_DESALOJO);
-    add_int_to_packet(p, SUCCESS);
-    add_int_to_packet(p, actual_query->id);
-    add_int_to_packet(p, actual_query->pc);
-    send_and_free_packet(p, sock);
     log_light_blue(logger, "Se envio respuesta del desalojo al Master ID=%d, PC=%d", actual_query->id, actual_query->pc);
     
     log_info(logger, "## Query %d: Desalojada por pedido del Master", actual_query->id);
     actual_worker->is_free=true;
     actual_worker->id_query = -1;
+
+    int id_temp = actual_query->id;
+    int pc_temp = actual_query->pc;
+
     free_query(actual_query);
     need_desalojo=0;
     if (hubo_error)
@@ -233,6 +231,16 @@ int check_need_desalojo(){
         flushear_tabla_paginas(true);
         log_light_blue(logger, "Termine de flushear");
     }
+
+
+    t_packet* p = create_packet();
+    add_int_to_packet(p, REQUEST_DESALOJO);
+    add_int_to_packet(p, SUCCESS);
+    add_int_to_packet(p, id_temp);
+    add_int_to_packet(p, pc_temp);
+    send_and_free_packet(p, socket_a_desalojar);
+    socket_a_desalojar=-1;
+
     return 1;
 }
 

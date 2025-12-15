@@ -27,6 +27,7 @@ int block_size;
 int need_desalojo;
 int need_stop;
 int storage_block_size;
+int socket_a_desalojar;
 
 //mutex por ser globales en los get y add
 t_list* lista_frames; //Se conoce el inicio de un frame, no el fin y si esta libre o no
