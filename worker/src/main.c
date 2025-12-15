@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     actual_worker = malloc(sizeof(worker));
     actual_worker->id = id_worker;
     actual_worker->is_free = true;
-    socket_a_desalojar=-1;
+    hubo_query=false;
 
     inicializar_worker();
     
@@ -47,7 +47,6 @@ int main(int argc, char* argv[]) {
     pthread_t* pth_que = malloc(sizeof(pthread_t));
     pthread_create(pth_que, NULL, (void*)loop_atender_queries, NULL);
     pthread_join(*pth_que, NULL);
-    //loop_atender_queries();
 
     return 0;
 }
@@ -59,7 +58,9 @@ void* connect_to_server(void* params){
     log_debug(logger, "Connectando al servidor: %s", ocm_to_string(ocm)); 
     int wcl = 0; 
     if(ocm == MODULE_MASTER){
+        log_pink(logger, "ESTOY ESPERANDO EL UN SEM STORAGE CONECTADO");
         sem_wait(&sem_storage_conectado); //Espero a que el storage esté conectado para conectarme al master
+        log_pink(logger, "ESTOY ESPERANDO EL UN SEM STORAGE CONECTADO");
         wcl = client_connection(cw.ip_master,cw.puerto_master);
         sock_master = wcl;
     }
@@ -89,7 +90,6 @@ void* connect_to_server(void* params){
         inicializar_memoria();
     }
 
-    //add_socket_structure_by_name_ocm_sock_server(ocm_to_string(ocm), ocm, wcl, 0);
     
     void* parameters = malloc(sizeof(int)*3);
     int len_args = 2;
@@ -116,7 +116,6 @@ void packet_callback(void* params){
     memcpy(&ocm, params+offset, sizeof(int));
     offset+=sizeof(int);
     memcpy(&sock, params+offset, sizeof(int));
-    //free(params);
     log_debug(logger, "OCM: %s", ocm_to_string(ocm));
     t_list* packet = recv_packet(sock);
     log_info(logger, "Recibi mensaje de %s cantidad del packet: %d", ocm_to_string(ocm), list_size(packet));
@@ -137,15 +136,11 @@ void packet_callback(void* params){
             {
                 free(archivo_query_actual);
             }
-/*            if(actual_query)
-            {
-                free_query(actual_query);
-            }*/
+
             archivo_query_actual = malloc(strlen(str)+1);
             strcpy(archivo_query_actual, str);
             
             
-            //actual_worker->is_free=false;
             actual_worker->id_query = id_query;
             
             log_pink(logger, "Por re-setear el actual_query");
@@ -154,26 +149,14 @@ void packet_callback(void* params){
             log_light_blue(logger, "Worker asignado a la Query %d PC=%d", actual_query->id, actual_query->pc);
             log_info(logger, "## Query %d: Se recibe la Query. El path de operaciones es: %s", id_query, archivo_query_actual); 
             hubo_error=false;
-            sem_post(&sem_query_recibida); //Aviso que ya tengo una query para ejecutar
+            hubo_query=true;
             free(str);
         }
         if(op_code == REQUEST_DESALOJO){
-            socket_a_desalojar= sock;
-            /*if(actual_worker == NULL || actual_query == NULL){
-                t_packet* p = create_packet();
-                add_int_to_packet(p, ERROR);
-                send_and_free_packet(p, sock);
-                list_destroy(packet);
-                return;
-            }*/
-            //qid id_query = list_get_int(packet, 1);
-            /*pthread_t pth = malloc(sizeof(pthread_t));
-            pthread_create(&pth, NULL, (void*)por_desalojarme, (void*)sock);
-            pthread_detach(pth);*/
         
             need_desalojo=1;
             log_light_green(logger, "need_desalojo seteada a 1 por request del Master");
-            /*log_light_blue(logger, "En Semwait need desalojo");
+            log_light_blue(logger, "En Semwait need desalojo");
             sem_wait(&sem_need_desalojo);
             log_light_blue(logger, "Termine Semwait need desalojo");
             
@@ -185,11 +168,12 @@ void packet_callback(void* params){
             send_and_free_packet(p, sock);
             log_light_blue(logger, "Se envio respuesta del desalojo al Master ID=%d, PC=%d", actual_query->id, actual_query->pc);
             
-            log_info(logger, "## Query %d: Desalojada por pedido del Master", actual_query->id);
+            log_info(logger, "## Query %d: Desalojada por pedido del Master", actual_quzery->id);
             actual_worker->is_free=true;
             actual_worker->id_query = -1;
             free_query(actual_query);
             need_desalojo=0;
+            
             if (hubo_error)
             {
                 if (ultimo_error_storage != WRITE_NO_PERMISSION)
@@ -202,12 +186,12 @@ void packet_callback(void* params){
             {
                 flushear_tabla_paginas(true);
                 log_light_blue(logger, "Termine de flushear");
-            }*/
+            }
+            hubo_query=0;
         }
     }
     if(ocm == MODULE_STORAGE){
         if(op_code == GET_DATA){
-            //sem_post(&sem_respuesta_storage);
             log_light_blue(logger, "Tamaño del paquete: %d", list_size(packet));
             log_trace(logger, "Estoy en get data");
             char* data = list_get_str(packet, 1);
@@ -226,9 +210,16 @@ void packet_callback(void* params){
             free(file);
             free(tag);
             sem_post(&sem_get_data);
-
-        }//TAG_NOT_FOUND FILE_NOT_FOUND
-        if(op_code==INSTRUCTION_ERROR || op_code==FILE_NOT_FOUND || op_code==TAG_NOT_FOUND || op_code==INSUFFICIENT_SPACE || op_code==WRITE_NO_PERMISSION || op_code==READ_WRITE_OVERFLOW || op_code == TAG_YA_EXISTENTE_SACA_LA_MANO_DE_AHI)
+        }
+        
+        if(
+            op_code==INSTRUCTION_ERROR || 
+            op_code==FILE_NOT_FOUND || 
+            op_code==TAG_NOT_FOUND || 
+            op_code==INSUFFICIENT_SPACE || 
+            op_code==WRITE_NO_PERMISSION || 
+            op_code==READ_WRITE_OVERFLOW || 
+            op_code == TAG_YA_EXISTENTE_SACA_LA_MANO_DE_AHI)
         {
             t_packet* paq=create_packet();
             add_int_to_packet(paq, op_code);
@@ -238,10 +229,7 @@ void packet_callback(void* params){
             ultimo_error_storage=op_code;
             sem_post(&sem_respuesta_storage);
         }
-        if(op_code == SUCCESS)
-        {
-            sem_post(&sem_respuesta_storage);
-        }
+        sem_post(&sem_de_esperar_la_puta_respuesta);
     }
     list_destroy(packet); //véase como en por ejemplo EJECUTAR_QUERY al recibir el list_get_str luego lo libero,
     //como el resto son enteros, los enteros no se pueden liberar porque lo hace el compilador

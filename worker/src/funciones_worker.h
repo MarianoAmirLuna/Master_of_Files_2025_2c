@@ -131,8 +131,6 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
         send_and_free_packet(paq, sock_master);
         if (need_desalojo)
         {
-                        log_error(logger,"CHUPALA NRO 2");
-
             sem_post(&sem_need_desalojo);
             need_desalojo = 0;
         }
@@ -199,50 +197,7 @@ t_list *obtener_instrucciones_v2(char *fullpath)
     if (line)
         free(line);
     return res;
-}
-
-int check_need_desalojo(){
-    if(!need_desalojo)
-        return 0;
-        
-    log_light_blue(logger, "En Semwait need desalojo");
-    
-    log_light_blue(logger, "Se envio respuesta del desalojo al Master ID=%d, PC=%d", actual_query->id, actual_query->pc);
-    
-    log_info(logger, "## Query %d: Desalojada por pedido del Master", actual_query->id);
-    actual_worker->is_free=true;
-    actual_worker->id_query = -1;
-
-    int id_temp = actual_query->id;
-    int pc_temp = actual_query->pc;
-
-    free_query(actual_query);
-    need_desalojo=0;
-    if (hubo_error)
-    {
-        if (ultimo_error_storage != WRITE_NO_PERMISSION)
-        {
-            flushear_tabla_paginas(false);
-            log_light_blue(logger, "Termine de flushear");
-        }
-    }
-    else
-    {
-        flushear_tabla_paginas(true);
-        log_light_blue(logger, "Termine de flushear");
-    }
-
-
-    t_packet* p = create_packet();
-    add_int_to_packet(p, REQUEST_DESALOJO);
-    add_int_to_packet(p, SUCCESS);
-    add_int_to_packet(p, id_temp);
-    add_int_to_packet(p, pc_temp);
-    send_and_free_packet(p, socket_a_desalojar);
-    socket_a_desalojar=-1;
-
-    return 1;
-}
+}z
 
 // FASE FETCH //
 void loop_atender_queries()
@@ -256,7 +211,8 @@ void loop_atender_queries()
         log_trace(logger, "Esperando una nueva Query...");
         if (need_desalojo)
         {
-            check_need_desalojo();
+            sem_post(&sem_need_desalojo);
+            need_desalojo = 0;
         }
         sem_wait(&sem_query_recibida);
         log_trace(logger, "Recibi una QUERYYYYYYYYYYYYYYYYYYYYYY");
@@ -275,10 +231,7 @@ void loop_atender_queries()
             if (need_desalojo)
             {
                 actual_worker->is_free = true;
-                            log_error(logger,"CHUPALA NRO 4");
-
                 sem_post(&sem_need_desalojo);
-
                 need_desalojo = 0;
                 break;
             }
@@ -286,7 +239,10 @@ void loop_atender_queries()
             {
                 if (need_desalojo)
                 {
-                    check_need_desalojo();
+                    actual_worker->is_free = true;
+                    sem_post(&sem_need_desalojo);
+                    need_desalojo = 0;
+                    // break;
                 }
                 log_debug(logger, "Voy a mandar un QUERY_END porque solicitaron un desalojo | need_stop es true: %d", need_stop);
                 // QUERY END Termina esto que te rre fuiste
@@ -328,17 +284,15 @@ void loop_atender_queries()
         if (hubo_error)
         {
             log_error(logger, "ERROR, se salio de la ejecucion del query por un error de storage");
-            need_desalojo=1;
-            check_need_desalojo();
-            
+            need_desalojo = 1;
+            log_light_green(logger, "need_desalojo seteada a 1 por error de storage");
         }
         log_debug(logger, "Estoy fuera del ciclo actual_worker is free");
         if (need_desalojo)
         {
-            check_need_desalojo();
-            /*actual_worker->is_free = true;
+            actual_worker->is_free = true;
             sem_post(&sem_need_desalojo);
-            need_desalojo = 0;*/
+            need_desalojo = 0;
         }
     }
 }
