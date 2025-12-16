@@ -80,7 +80,7 @@ int desalojo(worker* w)
     }
     log_pink(logger, "DESALOJO IS INVOKED");
     t_packet* pdes = create_packet();
-    add_int_to_packet(pdes, REQUEST_DESALOJO);
+    add_int_to_packet(pdes, REQUEST_DESALOJO_AGING);
     send_and_free_packet(pdes, w->fd); //Envío y espero su respuesta de success
 
     log_light_blue(logger, "Esperando respuesta de desalojo del worker %d", w->id);
@@ -127,7 +127,7 @@ void* desalojo_worker_query(void* params)
     }
     log_pink(logger, "DESALOJO IS INVOKED");
     t_packet* pdes = create_packet();
-    add_int_to_packet(pdes, REQUEST_DESALOJO);
+    add_int_to_packet(pdes, REQUEST_DESALOJO_AGING);
     send_and_free_packet(pdes, w->fd); //Envío y espero su respuesta de success
 
     log_light_blue(logger, "Esperando respuesta de desalojo del worker %d", w->id);

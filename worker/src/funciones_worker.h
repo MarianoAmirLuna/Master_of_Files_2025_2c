@@ -199,6 +199,34 @@ t_list *obtener_instrucciones_v2(char *fullpath)
     return res;
 }
 
+
+void atender_interrupcion()
+{
+    if(desalojado_por_prioridad)
+    {
+        log_orange(logger, "llega a desalojar por aging");
+        log_orange(logger, "#");
+        log_orange(logger, "#");
+        log_orange(logger, "#");
+        log_orange(logger, "#");
+        log_orange(logger, "#");
+        log_orange(logger, "#");
+        log_orange(logger, "#");
+        log_orange(logger, "#");
+        log_orange(logger, "#");
+        log_orange(logger, "#");
+        actual_worker->is_free=true;
+        desalojado_por_prioridad=false;
+        flushear_tabla_paginas(false);
+        t_packet *p = create_packet();
+        add_int_to_packet(p, REQUEST_DESALOJO);
+        add_int_to_packet(p, SUCCESS);
+        add_int_to_packet(p, actual_query->id);
+        add_int_to_packet(p, actual_query->pc);
+        send_and_free_packet(p, sock_master);
+    }
+}
+
 // FASE FETCH //
 void loop_atender_queries()
 {
@@ -287,6 +315,8 @@ void loop_atender_queries()
             need_desalojo = 1;
             log_light_green(logger, "need_desalojo seteada a 1 por error de storage");
         }
+
+        atender_interrupcion();
         log_debug(logger, "Estoy fuera del ciclo actual_worker is free");
         if (need_desalojo)
         {

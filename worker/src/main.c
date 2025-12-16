@@ -185,10 +185,14 @@ void packet_callback(void* params){
             log_light_blue(logger, "Se envio respuesta del desalojo al Master ID=%d, PC=%d", actual_query->id, actual_query->pc);
             
             log_info(logger, "## Query %d: Desalojada por pedido del Master", actual_query->id);
-            actual_worker->is_free=true;
+            actual_worker->is_free = true;
             actual_worker->id_query = -1;
             free_query(actual_query);
-            need_desalojo=0;
+            need_desalojo = 0;
+            if (op_code == REQUEST_DESALOJO_AGING)
+            {
+                desalojado_por_prioridad = true;
+            }
             if (hubo_error)
             {
                 if (ultimo_error_storage != WRITE_NO_PERMISSION)

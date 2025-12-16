@@ -27,6 +27,7 @@ void inicializar_variables()
 {
     actual_worker->is_free=true;
     hubo_error=false;
+    desalojado_por_prioridad=false;
 }
 
 void inicializar_colecciones(){

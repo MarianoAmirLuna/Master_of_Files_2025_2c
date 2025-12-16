@@ -47,6 +47,7 @@ sem_t sem_dimi;
 sem_t fin_de_flush;
 sem_t sem_de_esperar_la_puta_respuesta;
 
+bool desalojado_por_prioridad;
 /*/// @brief Cuando el worker está libre para una nueva ejecución que quiera hacer el Master
 int is_free;*/
 

@@ -76,6 +76,7 @@ typedef enum{
     /// @brief Cuando el Master debe desalojar el Query al Worker
     /// [id_query]
     REQUEST_DESALOJO,
+    REQUEST_DESALOJO_AGING,
     REQUEST_KILL,
     REQUEST_WRITE,
     REQUEST_READ,
