@@ -104,6 +104,7 @@ void* attend_multiple_clients(void* params)
             w->fd = sock_client;
             w->is_free = 1; //Al conectarse el worker está libre
             w->resp_desalojo = (response_desalojo){-1, -1, -1};
+            w->estoy_desalojando=0;
             sem_init(&w->sem_desalojo, 0, 0);
             id = id_worker;
 
@@ -311,7 +312,7 @@ void work_worker(t_list* pack, int id, int sock){
         w->resp_desalojo.status = status;
         w->resp_desalojo.id_query = qid;
         w->resp_desalojo.pc = pc;
-
+        w->estoy_desalojando= 0;
         sem_post(&w->sem_desalojo);
     }
     if(opcode == REQUEST_READ || opcode == REQUEST_READ_DEL_WORKER){

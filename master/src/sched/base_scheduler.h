@@ -92,6 +92,8 @@ int increment_priority(query* q){
 
 int _desalojo(worker* w)
 {
+    if(w->estoy_desalojando)
+        return;
     if(w == NULL){
         log_error(logger, "W es nulo en desalojo (%s:%d)", __func__, __LINE__);
         return 0;
@@ -99,10 +101,12 @@ int _desalojo(worker* w)
     if(w->is_free){
         return 0;
     }
+    w->estoy_desalojando= 1;
     log_pink(logger, "DESALOJO IS INVOKED");
     t_packet* pdes = create_packet();
     add_int_to_packet(pdes, REQUEST_DESALOJO);
     send_and_free_packet(pdes, w->fd); //Envío y espero su respuesta de success
+    
     query* q_worker = get_query_by_qid(w->id_query);
     log_light_blue(logger, "Esperando respuesta de desalojo del worker %d", w->id);
     sem_wait(&w->sem_desalojo); //MMM me da medio miedo porque como tiene que flushear la tabla el worker, debe esperar hasta que termine de flushearla el pete.
@@ -150,6 +154,8 @@ int desalojo_worker_de_este_query(query* q){
             continue;
         }
         if(w->id_query == q->id){
+            if(w->estoy_desalojando) //no hago nada porque estoy pidiendo desalojar
+                return;
             pthread_t* pth = malloc(sizeof(pthread_t));
             pthread_create(pth, NULL, _desalojo, w);
             pthread_detach(*pth);

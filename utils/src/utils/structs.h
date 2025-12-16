@@ -93,6 +93,7 @@ typedef struct{
     int pc;
     response_desalojo resp_desalojo;
     sem_t sem_desalojo;
+    int estoy_desalojando;
 }worker;
 
 /// @brief Estructuras para manejo de memoria principal
