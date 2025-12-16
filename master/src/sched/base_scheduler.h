@@ -104,7 +104,7 @@ int _desalojo(worker* w)
     w->estoy_desalojando= 1;
     log_pink(logger, "DESALOJO IS INVOKED");
     t_packet* pdes = create_packet();
-    add_int_to_packet(pdes, REQUEST_DESALOJO);
+    add_int_to_packet(pdes, cm.algoritmo_planificacion == PRIORITIES ? REQUEST_DESALOJO_AGING : REQUEST_DESALOJO);
     send_and_free_packet(pdes, w->fd); //Envío y espero su respuesta de success
     
     query* q_worker = get_query_by_qid(w->id_query);

@@ -299,7 +299,7 @@ void work_worker(t_list* pack, int id, int sock){
     int opcode = list_get_int(pack, 0);
     worker* w = get_worker_by_wid(id);
   
-   if(opcode == REQUEST_DESALOJO){
+   if(opcode == REQUEST_DESALOJO || opcode == REQUEST_DESALOJO_AGING){
         log_light_blue(logger, "Respuesta del worker desalojo %d", id);
         int status = list_get_int(pack, 1);
         int qid = list_get_int(pack, 2);
