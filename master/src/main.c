@@ -18,11 +18,9 @@ int main(int argc, char* argv[]) {
     }
     sem_init(&sem_idx, 0,1);
     sem_init(&sem_incoming_client, 0,1);
-    sem_init(&sem_locker, 0,1);
-    sem_init(&sem_worker, 0,1);
     sem_init(&sem_have_query, 0,0);
     sem_init(&sem_have_worker, 0,0);
-    //sem_init(&sem_desalojo, 0,0);
+
     int sock_server = server_connection(cm.puerto_escucha);
     
     void* param = malloc(sizeof(int)*2);
@@ -33,43 +31,10 @@ int main(int argc, char* argv[]) {
     pthread_create(pth, NULL, scheduler, NULL);
     pthread_detach(*pth);
 
-    /*pthread_t* pth_console = malloc(sizeof(pthread_t));
-    pthread_create(pth_console, NULL, console, NULL);
-    pthread_detach(*pth_console);*/
-    
     attend_multiple_clients(param);
     
     
     return 0;
-}
-
-void* console(){
-    log_light_blue(logger, "%s", "Console instance");
-    //Solo para solicitar boludeces por consola
-    for(;;){
-        char* rd = readline(">");
-        if(string_is_empty(rd))
-        {
-            log_warning(logger, "No ingresaste ningún comando");
-            free(rd);
-            break;
-        }
-        char** spl = string_split(rd, ":");
-        int spl_size = string_array_size(spl);
-        log_pink(logger, "Comando recibido: %s - Cantidad de argumentos: %d", rd, spl_size);
-        for(int n=0;n<list_size(workers);n++){
-            worker* w = list_get(workers, n);
-            t_packet* p = create_packet();
-            for(int i=0;i<spl_size;i++){
-                add_int_to_packet(p, atoi(spl[i]));
-            }
-            send_and_free_packet(p, w->fd);
-            log_light_green(logger, "Envié a Worker %d el comando %s", w->id, rd);
-            sleep(1);
-        }
-        free(rd);
-    }
-    return NULL;
 }
 
 void* attend_multiple_clients(void* params)
@@ -85,7 +50,6 @@ void* attend_multiple_clients(void* params)
     }
 
     for(;;){
-        //pthread_mutex_lock(&lock);
         log_debug(logger, "Esperando cliente en socket %d, Puerto: %d", sock, port);
         int sock_client = wait_client(sock, port);
         log_debug(logger, "Socket cliente: %d", sock_client);
@@ -105,16 +69,12 @@ void* attend_multiple_clients(void* params)
         if(ocm == MODULE_QUERY_CONTROL){
             int prioridad = list_get_int(l,1);
             char* archive_query= list_get_str(l,2);
-            //log_pink(logger, "Tamaño del archive_query = %d", strlen(archive_query));
             query* q = malloc(sizeof(query));
             q->archive_query = string_duplicate(archive_query);
-            /*q->archive_query = (char*)malloc(strlen(archive_query)+1);
-            strcpy(q->archive_query, archive_query);*/
             q->priority = prioridad;
             q->fd = sock_client;
             q->id = increment_idx();
             q->pc=0;
-            //q->sp = STATE_READY;
             q->temp = temporal_create();
             id = q->id;
             log_orange(logger, "Recibi el dato de Query Control: Query:%s ID=%d, Prioridad: %d", archive_query, q->id, prioridad);
@@ -144,6 +104,7 @@ void* attend_multiple_clients(void* params)
             w->fd = sock_client;
             w->is_free = 1; //Al conectarse el worker está libre
             w->resp_desalojo = (response_desalojo){-1, -1, -1};
+            w->estoy_desalojando=0;
             sem_init(&w->sem_desalojo, 0, 0);
             id = id_worker;
 
@@ -351,7 +312,7 @@ void work_worker(t_list* pack, int id, int sock){
         w->resp_desalojo.status = status;
         w->resp_desalojo.id_query = qid;
         w->resp_desalojo.pc = pc;
-
+        w->estoy_desalojando= 0;
         sem_post(&w->sem_desalojo);
     }
     if(opcode == REQUEST_READ || opcode == REQUEST_READ_DEL_WORKER){

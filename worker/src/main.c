@@ -189,10 +189,7 @@ void packet_callback(void* params){
             actual_worker->id_query = -1;
             free_query(actual_query);
             need_desalojo = 0;
-            if (op_code == REQUEST_DESALOJO_AGING)
-            {
-                desalojado_por_prioridad = true;
-            }
+            
             if (hubo_error)
             {
                 if (ultimo_error_storage != WRITE_NO_PERMISSION)
@@ -206,6 +203,11 @@ void packet_callback(void* params){
                 flushear_tabla_paginas(true);
                 log_light_blue(logger, "Termine de flushear");
             }
+        }
+        if (op_code == REQUEST_DESALOJO_AGING)
+        {
+            log_pink(logger, "DESALOJO AGING INVOKED");
+            desalojado_por_prioridad = true;
         }
     }
     if(ocm == MODULE_STORAGE){
