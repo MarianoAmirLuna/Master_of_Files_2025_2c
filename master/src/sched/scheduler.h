@@ -75,8 +75,20 @@ void execute_worker(){
         t_queue* qpr = get_queue_by_sp(STATE_READY);
         list_sort(qpr->elements, order_query_by); 
         query* peek= cast_query(queue_peek(qpr));
+        if(peek == NULL){
+            log_error(logger, "PEEK QUERY es NULL");
+        }
         //Tengo que verificar si existe un query READY que tiene más prioridad que la prioridad más baja que tiene el worker
         worker* wlowpriority = list_get_maximum(workers, worker_con_prioridad_mas_baja);
+        if(wlowpriority == NULL){
+            log_error(logger, "WLOWPRIORITY es NULL");
+        }
+        if(wlowpriority->id_query == -1 || wlowpriority->is_free)
+        {
+            //No tiene nada asignado así que voy a asignar esta query
+            execute_worker_on_this_query(wlowpriority, queue_pop(qpr));
+            return;
+        }
         if(get_query_by_qid(wlowpriority->id_query)->priority >= peek->priority)
         {
             //Existe un query que está en wlowpriority que tiene prioridad más baja (número más alto) que el query que está en READY (de la prioridad más alta)
@@ -85,6 +97,7 @@ void execute_worker(){
             execute_worker_on_this_query(wlowpriority, queue_pop(qpr));
             return;
         }else{
+            log_pink(logger, "HERE ELSE");
             return;
         }
         /*queue_destroy(qpr);
