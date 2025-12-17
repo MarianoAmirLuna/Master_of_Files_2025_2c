@@ -4,6 +4,11 @@
 #ifndef BASE_COMMUNICATION_OPS_H
 #include "base_communication_ops.h"
 #endif
+
+#ifndef CONTROL_ACCESOS_H
+#include "../control_accesos.h"
+#endif
+
 #ifndef CRYPTO_H_
 #include "commons/crypto.h"
 #endif
@@ -144,7 +149,9 @@ void commit_tag_ops(char* file, char* tag, worker* w){
                 } else {
                     // Si solo queda el archivo físico sin referencias lógicas, liberarlo
                     if(st.st_nlink == 1){
+                        pthread_mutex_lock(&bitmap_lock);
                         liberar_bloque(g_bitmap, bloque_fisico_actual, g_bitmap_size);
+                        pthread_mutex_unlock(&bitmap_lock);
                         log_info(logger, "## %d - Bloque Físico Liberado - Número de Bloque: %d", w->id_query, bloque_fisico_actual);
                     }
                 }

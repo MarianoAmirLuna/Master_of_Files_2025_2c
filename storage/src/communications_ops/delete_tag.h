@@ -4,6 +4,11 @@
 #ifndef BASE_COMMUNICATION_OPS_H
 #include "base_communication_ops.h"
 #endif
+
+#ifndef CONTROL_ACCESOS_H
+#include "../control_accesos.h"
+#endif
+
 #ifndef BITMAP_EXT_H
 #include "exts/bitmap_ext.h"
 #endif
@@ -81,7 +86,9 @@ void delete_tag_ops(char* file, char* tag, worker* w){
             // Si st_nlink == 1, solo queda el archivo físico en physical_blocks
             // (nadie más lo está usando) -> LIBERAR del bitmap
             if(st.st_nlink == 1){
+                pthread_mutex_lock(&bitmap_lock);
                 liberar_bloque(g_bitmap, bloque_fisico, g_bitmap_size);
+                pthread_mutex_unlock(&bitmap_lock);
                 log_info(logger, "## %d - Bloque Físico Liberado - Número de Bloque: %d",
                          w->id_query, bloque_fisico);
             }
