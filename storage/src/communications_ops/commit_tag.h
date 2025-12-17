@@ -60,6 +60,8 @@ void commit_tag_ops(char* file, char* tag, worker* w){
     //Según la condiciión si no está comiteado debo especificarlo como comiteado
     set_state_metadata_from_config(metadata, COMMITED);
 
+    // Bloquear acceso al hash index para evitar race conditions
+    pthread_mutex_lock(&hash_index_lock);
     t_config* bhi = get_block_hash_index(cs);
     char* logical_dir = get_logical_blocks_dir(cs, file, tag);
 
@@ -180,6 +182,8 @@ void commit_tag_ops(char* file, char* tag, worker* w){
     free(logical_dir);
     config_destroy(metadata);
     config_destroy(bhi);
+    // Desbloquear acceso al hash index
+    pthread_mutex_unlock(&hash_index_lock);
 
     // Log de commit exitoso
     log_info(logger, "## %d - Commit de File:Tag %s:%s", w->id_query, file, tag);

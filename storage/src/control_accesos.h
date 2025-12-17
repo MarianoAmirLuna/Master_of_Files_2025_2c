@@ -8,12 +8,14 @@ t_dictionary* file_tag_locks;
 pthread_mutex_t file_tag_locks_lock;
 pthread_mutex_t* block_locks;
 pthread_mutex_t bitmap_lock;
+pthread_mutex_t hash_index_lock;
 
 void creo_semaforos_fs()
 {
     file_tag_locks = dictionary_create();
     pthread_mutex_init(&file_tag_locks_lock, NULL);
     pthread_mutex_init(&bitmap_lock, NULL);
+    pthread_mutex_init(&hash_index_lock, NULL);
 }
 
 
