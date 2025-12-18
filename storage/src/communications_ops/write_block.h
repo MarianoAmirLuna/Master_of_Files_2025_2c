@@ -109,7 +109,8 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
     // =============================
     // CASO A: BLOQUE EXCLUSIVO -> escribir directamente
     // =============================
-    if(cantidad_links == 1){
+    log_error(logger, "cantidad de links %d", cantidad_links);
+    if(cantidad_links == 2){
         log_debug(logger, "[WRITE_BLOCK] Bloque físico %d es exclusivo. Se escribirá directamente.", bloque_fisico_actual);
 
         // Lock del bloque físico actual
@@ -124,7 +125,7 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
     // =============================
     // CASO B: BLOQUE COMPARTIDO -> COPY-ON-WRITE
     // =============================
-    else if(cantidad_links >= 2){
+    else if(cantidad_links > 2){
         log_debug(logger, "[WRITE_BLOCK] Bloque físico %d se comparte (%d links). Se hace COPY-ON-WRITE.",
                   bloque_fisico_actual, cantidad_links);
 
