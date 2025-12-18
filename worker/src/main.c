@@ -17,11 +17,12 @@ int main(int argc, char* argv[]) {
     log_light_blue(logger, "RETARDO MEMORIA CONFIGURADO EN WORKER: %d", cw.retardo_memoria);
     log_trace(logger, "%s", "Hola soy WORKER");
     instance_signal_handler();
+    
     actual_worker = malloc(sizeof(worker));
     actual_worker->id = id_worker;
     actual_worker->is_free = true;
     
-    
+
     inicializar_worker();
     
     pthread_mutex_t locker;
@@ -240,13 +241,16 @@ void packet_callback(void* params){
             send_and_free_packet(paq, sock_master);
             hubo_error=true;
             ultimo_error_storage=op_code;
-            sem_post(&sem_respuesta_storage);
-            if(op_code==READ_WRITE_OVERFLOW)
+            if (op_code == READ_WRITE_OVERFLOW)
             {
-                sem_post(&sem_get_data);    
+                sem_post(&sem_get_data);
+            }
+            else
+            {
+                sem_post(&sem_respuesta_storage);
             }
         }
-        if(op_code == SUCCESS)
+        if (op_code == SUCCESS)
         {
             sem_post(&sem_respuesta_storage);
         }

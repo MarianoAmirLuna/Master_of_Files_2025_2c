@@ -246,6 +246,11 @@ int manejar_miss_memoria(char *file_tag, int pagina)
     marco_a_loguear = nueva_entrada_TPG->marco;
     queue_push(tabla_pags_global, nueva_entrada_TPG);
     actualizar_pagina(file_tag, pagina);
+    if(hubo_error)
+    {
+        sacar_entrada_de_la_tabla(nueva_entrada_TPG); //se fue baiteada la pagina
+        return -1;
+    }
     return marco_a_loguear;
 }
 
@@ -338,6 +343,11 @@ char* ejecutar_read(char *file_tag, int dir_base, int tam)
     }
     else
     {
+        log_orange(logger, "Esto pasa por codear apurado lcdll");
+        log_orange(logger, "#");
+        log_orange(logger, "#");
+        log_orange(logger, "#");
+        log_orange(logger, "#");
         entrada_tabla_pags *aux = obtener_frame(file_tag, dir_base);
         n_frame = aux->marco;
     }

@@ -277,15 +277,29 @@ entrada_tabla_pags *nueva_entrada(char *file_tag, int pagina, int marco)
     ret->uso = true;
     return ret;
 }
-/*
-    ALGORITMOS DE REEMPLAZO
-*/
+
 bool comparar_entrada_tabla_pags(void *a, void *b)
 {
     entrada_tabla_pags *lineaA = (entrada_tabla_pags *)a;
     entrada_tabla_pags *lineaB = (entrada_tabla_pags *)b;
     return (!strcmp(lineaA->file_tag, lineaB->file_tag)) && (lineaA->pag == lineaB->pag);
 }
+
+void sacar_entrada_de_la_tabla(entrada_tabla_pags *ent)
+{
+    int index = list_index_of(tabla_pags_global->elements, ent, comparar_entrada_tabla_pags); // Obtengo el índice del que quiero actualizar
+
+    if(index != -1)
+    {
+        entrada_tabla_pags *entradaRemovida = list_remove(tabla_pags_global->elements, index);
+    }
+
+    liberar_entrada_TPG(ent);
+}
+
+/*
+    ALGORITMOS DE REEMPLAZO
+*/
 
 void actualizarPrioridadLRU(entrada_tabla_pags *entrada)
 {
