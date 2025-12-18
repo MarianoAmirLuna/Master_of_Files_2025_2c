@@ -204,17 +204,7 @@ void atender_interrupcion()
 {
     if(desalojado_por_prioridad)
     {
-        log_orange(logger, "llega a desalojar por aging");
-        log_orange(logger, "#");
-        log_orange(logger, "#");
-        log_orange(logger, "#");
-        log_orange(logger, "#");
-        log_orange(logger, "#");
-        log_orange(logger, "#");
-        log_orange(logger, "#");
-        log_orange(logger, "#");
-        log_orange(logger, "#");
-        log_orange(logger, "#");
+        log_orange(logger, "desaloja por aging");
         actual_worker->is_free=true;
         desalojado_por_prioridad=false;
         flushear_tabla_paginas(false);

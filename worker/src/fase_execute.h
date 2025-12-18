@@ -116,7 +116,6 @@ int realizar_escritura(char *file_tag, int dir_logica, char *contenido)
         memcpy(base + offset, contenido, espacio_restante_en_marco);
         log_trace(logger, "Se realizó una escritura %d", espacio_restante_en_marco);
         return espacio_restante_en_marco;
-        // realizar_escritura(file_tag, dir_logica + espacio_restante_en_marco, contenido + espacio_restante_en_marco); // feo con ganas eh
     }
     else
     {
