@@ -17,12 +17,11 @@ int main(int argc, char* argv[]) {
     log_light_blue(logger, "RETARDO MEMORIA CONFIGURADO EN WORKER: %d", cw.retardo_memoria);
     log_trace(logger, "%s", "Hola soy WORKER");
     instance_signal_handler();
-    
     actual_worker = malloc(sizeof(worker));
     actual_worker->id = id_worker;
     actual_worker->is_free = true;
     
-
+    
     inicializar_worker();
     
     pthread_mutex_t locker;

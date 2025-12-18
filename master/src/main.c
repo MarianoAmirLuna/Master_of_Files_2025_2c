@@ -9,6 +9,7 @@ int main(int argc, char* argv[]) {
     create_log("master", cm.log_level);
     log_violet(logger, "%s", "Hola soy MASTER");
     pthread_mutex_init(&mutex_sched, NULL);
+    pthread_mutex_init(&safe_query_to, NULL);
     instance_signal_handler();
     queries = list_create();
     workers = list_create();
@@ -186,7 +187,9 @@ void disconnect_callback(void* params){
             if(w == NULL){ //No se encuentra
                 log_warning(logger, "%s","No se encontró el worker en la lista de workers");
             }else{
-                query_to(q, STATE_EXIT);
+                _desalojo_matar(w);
+                //query_to(q, STATE_EXIT);
+                //_desalojo(w);
                 /*if(desalojo(w))
                 {
                     query_to(q, STATE_EXIT);

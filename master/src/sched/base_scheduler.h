@@ -13,7 +13,7 @@
 #include "exts/temporal_ext.h"
 
 pthread_mutex_t mutex_sched;
-
+pthread_mutex_t safe_query_to;
 //response_desalojo resp_desalojo= {-1, -1, -1};
 
 config_master cm;
@@ -90,16 +90,15 @@ int increment_priority(query* q){
     return q->priority;
 }
 
-int _desalojo(worker* w)
-{
+int _desalojo_abstract(worker* w, state_process spto){
     if(w->estoy_desalojando)
-        return;
+        return 1;
     if(w == NULL){
         log_error(logger, "W es nulo en desalojo (%s:%d)", __func__, __LINE__);
-        return 0;
+        return 1;
     }
     if(w->is_free){
-        return 0;
+        return 1;
     }
     w->estoy_desalojando= 1;
     log_pink(logger, "DESALOJO IS INVOKED");
@@ -125,12 +124,12 @@ int _desalojo(worker* w)
     query* q = get_query_by_qid(qid);
     if(q != NULL){
         q->pc = pc;
-        q->sp = STATE_READY;
+        q->sp = spto;
     }else{
         log_error(logger, "Query es nulo en desalojo (%s:%d)", __func__, __LINE__);
         return 0;
     }
-    if(cm.algoritmo_planificacion == PRIORITIES){
+     if(spto != STATE_EXIT && cm.algoritmo_planificacion == PRIORITIES){
         log_info(logger, "## Se desaloja la Query <%d> (%d) del Worker <%d> - Motivo: PRIORIDAD",
             q_worker->id,
             q_worker->priority,
@@ -140,9 +139,17 @@ int _desalojo(worker* w)
     query_to(q, q->sp);
     w->is_free = 1; //El worker ahora está libre
     w->id_query = -1; //El worker ya no tiene query asignado    
-    //Como el desalojo sólo invoca cuando en PRIORIDADES CON AGING en el siguiente ciclo del scheduler ya invoca el execute_worker
-    //execute_worker();
+    
     return w->resp_desalojo.status;
+}
+
+int _desalojo_matar(worker *w){
+    return _desalojo_abstract(w, STATE_EXIT);
+}
+
+int _desalojo(worker* w)
+{
+    return _desalojo_abstract(w, STATE_READY);
 }
 
 int desalojo_worker_de_este_query(query* q){
@@ -192,12 +199,16 @@ void _query_to(query* q, state_process to){
     add_query_on_state(q, to);
 }
 void query_to(query* q, state_process to){
+    pthread_mutex_lock(&safe_query_to);
     _query_to(q, to);
     on_changed(on_query_state_changed, q);
+    pthread_mutex_unlock(&safe_query_to);
 }
 
 void query_to_no_notify(query* q, state_process to){
+    pthread_mutex_lock(&safe_query_to);
     _query_to(q, to);
+    pthread_mutex_unlock(&safe_query_to);
 }
 
 void print_query(query* q){

@@ -28,6 +28,7 @@ void inicializar_variables()
     actual_worker->is_free=true;
     hubo_error=false;
     desalojado_por_prioridad=false;
+    block_size=16;
 }
 
 void inicializar_colecciones(){
