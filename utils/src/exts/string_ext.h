@@ -200,6 +200,9 @@ char* get_motivo_error(int code_error){
     if(code_error == TAG_YA_EXISTENTE_SACA_LA_MANO_DE_AHI){
         return "Tag ya existente";
     }
+    if(code_error == FILE_YA_EXISTENTE_SACA_LA_MANO_DE_AHI){
+        return "File ya existente";
+    }
     return "Error desconocido";
 }
 

@@ -61,7 +61,7 @@ void commit_tag_ops(char* file, char* tag, worker* w){
     set_state_metadata_from_config(metadata, COMMITED);
 
     // Bloquear acceso al hash index para evitar race conditions
-    pthread_mutex_lock(&hash_index_lock);
+//    pthread_mutex_lock(&hash_index_lock);
     t_config* bhi = get_block_hash_index(cs);
     char* logical_dir = get_logical_blocks_dir(cs, file, tag);
 
@@ -106,6 +106,7 @@ void commit_tag_ops(char* file, char* tag, worker* w){
         char* block_hash = crypto_md5(buffer, g_block_size);
         free(buffer);
 
+        pthread_mutex_lock(&hash_index_lock);
         // Verificar si ya existe un bloque físico con el mismo hash
         if(exists_hash_in_block_hash(bhi, block_hash)){
             // Obtener el nombre del bloque físico pre-existente (ej: "block0005")
@@ -173,6 +174,7 @@ void commit_tag_ops(char* file, char* tag, worker* w){
             insert_hash_block(bhi, block_hash, block_name);
             free(block_name);
         }
+        pthread_mutex_unlock(&hash_index_lock);
 
         free(block_hash);
         free(logical_block_path);
@@ -183,7 +185,6 @@ void commit_tag_ops(char* file, char* tag, worker* w){
     config_destroy(metadata);
     config_destroy(bhi);
     // Desbloquear acceso al hash index
-    pthread_mutex_unlock(&hash_index_lock);
 
     // Log de commit exitoso
     log_info(logger, "## %d - Commit de File:Tag %s:%s", w->id_query, file, tag);

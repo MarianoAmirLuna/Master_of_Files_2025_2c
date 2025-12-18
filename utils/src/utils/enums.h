@@ -181,6 +181,8 @@ typedef enum{
     WRITE_NO_PERMISSION,
     /// @brief Un bobo intento crear un tag ya existente, no se que le pasa.
     TAG_YA_EXISTENTE_SACA_LA_MANO_DE_AHI,
+    /// @brief Un bobo intento crear un file ya existente, no se que le pasa.
+    FILE_YA_EXISTENTE_SACA_LA_MANO_DE_AHI,
     /// @brief Una query intenta leer o escribir por fuera del tamaño del File:Tag.
     READ_WRITE_OVERFLOW
 }errors_operation;
