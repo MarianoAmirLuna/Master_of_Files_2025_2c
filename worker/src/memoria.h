@@ -20,7 +20,6 @@ void inicializar_memoria()
         marco *entrada_frame_table = malloc(sizeof(marco));
 
         entrada_frame_table->libre = true;
-        // entrada_frame_table->inicio = (char*)memory + i * block_size; //Se castea a char* para aritmetica de punteros
         entrada_frame_table->inicio = (char *)(memory + i * block_size); // Se castea a char* para aritmetica de punteros
 
         list_add(lista_frames, entrada_frame_table);
@@ -183,10 +182,6 @@ bool coincide_tag_y_pagina(void *element)
  */
 bool existe_fileTag_y_pag_en_tp(char *file_tag, int pagina, t_list *tabla_de_paginas)
 {
-    // dto_buscado.pag = pagina;
-    // dto_buscado.file_tag = file_tag;
-    // bool aux = list_any_satisfy (tabla_de_paginas, coincide_tag_y_pagina);
-
     for (int i = 0; i < list_size(tabla_de_paginas); i++)
     {
         entrada_tabla_pags *aux = list_get(tabla_de_paginas, i);
@@ -203,7 +198,8 @@ bool existe_fileTag_y_pag_en_tp(char *file_tag, int pagina, t_list *tabla_de_pag
 }
 
 /***
- * @brief retorna el primer marco que este libre o NULL
+ * @brief busca el primer marco que este libre
+ * @return El primer marco libre si lo hay. Si no, NULL
  */
 marco *buscar_frame_libre()
 {
@@ -378,8 +374,6 @@ void liberar_entrada_TPG(entrada_tabla_pags *elemento)
     char *file = spl[0];
     char *tag = spl[1];
 
-    /*char* file = strtok(elemento->file_tag, ":");
-    char* tag = strtok(NULL, ":");*/
     log_info(logger, "Query <%d>: Se libera el Marco: <%d> perteneciente al - File: <%s> - Tag: <%s>", actual_worker->id_query, elemento->marco, file, tag);
     free(elemento->file_tag);
     free(elemento);
