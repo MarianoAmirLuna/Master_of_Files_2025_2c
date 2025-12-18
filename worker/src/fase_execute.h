@@ -192,6 +192,9 @@ void *actualizar_pagina(char *file_tag, int pagina)
 
     log_trace(logger, "Esperando respuesta de Storage para GET_DATA...");
     sem_wait(&sem_get_data);
+    if(hubo_error){
+        return;
+    }
     int base = buscar_base_pagina(file_tag, pagina, -1);
     log_trace(logger, "StorageBlockSize: %d base=%d", storage_block_size, base);
 
@@ -282,6 +285,10 @@ void ejecutar_write(char *file_tag, int dir_base, char *contenido)
         log_info(logger, "Query <%d>: - Memoria Miss - File: <%s> - Tag: <%s> - Pagina: <%d>", actual_worker->id_query, file, tag, pagina);
 
         n_frame = manejar_miss_memoria(file_tag, pagina);
+        if (hubo_error)
+        {
+            return;
+        }
 
         string_array_destroy(spl);
     }
@@ -322,6 +329,10 @@ char* ejecutar_read(char *file_tag, int dir_base, int tam)
         log_info(logger, "Query <%d>: - Memoria Miss - File: <%s> - Tag: <%s> - Pagina: <%d>", actual_worker->id_query, file, tag, pagina);
 
         n_frame = manejar_miss_memoria(file_tag, pagina);
+        if (hubo_error)
+        {
+            return "";
+        }
 
         string_array_destroy(spl);
     }

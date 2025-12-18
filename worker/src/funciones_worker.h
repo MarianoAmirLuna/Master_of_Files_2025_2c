@@ -73,7 +73,10 @@ void ejecutar_instruccion(instr_code caso, char *parametro1, char *parametro2, c
 
             // Leer la página actual
             char *paginaLeida = ejecutar_read(parametro1, base + offset, slice_len);
-
+            if(hubo_error)
+            {
+                return;
+            }
             // Concatenar el contenido leído al acumulador
             strcat(contenido_total, paginaLeida);
 

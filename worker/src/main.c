@@ -242,6 +242,10 @@ void packet_callback(void* params){
             hubo_error=true;
             ultimo_error_storage=op_code;
             sem_post(&sem_respuesta_storage);
+            if(op_code==READ_WRITE_OVERFLOW)
+            {
+                sem_post(&sem_get_data);    
+            }
         }
         if(op_code == SUCCESS)
         {
