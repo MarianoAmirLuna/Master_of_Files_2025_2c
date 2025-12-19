@@ -109,7 +109,6 @@ void write_block_ops(char* file, char* tag, int bloque_logico, char* contenido, 
     // =============================
     // CASO A: BLOQUE EXCLUSIVO -> escribir directamente
     // =============================
-    log_error(logger, "cantidad de links %d", cantidad_links);
     if(cantidad_links == 2){
         log_debug(logger, "[WRITE_BLOCK] Bloque físico %d es exclusivo. Se escribirá directamente.", bloque_fisico_actual);
 
