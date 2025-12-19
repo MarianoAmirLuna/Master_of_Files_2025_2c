@@ -336,6 +336,7 @@ void eliminar_bloques_fisicos (int cantidad_bloques_de_mas, char* path, int bloq
 
 void crear_bloques_fisicos (int cantidad_bloques_faltantes, char* path, int bloques_actuales, int g_block_size)
 {
+    bool primero = true;
     for (int i = 0; i < cantidad_bloques_faltantes; i++)
     {
         char* nombre = string_from_format("block%04d", bloques_actuales + i);
@@ -343,7 +344,11 @@ void crear_bloques_fisicos (int cantidad_bloques_faltantes, char* path, int bloq
         crear_archivo(path, nombre, "dat");
 
         char* full_path = string_from_format("%s/%s.dat", path, nombre);
-        llenar_archivo_con_ceros(full_path, g_block_size);
+        if(primero)
+        {
+            llenar_archivo_con_ceros(full_path, g_block_size);
+            primero = false;
+        }
 
         free(nombre);
         free(full_path);
