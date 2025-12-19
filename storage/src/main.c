@@ -130,7 +130,7 @@ void* go_loop_net(void* params){
 
 // nucleo del storage
 void packet_callback(void* params){
-    log_info(logger, "Inside here");
+    //log_info(logger, "Inside here");
 
     int sock_client = 0;
     op_code_module ocm= 0; // aca veo el modulo que se comunico, deberia ser siempre worker (MODULE_WORKER: 9)

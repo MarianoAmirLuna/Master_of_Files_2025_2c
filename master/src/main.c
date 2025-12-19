@@ -258,7 +258,7 @@ void disconnect_callback(void* params){
 }
 
 void packet_callback(void* params){
-    log_info(logger, "Inside here");
+    //log_info(logger, "Inside here");
 
     int sock_client = 0;
     op_code_module ocm= 0;
