@@ -50,6 +50,12 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
         send_and_free_packet(pdata, sock_client);
         return;
     }*/
+    pthread_mutex_t* tag_lock = get_file_tag_lock(file, tag);
+    if(opcode != WRITE_BLOCK && opcode != WRITE_BLOCK_NOT_ERROR)
+    {
+        pthread_mutex_lock(tag_lock);
+    }
+
     if(opcode == CREATE_FILE){
         if(real_sz < 2){
             log_error(logger, "Cantidad inválida de argumentos");
@@ -88,6 +94,12 @@ void tratar_mensaje(t_list* pack, worker* w, int sock_client)
     if(opcode == DELETE_TAG){
         delete_tag_ops(file, tag, w);
     }
+
+    if(opcode != WRITE_BLOCK && opcode != WRITE_BLOCK_NOT_ERROR)
+    {
+        pthread_mutex_unlock(tag_lock);
+    }
+
     free(file);
     free(tag);
     // esto es una respuesta barata, despues le agrego a cada uno su respuesta personalizada
