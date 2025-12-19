@@ -19,7 +19,7 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     char* fullpath = get_filetag_path(cs,file,tag);
     if(!control_existencia(fullpath)){
         send_basic_packet(w->fd, TAG_NOT_FOUND); // no existe el file:tag
-        log_pink(logger, "[READ_BLOCK] No existe el File:Tag %s:%s", file, tag);
+        log_error(logger, "[READ_BLOCK] No existe el File:Tag %s:%s", file, tag);
         return;
     }
     
@@ -28,7 +28,7 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
     int cant_bloques = list_size(bloques);
 
     if(numero_bloque < 0 || numero_bloque >= cant_bloques){
-        log_pink(logger, "[READ_BLOCK] Bloque lógico fuera de límite");
+        log_error(logger, "[READ_BLOCK] Bloque lógico fuera de límite");
         send_basic_packet(w->fd, READ_WRITE_OVERFLOW); // lectura fuera de limites
         config_destroy(metadata);
         list_destroy(bloques);
