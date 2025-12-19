@@ -284,6 +284,34 @@ t_config* insert_hash_block_n(t_config* block_hash_index, char* hash, int nblock
     return res;
 }
 
+// borra del blocks_hash_index.config la entrada cuyo value == blockXXXX (ej "block0029")
+static void remove_hash_by_blockname(t_config* block_hash_index, const char* blockname) {
+    if (!block_hash_index || !blockname) return;
+
+    char* key_to_remove = NULL;
+
+    void _find_key(char* key, void* value) {
+        if (key_to_remove != NULL) return; // ya encontramos
+        const char* v = (const char*) value;
+        if (v != NULL && strcmp(v, blockname) == 0) {
+            key_to_remove = strdup(key); // duplico porque key es del diccionario
+        }
+    }
+
+    dictionary_iterator(block_hash_index->properties, _find_key);
+
+    if (key_to_remove != NULL) {
+        config_remove_key(block_hash_index, key_to_remove);   // elimina del diccionario :contentReference[oaicite:2]{index=2}
+        if (config_save(block_hash_index) == -1) {            // persiste :contentReference[oaicite:3]{index=3}
+            log_error(logger, "[HASH_INDEX] No se pudo guardar blocks_hash_index.config al borrar %s", key_to_remove);
+        } else {
+            log_info(logger, "[HASH_INDEX] Se eliminó hash %s -> %s del índice", key_to_remove, blockname);
+        }
+        free(key_to_remove);
+    }
+}
+
+
 t_config* insert_crypto_hash_block(t_config* block_hash_index, void* value, int len_value, char* block){
     //Lo gracioso es que el MD5 es un hash pobre y es más propenso a tener colisión de hash que un SHA1
     if(block_hash_index == NULL){

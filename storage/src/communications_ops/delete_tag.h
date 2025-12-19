@@ -89,6 +89,17 @@ void delete_tag_ops(char* file, char* tag, worker* w){
                 pthread_mutex_lock(&bitmap_lock);
                 liberar_bloque(g_bitmap, bloque_fisico, g_bitmap_size);
                 pthread_mutex_unlock(&bitmap_lock);
+ 
+                pthread_mutex_lock(&hash_index_lock);
+                t_config* bhi = get_block_hash_index(cs);
+
+                char* blockname = get_block_name_by_n(bloque_fisico, NUMBER_OF_DIGITS_BLOCK);
+                // si tenés mutex del índice, usalo (recomendado)
+                remove_hash_by_blockname(bhi, blockname);
+                free(blockname);
+
+                pthread_mutex_unlock(&hash_index_lock);
+
                 log_info(logger, "## %d - Bloque Físico Liberado - Número de Bloque: %d",
                          w->id_query, bloque_fisico);
             }
