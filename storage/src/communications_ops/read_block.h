@@ -22,7 +22,7 @@ void read_block_ops(char* file, char* tag, int numero_bloque, worker* w){
         log_error(logger, "[READ_BLOCK] No existe el File:Tag %s:%s", file, tag);
         return;
     }
-    
+     
     t_config* metadata = get_metadata_from_file_tag(cs, file, tag);
     t_list* bloques = get_array_blocks_as_list_from_metadata(metadata);
     int cant_bloques = list_size(bloques);
