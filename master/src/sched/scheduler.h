@@ -63,7 +63,7 @@ void query_ready_con_prioridad_mas_alta(void* a, void *b){
 
 void execute_worker(){
     log_light_blue(logger, "%s", "On ExecuteWorker");
-    print_queries_y_workers();
+    //print_queries_y_workers();
     if(!have_query_ready()){
         log_pink(logger, "No hay query que se encuentra en ready");
         //No hay query ready así que no hay nada que hacer.
