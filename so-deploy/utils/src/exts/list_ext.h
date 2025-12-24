@@ -1,0 +1,263 @@
+#ifndef EXTS_LIST_EXT
+#define EXTS_LIST_EXT
+
+#include <stdio.h>
+#include "commons/collections/list.h"
+#ifndef UTILS_STRUCTS_H
+#include "../utils/structs.h"
+#endif
+int list_get_int(t_list* l, int index){
+    if(list_size(l) < index)
+        log_error(logger, "INDICE INVALIDO EN LA LISTA %s:%d", __func__, __LINE__);
+    int res = 0;
+    memcpy(&res, list_get(l, index), sizeof(int));
+    return res;
+}
+
+/// @brief Esto crea un PUNTERO de un entero y lo agrega en la lista, es útil cuando se quiere usar el método list_get_int.
+/// Porque si no fuera un puntero no se puede obtener valor con el list_get_int porque se espera QUE SEA UN PUNTERO.
+/// @param l 
+/// @param v 
+void list_add_int(t_list* l, int v){
+    int* val = malloc(sizeof(int));
+    memcpy(val, &v, sizeof(int));
+    list_add(l, val);
+}
+
+char* list_get_str(t_list* l, int index){
+    return (char*)list_get(l, index);
+    //return buffer_to_string(list_get(l, index));
+}
+
+worker* list_get_worker(t_list* l, int index){
+    void* data = list_get(l, index);
+    worker* w = malloc(sizeof(worker));
+    w->fd=-1; //Recuerden que al recibir un worker por red no se conoce su socket
+    int offset = 0;
+    memcpy(&w->id, data+(offset++), sizeof(int));
+    memcpy(&w->id_query, data+(offset++), sizeof(int));
+    memcpy(&w->is_free, data+(offset++), sizeof(int));
+    memcpy(&w->pc, data+(offset++), sizeof(int));
+    return w;
+}
+
+t_list* list_filter_by(t_list* l, int(*condition)(void*, void*), void* by)
+{
+    t_list* res = list_create();
+    for(int i=0;i<list_size(l);i++){
+        void* elem = list_get(l, i);
+        if(condition(elem, by))
+            list_add(res, elem);
+    }
+    return res;
+}
+
+t_list* list_filter_by_and_by(t_list* l, int(*condition)(void*, void*, void*), void* by, void* andby)
+{
+    t_list* res = list_create();
+    for(int i=0;i<list_size(l);i++){
+        void* elem = list_get(l, i);
+        if(condition(elem, by, andby))
+            list_add(res, elem);
+    }
+    return res;
+}
+
+
+/// @brief Busca el primer elemento que conicida con su condición
+/// @param l 
+/// @param condition 
+/// @param by 
+/// @return el elemento, si no existe retorna NULL
+void* list_find_by(t_list* l, int(*condition)(void*, void*), void* by){
+    
+    int sz = list_size(l);
+    for(int i=0;i<sz;i++){
+        void* elem = list_get(l, i);
+        if(condition(elem, by))
+            return elem;
+    }
+    return NULL;
+}
+
+/// @brief Busca el primer elemento que conicida con su condición
+/// @param l 
+/// @param condition 
+/// @param by 
+/// @return el elemento, si no existe retorna NULL
+void* list_find_by_idx_list(t_list* l, int(*condition)(void*, void*), void* by, int* idx){
+    int sz = list_size(l);
+    for(int i=0;i<sz;i++){
+        void* elem = list_get(l, i);
+        if(condition(elem, by)){
+            *idx = i;
+            return elem;
+        }
+    }
+    *idx=-1;
+    return NULL;
+}
+int list_exists(t_list* l, int(*condition)(void*, void*), void* by)
+{
+    return list_find_by(l,condition, by) != NULL;
+}
+
+/// @brief Suponiendo que todos los elementos son de tipo entero
+/// @param l 
+/// @return 
+int list_sum(t_list* l){
+    int res = 0;
+    for(int i=0;i<list_size(l);i++){
+        int v=0;
+        memcpy(&v, list_get(l, i), sizeof(int));
+        res+=v;
+    }
+    return res;
+}
+
+double list_avg(t_list* l){
+    int sum = list_sum(l);
+    int sz = list_size(l);
+    if(sz == 0) //NO SE PUEDE DIVIDIR POR CERO
+        return 0;
+    return (double)sum / (double)sz;
+}
+
+void list_fill(t_list* l, void* value)
+{
+    for(int i=0;i<list_size(l);i++){
+        list_replace(l, i, value);
+    }
+}
+void list_fill_from_to(t_list* l, void* value, int from, int to){
+    if(list_size(l) >= to || from < 0)
+    {
+        printf("Invalid %s from %d to %d the list size is %d", __func__, from,to,list_size(l));
+        exit(1);
+    }
+    for(int i=from;i<to;i++)
+        list_replace(l,i,value);
+}
+void list_fill_from_length(t_list* l, void* value, int from, int length){
+    list_fill_from_to(l,value, from, from+length);
+}
+void list_add_range(t_list* l, void* v, int sz){
+    for(int i=0;i<sz;i++){
+        list_add(l, v);
+    }
+}
+
+void list_add_range_int(t_list* l, int v, int sz){
+    for(int i=0;i<sz;i++){
+        void* val = malloc(sizeof(int));
+        memcpy(val, &v, sizeof(int));
+        list_add(l, val);
+    }
+}
+
+t_list* list_add_range_fill(t_list* l, void*(*fptr)()){
+    for(int i=0;i<list_size(l);i++){
+        list_add(l, fptr());
+    }
+    return l;
+}
+
+t_list* list_add_range_fill_length(t_list* l, void*(*fptr)(), int length){
+    for(int i=0;i<length;i++){
+        list_add(l, fptr());
+    }
+    return l;
+}
+
+char* list_array_int_as_string(t_list* l){
+    int sz = list_size(l);
+    char* res = string_new();
+    string_append(&res, "[");
+    for(int i=0;i<sz;i++){
+        string_append_with_format(&res, i == sz-1 ? "%d" : "%d,", list_get_int(l, i));
+    }
+    string_append(&res, "]");
+    return res;
+}
+
+char* list_array_int_as_string_v2(t_list* l){
+    int sz = list_size(l);
+    char* res = string_new();
+    string_append(&res, "[");
+    for(int i=0;i<sz;i++){
+        string_append_with_format(&res, i == sz-1 ? "%d" : "%d,", (int)list_get(l, i));
+    }
+    string_append(&res, "]");
+    return res;
+}
+
+/*
+char* list_array_int_as_string_v2(t_list* l) { // lseijas
+    int sz = list_size(l);
+    char* res = string_new();
+    string_append(&res, "[");
+
+    for(int i = 0; i < sz; i++) {
+        int value = *(int*) list_get(l, i);
+        string_append_with_format(
+            &res,
+            i == sz - 1 ? "%d" : "%d,",
+            value
+        );
+    }
+
+    string_append(&res, "]");
+    return res;   // caller debe free()
+}*/
+
+void* list_remove_by_condition_by(t_list* l, int(*condition)(void*, void*), void* by){
+    int sz = list_size(l);
+    for(int i=0;i<sz;i++){
+        void* elem = list_get(l, i);
+        if(condition(elem, by)){
+            list_remove(l, i);
+            return elem;
+        }
+    }
+    return NULL;
+}
+
+bool list_contain(t_list* l, void* element, int(*comparer)(void*, void*)){
+    for(int i=0;i<list_size(l);i++){
+        void* elem = list_get(l, i);
+        if(comparer(elem, element))
+            return true;
+    }
+    return false;
+}
+
+bool list_contain_int(t_list* l, int element){
+    for(int i=0;i<list_size(l);i++){
+        int elem= (int)list_get(l, i);
+        if(elem == element)
+            return true;
+    }
+    return false;
+}
+t_list* list_distinct(t_list* l, int(*comparer)(void*, void*)){
+    t_list* res = list_create();
+    for(int i=0;i<list_size(l);i++){
+        void* elem = list_get(l, i);
+        
+        if(!list_exists(res, comparer, elem)){
+            list_add(res, elem);
+        }
+    }
+    return res;
+}
+t_list* list_distinct_int(t_list* l){
+    t_list* res = list_create();
+    for(int i=0;i<list_size(l);i++){
+        int elem = (int)list_get(l, i);
+        if(!list_contain_int(res, elem)){
+            list_add(res, elem);
+        }
+    }
+    return res;
+}
+#endif
